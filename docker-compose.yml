@@ -24,6 +24,7 @@ services:
       PGDATABASE: volunteer_db
       PGPORT: 5432
       NODE_ENV: development
+      DATABASE_URL: postgres://postgres:1234@db:5432/volunteer_db
     depends_on:
       - db
 
@@ -36,6 +37,7 @@ services:
       PGDATABASE: volunteer_db
       PGPORT: 5432
       NODE_ENV: test
+      DATABASE_URL: postgres://postgres:1234@db:5432/volunteer_db
     depends_on:
       - db
     command: npm test
