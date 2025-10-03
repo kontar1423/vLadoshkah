@@ -23,11 +23,15 @@ async function getById(id) {
   }
 }
 
-async function create(name) {
+async function create(data) {
+  const { name, photo = null, adress = null, credits = null, reports = null } = data;
+
   try {
     const result = await pool.query(
-      'INSERT INTO shelters(name) VALUES($1) RETURNING *',
-      [name]
+      `INSERT INTO shelters(name, photo, adress, credits, reports)
+       VALUES($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [name, photo, adress, credits, reports]
     );
     logger.info({ shelter: result.rows[0] }, 'DAO: created shelter');
     return result.rows[0];

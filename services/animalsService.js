@@ -21,9 +21,9 @@ async function getAnimalById(id) {
 
 // Создать животное
 async function createAnimal(data) {
-  const { error, value } = animalSchema.validate(data);
-  if (error) throw new Error(error.details[0].message);
-  return animalsDao.create(value);
+  // const { error, value } = animalSchema.validate(data);
+  // if (error) throw new Error(error.details[0].message);
+  return animalsDao.create(data);
 }
 
 // Обновить животное

@@ -18,9 +18,9 @@ async function getShelterById(id) {
 
 // Создать приют
 async function createShelter(data) {
-  const { error, value } = shelterSchema.validate(data);
-  if (error) throw new Error(error.details[0].message);
-  return sheltersDao.create(value.name);
+  // const { error, value } = shelterSchema.validate(data);
+  // if (error) throw new Error(error.details[0].message);
+  return sheltersDao.create(data);
 }
 
 // Обновить приют

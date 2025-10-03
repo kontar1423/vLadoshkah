@@ -23,11 +23,11 @@ async function getById(id) {
   }
 }
 
-async function create({ name, age, type, shelter_id }) {
+async function create({name, age, type, health, sex, color, weight, photo, personality, size, history, shelter_id}) {
   try {
     const result = await pool.query(
-      'INSERT INTO animals(name, age, type, shelter_id) VALUES($1,$2,$3,$4) RETURNING *',
-      [name, age, type, shelter_id]
+      'INSERT INTO animals(name, age, type, health, sex, color, weight, photo, personality, size, history, shelter_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *',
+      [name, age, type, health, sex, color, weight, photo, personality, size, history, shelter_id]
     );
     logger.info({ animal: result.rows[0] }, 'DAO: created animal');
     return result.rows[0];
@@ -37,11 +37,11 @@ async function create({ name, age, type, shelter_id }) {
   }
 }
 
-async function update(id, { name, age, type, shelter_id }) {
+async function update(id, {name, age, type, health, sex, color, weight, personality, size, history, shelter_id }) {
   try {
     const result = await pool.query(
-      'UPDATE animals SET name=$1, age=$2, type=$3, shelter_id=$4 WHERE id=$5 RETURNING *',
-      [name, age, type, shelter_id, id]
+      'UPDATE animals SET  name=$1, age=$2, type=$3, health=$4, sex=$5, color=$6, weight=$7, personality=$8, size=$9, history=$10, shelter_id=$11 WHERE id=$12 RETURNING *',
+      [name, age, type, health, sex, color, weight, personality, size, history, shelter_id, id]
     );
     logger.info({ id, updated: result.rowCount }, 'DAO: updated animal');
     return result.rows[0];
