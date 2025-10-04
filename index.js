@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const animalsRouter = require('./routes/animals');
 const sheltersRouter = require('./routes/shelters');
+const usersRouter = require('./routes/users');
 const logger = require('./logger');
 const pinoHttp = require('pino-http');
 
@@ -27,6 +28,7 @@ app.use(pinoHttp({
 // Routes
 app.use('/animals', animalsRouter);
 app.use('/shelters', sheltersRouter);
+app.use('/users', usersRouter);
 
 // Liveness/Readiness probe
 app.get('/healthz', (req, res) => {
