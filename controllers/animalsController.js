@@ -32,6 +32,26 @@ async function getById(req, res) {
   }
 }
 
+async function getAllByShelterId(req, res) {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: 'Invalid id' });
+  }
+  try {
+    const animals = await animalsService.getAnimalsByShelterId(id);
+    if (!animals) {
+      const log = req.log || logger;
+      log.warn({ id }, 'Controller: animals not found');
+      return res.status(404).json({ error: 'Not found' });
+    }
+    res.json(animals);
+  } catch (err) {
+    const log = req.log || logger;
+    log.error(err, 'Controller: error fetching animals by ShelterId');
+    res.status(500).json({ error: 'Database error' });
+  }
+}
+
 async function create(req, res) {
   try {
     const newAnimal = await animalsService.createAnimal(req.body);
@@ -83,4 +103,4 @@ async function remove(req, res) {
   }
 }
 
-module.exports = { getAll, getById, create, update, remove };
+module.exports = { getAll, getById, create, update, remove, getAllByShelterId };

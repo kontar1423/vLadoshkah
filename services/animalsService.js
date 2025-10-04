@@ -19,6 +19,10 @@ async function getAnimalById(id) {
   return animalsDao.getById(id);
 }
 
+async function getAnimalsByShelterId(id) {
+  return animalsDao.getAnimalsByShelter(id);
+}
+
 // Создать животное
 async function createAnimal(data) {
   // const { error, value } = animalSchema.validate(data);
@@ -38,4 +42,4 @@ async function removeAnimal(id) {
   return animalsDao.remove(id);
 }
 
-module.exports = { getAllAnimals, getAnimalById, createAnimal, updateAnimal, removeAnimal };
+module.exports = { getAllAnimals, getAnimalById, createAnimal, updateAnimal, removeAnimal, getAnimalsByShelterId };

@@ -12,7 +12,7 @@ export const up = (pgm) => {
 // 1️⃣ Добавляем все колонки, все nullable
   pgm.addColumns('animals', {
     health: { type: 'varchar(30)' },
-    sex: { type: 'varchar(10)' },
+    gender: { type: 'varchar(10)' },
     color: { type: 'varchar(50)' },
     weight: { type: 'int' },
     photo: { type: 'varchar(300)' },
@@ -25,7 +25,7 @@ export const up = (pgm) => {
     pgm.sql(`
     UPDATE animals
     SET health = 'не указан',
-        sex = 'не указан',
+        gender = 'не указан',
         color = 'не указан',
         weight = 0,
         photo = '',
@@ -35,7 +35,7 @@ export const up = (pgm) => {
 
   // 3️⃣ Делаем колонки обязательными
   pgm.alterColumn('animals', 'health', { notNull: true });
-  pgm.alterColumn('animals', 'sex', { notNull: true });
+  pgm.alterColumn('animals', 'gender', { notNull: true });
   pgm.alterColumn('animals', 'color', { notNull: true });
   pgm.alterColumn('animals', 'weight', { notNull: true });
   pgm.alterColumn('animals', 'photo', { notNull: true });
@@ -48,5 +48,5 @@ export const up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 export const down = (pgm) => {
-    pgm.dropColumn('animals', ["health", "sex", "color", "weight", "personality", "size", "history"]);
+    pgm.dropColumn('animals', ["health", "gender", "color", "weight", "personality", "size", "history"]);
 };
