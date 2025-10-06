@@ -3,6 +3,7 @@ const express = require('express');
 const animalsRouter = require('./routes/animals');
 const sheltersRouter = require('./routes/shelters');
 const usersRouter = require('./routes/users');
+const photosRouter = require('./routes/photos');
 const logger = require('./logger');
 const pinoHttp = require('pino-http');
 
@@ -29,6 +30,7 @@ app.use(pinoHttp({
 app.use('/animals', animalsRouter);
 app.use('/shelters', sheltersRouter);
 app.use('/users', usersRouter);
+app.use('/photos',photosRouter)
 
 // Liveness/Readiness probe
 app.get('/healthz', (req, res) => {
