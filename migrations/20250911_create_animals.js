@@ -10,7 +10,14 @@ exports.up = (pgm) => {
       notNull: true,
       references: 'shelters',
       onDelete: 'cascade'
-    }
+    },
+    health: { type: 'varchar(30)' },
+    gender: { type: 'varchar(10)' },
+    color: { type: 'varchar(50)' },
+    weight: { type: 'int' },
+    personality: { type: 'varchar(100)' },
+    size: { type: 'int' },
+    history: { type: 'varchar(1000)' },
   });
 };
 

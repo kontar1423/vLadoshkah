@@ -1,10 +1,10 @@
-const sheltersService = require('../services/sheltersService');
-const logger = require('../logger');
+import { getAllShelters, getShelterById, createShelter, updateShelter, removeShelter } from '../services/sheltersService';
+import logger from '../logger';
 
 // Получить все приюты
 async function getAll(req, res) {
   try {
-    const shelters = await sheltersService.getAllShelters();
+    const shelters = await getAllShelters();
     res.json(shelters);
   } catch (err) {
     const log = req.log || logger;
@@ -20,7 +20,7 @@ async function getById(req, res) {
     if (!Number.isInteger(id)) {
       return res.status(400).json({ error: 'Invalid id' });
     }
-    const shelter = await sheltersService.getShelterById(id);
+    const shelter = await getShelterById(id);
     if (!shelter) return res.status(404).json({ error: 'Not found' });
     res.json(shelter);
   } catch (err) {
@@ -33,7 +33,7 @@ async function getById(req, res) {
 // Создать приют
 async function create(req, res) {
   try {
-    const shelter = await sheltersService.createShelter(req.body);
+    const shelter = await createShelter(req.body);
     res.status(201).json(shelter);
   } catch (err) {
     const log = req.log || logger;
@@ -49,7 +49,7 @@ async function update(req, res) {
     if (!Number.isInteger(id)) {
       return res.status(400).json({ error: 'Invalid id' });
     }
-    const shelter = await sheltersService.updateShelter(id, req.body);
+    const shelter = await updateShelter(id, req.body);
     if (!shelter) return res.status(404).json({ error: 'Not found' });
     res.json(shelter);
   } catch (err) {
@@ -66,7 +66,7 @@ async function remove(req, res) {
     if (!Number.isInteger(id)) {
       return res.status(400).json({ error: 'Invalid id' });
     }
-    const shelter = await sheltersService.removeShelter(id);
+    const shelter = await removeShelter(id);
     if (!shelter) return res.status(404).json({ error: 'Not found' });
     res.status(204).end();
   } catch (err) {
@@ -76,4 +76,4 @@ async function remove(req, res) {
   }
 }
 
-module.exports = { getAll, getById, create, update, remove };
+export default { getAll, getById, create, update, remove };

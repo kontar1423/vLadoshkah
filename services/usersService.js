@@ -1,8 +1,17 @@
-const userDAO = require('../dao/usersDao');
-const logger = require('../logger');
+import userDAO from '../dao/usersDao';
+import photoDAO from '../dao/photosDao';
+import logger from '../logger';
 
 async function getAll() {
-  return await userDAO.getAll();
+  const photos = await photoDAO.getByEntityType('user');
+  const users = await userDAO.getAll()
+  const usersWithPhotos = users.map(user => ({
+  ...user,
+  photos: photos
+    .filter(p => p.entity_id === user.id)
+    .map(p => p.url)
+}));
+  return usersWithPhotos;
 }
 
 async function getById(id) {
@@ -39,4 +48,4 @@ async function remove(id) {
   return deleted;
 }
 
-module.exports = { getAll, getById, create, update, remove };
+export default { getAll, getById, create, update, remove };

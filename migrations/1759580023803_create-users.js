@@ -13,7 +13,6 @@ export const up = (pgm) => {
     id: 'id',
     firstname: { type: 'varchar(100)', notNull: true },
     lastname: { type: 'varchar(100)', notNull: true },
-    photo: {type: 'varchar(300)'},
     role: {type: 'varchar(30)', notNull: true},
     gender: {type: 'varchar(30)',notNull:true},
     email: {type: 'varchar(100)',notNull:true},

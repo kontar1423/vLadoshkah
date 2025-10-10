@@ -1,13 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const sheltersController = require('../controllers/sheltersController');
-const animalsController = require('../controllers/animalsController');
+import { Router } from 'express';
+const router = Router();
+import { getAll, getById, create, update, remove } from '../controllers/sheltersController';
+import { getAllByShelterId } from '../controllers/animalsController';
 
-router.get('/', sheltersController.getAll);          // GET /shelters
-router.get('/:id', sheltersController.getById);      // GET /shelters/:id
-router.get('/:id/animals', animalsController.getAllByShelterId);    // GET /shelters/:id/animals
-router.post('/', sheltersController.create);        // POST /shelters
-router.put('/:id', sheltersController.update);      // PUT /shelters/:id
-router.delete('/:id', sheltersController.remove);   // DELETE /shelters/:id
+router.get('/', getAll);          // GET /shelters
+router.get('/:id', getById);      // GET /shelters/:id
+router.get('/:id/animals', getAllByShelterId);    // GET /shelters/:id/animals
+router.post('/', create);        // POST /shelters
+router.put('/:id', update);      // PUT /shelters/:id
+router.delete('/:id', remove);   // DELETE /shelters/:id
 
-module.exports = router;
+export default router;

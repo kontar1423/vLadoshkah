@@ -1,9 +1,9 @@
-const Joi = require('joi');
-const sheltersDao = require('../dao/sheltersDao');
+import { object, string } from 'joi';
+import sheltersDao from '../dao/sheltersDao';
 
 // Joi-схема для валидации shelter
-const shelterSchema = Joi.object({
-  name: Joi.string().min(2).required()
+const shelterSchema = object({
+  name: string().min(2).required()
 });
 
 // Получить все приюты
@@ -35,4 +35,4 @@ async function removeShelter(id) {
   return sheltersDao.remove(id);
 }
 
-module.exports = { getAllShelters, getShelterById, createShelter, updateShelter, removeShelter };
+export default { getAllShelters, getShelterById, createShelter, updateShelter, removeShelter };

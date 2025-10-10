@@ -1,9 +1,9 @@
-const animalsService = require('../services/animalsService');
-const logger = require('../logger');
+import { getAllAnimals, getAnimalById, getAnimalsByShelterId, createAnimal, updateAnimal, removeAnimal } from '../services/animalsService';
+import logger from '../logger';
 
 async function getAll(req, res) {
   try {
-    const animals = await animalsService.getAllAnimals();
+    const animals = await getAllAnimals();
     res.json(animals);
   } catch (err) {
     const log = req.log || logger;
@@ -18,7 +18,7 @@ async function getById(req, res) {
     return res.status(400).json({ error: 'Invalid id' });
   }
   try {
-    const animal = await animalsService.getAnimalById(id);
+    const animal = await getAnimalById(id);
     if (!animal) {
       const log = req.log || logger;
       log.warn({ id }, 'Controller: animal not found');
@@ -38,7 +38,7 @@ async function getAllByShelterId(req, res) {
     return res.status(400).json({ error: 'Invalid id' });
   }
   try {
-    const animals = await animalsService.getAnimalsByShelterId(id);
+    const animals = await getAnimalsByShelterId(id);
     if (!animals) {
       const log = req.log || logger;
       log.warn({ id }, 'Controller: animals not found');
@@ -54,7 +54,7 @@ async function getAllByShelterId(req, res) {
 
 async function create(req, res) {
   try {
-    const newAnimal = await animalsService.createAnimal(req.body);
+    const newAnimal = await createAnimal(req.body);
     res.status(201).json(newAnimal);
   } catch (err) {
     const log = req.log || logger;
@@ -69,7 +69,7 @@ async function update(req, res) {
     return res.status(400).json({ error: 'Invalid id' });
   }
   try {
-    const updated = await animalsService.updateAnimal(id, req.body);
+    const updated = await updateAnimal(id, req.body);
     if (!updated) {
       const log = req.log || logger;
       log.warn({ id }, 'Controller: animal to update not found');
@@ -89,7 +89,7 @@ async function remove(req, res) {
     return res.status(400).json({ error: 'Invalid id' });
   }
   try {
-    const deleted = await animalsService.removeAnimal(id);
+    const deleted = await removeAnimal(id);
     if (!deleted) {
       const log = req.log || logger;
       log.warn({ id }, 'Controller: animal to delete not found');
@@ -103,4 +103,4 @@ async function remove(req, res) {
   }
 }
 
-module.exports = { getAll, getById, create, update, remove, getAllByShelterId };
+export default { getAll, getById, create, update, remove, getAllByShelterId };

@@ -1,26 +1,48 @@
-const Joi = require('joi');
-const animalsDao = require('../dao/animalsDao');
+import { object, string, number } from 'joi';
+import animalsDao from '../dao/animalsDao';
+import photosDao from '../dao/photosDao';
 
 // Joi-схема для валидации animal
-const animalSchema = Joi.object({
-  name: Joi.string().min(2).required(),
-  age: Joi.number().integer().min(0).required(),
-  type: Joi.string().valid('dog','cat','other').required(),
-  shelter_id: Joi.number().integer().required()
+const animalSchema = object({
+  name: string().min(2).required(),
+  age: number().integer().min(0).required(),
+  type: string().valid('dog','cat','other').required(),
+  shelter_id: number().integer().required()
 });
 
 // Получить всех животных
 async function getAllAnimals() {
-  return animalsDao.getAll();
-}
+    const photos = await photosDao.getByEntityType('animal');
+    const animals = await animalsDao.getAll()
+    const animalsWithPhotos = animals.map(animal => ({
+    ...animal,
+    photos: photos
+      .filter(p => p.entity_id === animal.id)
+      .map(p => p.url)
+  }));
+    return animalsWithPhotos;
+  }
 
 // Получить животное по id
 async function getAnimalById(id) {
-  return animalsDao.getById(id);
+  animal = await animalsDao.getById(id);
+  photo = await photosDao.getByEntity('animal', animal.id);
+  return {
+    ...animal,
+    photos: photos.map(photo => photo.url)
+  };
 }
 
 async function getAnimalsByShelterId(id) {
-  return animalsDao.getAnimalsByShelter(id);
+  const animals = animalsDao.getAnimalsByShelter(id);
+  const photos = await photosDao.getByEntityType('animal');
+  const animalsWithPhotos = animals.map(animal => ({
+    ...animal,
+    photos: photos
+      .filter(p => p.entity_id === animal.id)
+      .map(p => p.url)
+  }));
+    return animalsWithPhotos;
 }
 
 // Создать животное
@@ -42,4 +64,4 @@ async function removeAnimal(id) {
   return animalsDao.remove(id);
 }
 
-module.exports = { getAllAnimals, getAnimalById, createAnimal, updateAnimal, removeAnimal, getAnimalsByShelterId };
+export default { getAllAnimals, getAnimalById, createAnimal, updateAnimal, removeAnimal, getAnimalsByShelterId };
