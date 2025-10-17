@@ -1,5 +1,5 @@
 # Используем официальный Node.js
-FROM node:22
+FROM node:22-alpine
 
 # Создаём рабочую директорию
 WORKDIR /usr/src/app
@@ -8,36 +8,19 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Устанавливаем зависимости
-RUN npm install
+RUN npm ci
 
 # Копируем весь проект
 COPY . .
 
-# Устанавливаем netcat (для проверки готовности сервисов)
-RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
+# Устанавливаем зависимости для проверок
+RUN apk add --no-cache postgresql-client curl
 
 # Пробрасываем порт
 EXPOSE 4000
 
-# Скрипт запуска: ждём БД и MinIO, затем миграции и старт
-CMD ["sh", "-c", "\
-  echo '⏳ Waiting for database...'; \
-  until nc -z db 5432; do \
-    echo 'Database is unavailable - sleeping'; \
-    sleep 1; \
-  done; \
-  echo '✅ Database is up'; \
-  \
-  echo '⏳ Waiting for MinIO...'; \
-  until nc -z minio 9000; do \
-    echo 'MinIO is unavailable - sleeping'; \
-    sleep 1; \
-  done; \
-  echo '✅ MinIO is up'; \
-  \
-  echo '🚀 Running migrations...'; \
-  npx node-pg-migrate up; \
-  \
-  echo '🚀 Starting server...'; \
-  npm run dev \
-"]
+# Скрипт для проверки готовности БД (более надежный чем netcat)
+COPY wait-for-services.sh /usr/src/app/
+RUN chmod +x /usr/src/app/wait-for-services.sh
+
+CMD ["/usr/src/app/wait-for-services.sh"]

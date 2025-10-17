@@ -1,12 +1,26 @@
 import express from 'express';
-import { PhotosController } from '../controllers/photosController.js';
+import upload from '../middleware/upload.js';
+import photosController from '../controllers/photosController.js';
 
 const router = express.Router();
 
-router.get('/', PhotosController.getAll);
-router.get('/:id', PhotosController.getById);
-router.get('/entity/:type/:id', PhotosController.getByEntity);
-router.post('/', PhotosController.create);
-router.delete('/:id', PhotosController.delete);
+// Загрузка фото
+router.post('/upload', upload.single('photo'), photosController.uploadPhoto);
+
+// Получение информации о фото по ID
+router.get('/info/:id', photosController.getPhotoInfo);
+
+// Получение файла фото по object_name
+router.get('/file/:objectName', photosController.getPhotoFile);
+
+// Удаление фото по ID
+router.delete('/:id', photosController.deletePhoto);
+
+// Получение фото по сущности
+router.get('/entity/:entityType/:entityId', photosController.getPhotosByEntity);
+
+// Получение всех фото
+router.get('/', photosController.getAllPhotos);
 
 export default router;
+

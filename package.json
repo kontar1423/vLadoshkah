@@ -15,11 +15,12 @@
       "**/__tests__/**/*.test.js"
     ]
   },
+  "type": "module",
   "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
-    "start": "node index.js",
-    "dev": "nodemon index.js",
     "migrate": "node-pg-migrate up",
     "migrate:down": "node-pg-migrate down"
   },
@@ -29,12 +30,15 @@
   "dependencies": {
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
+    "glob": "^7.2.0",
     "joi": "^18.0.1",
     "minio": "^8.0.6",
+    "multer": "^2.0.2",
     "pg": "^8.16.3",
     "pino": "^9.9.5",
     "pino-http": "^10.5.0",
-    "pino-multi-stream": "^6.0.0"
+    "pino-multi-stream": "^6.0.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",

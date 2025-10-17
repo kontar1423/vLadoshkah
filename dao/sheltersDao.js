@@ -1,5 +1,5 @@
-import { query } from '../db';
-import { debug, error, info } from '../logger';
+import { query } from '../db.js'; // ← ЭТОЙ СТРОКИ НЕТ В ВАШЕМ ФАЙЛЕ!
+import { debug, info, error } from '../logger.js';
 
 async function getAll() {
   try {
@@ -24,14 +24,14 @@ async function getById(id) {
 }
 
 async function create(data) {
-  const { name, photo = null, adress = null, credits = null, reports = null } = data;
+  const { name, address = null, credits = null, reports = null } = data;
 
   try {
     const result = await query(
-      `INSERT INTO shelters(name, adress, credits, reports)
-       VALUES($1, $3, $4, $5)
+      `INSERT INTO shelters(name, address, credits, reports)
+       VALUES($1, $2, $3, $4)
        RETURNING *`,
-      [name, adress, credits, reports]
+      [name, address, credits, reports]
     );
     info({ shelter: result.rows[0] }, 'DAO: created shelter');
     return result.rows[0];
@@ -41,11 +41,11 @@ async function create(data) {
   }
 }
 
-async function update(id, name, adress, credids, reports) {
+async function update(id, name, address, credids, reports) {
   try {
     const result = await query(
-      'UPDATE shelters SET name=$1, adress=$2, credits=$3, reports=$4 WHERE id=$5 RETURNING *',
-      [name, adress, credids, reports, id]
+      'UPDATE shelters SET name=$1, address=$2, credits=$3, reports=$4 WHERE id=$5 RETURNING *',
+      [name, address, credids, reports, id]
     );
     info({ id, updated: result.rowCount }, 'DAO: updated shelter');
     return result.rows[0];

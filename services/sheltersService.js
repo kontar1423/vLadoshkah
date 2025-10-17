@@ -1,10 +1,11 @@
-import { object, string } from 'joi';
-import sheltersDao from '../dao/sheltersDao';
+import Joi from 'joi';
+const { object, string } = Joi;
+import sheltersDao from '../dao/sheltersDao.js';
 
 // Joi-схема для валидации shelter
-const shelterSchema = object({
-  name: string().min(2).required()
-});
+// const shelterSchema = object({
+//   name: string().min(2).required()
+// });
 
 // Получить все приюты
 async function getAllShelters() {

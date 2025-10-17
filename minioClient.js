@@ -1,18 +1,24 @@
-import { Client } from "minio";
+import { Client } from 'minio';
 
 const minioClient = new Client({
   endPoint: process.env.MINIO_ENDPOINT,
   port: parseInt(process.env.MINIO_PORT),
-  useSSL: false,
+  useSSL: process.env.MINIO_USE_SSL === 'true',
   accessKey: process.env.MINIO_ACCESS_KEY,
-  secretKey: process.env.MINIO_SECRET_KEY,
+  secretKey: process.env.MINIO_SECRET_KEY
 });
 
-const bucket = process.env.MINIO_BUCKET || "uploads";
-
-(async () => {
-  const exists = await minioClient.bucketExists(bucket).catch(() => false);
-  if (!exists) await minioClient.makeBucket(bucket, "us-east-1");
-})();
+// Проверка подключения
+minioClient.bucketExists(process.env.MINIO_BUCKET)
+  .then(exists => {
+    if (exists) {
+      console.log(`✅ MinIO connected. Bucket "${process.env.MINIO_BUCKET}" exists`);
+    } else {
+      console.log(`⚠️ Bucket "${process.env.MINIO_BUCKET}" doesn't exist`);
+    }
+  })
+  .catch(err => {
+    console.error('❌ MinIO connection error:', err.message);
+  });
 
 export default minioClient;

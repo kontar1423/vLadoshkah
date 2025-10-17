@@ -1,6 +1,5 @@
-import { query } from '../db';
-import { debug, error, info } from '../logger';
-
+import { query } from '../db.js'; // ← ЭТОЙ СТРОКИ НЕТ В ВАШЕМ ФАЙЛЕ!
+import { debug, info, error } from '../logger.js';
 async function getAll() {
   try {
     const result = await query('SELECT * FROM users');

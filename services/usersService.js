@@ -1,6 +1,6 @@
-import userDAO from '../dao/usersDao';
-import photoDAO from '../dao/photosDao';
-import logger from '../logger';
+import userDAO from '../dao/usersDao.js';
+import photoDAO from '../dao/photosDao.js';
+import logger from '../logger.js';
 
 async function getAll() {
   const photos = await photoDAO.getByEntityType('user');

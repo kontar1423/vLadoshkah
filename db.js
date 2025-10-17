@@ -1,6 +1,6 @@
-require('dotenv').config();
-const { Pool } = require('pg');
-const logger = require('./logger');
+import 'dotenv/config'; // ES modules эквивалент require('dotenv').config()
+import { Pool } from 'pg';
+import logger from './logger.js';
 
 const pool = new Pool({
   user: process.env.PGUSER || 'postgres',
@@ -31,4 +31,8 @@ process.on('SIGINT', async () => {
   }
 });
 
-module.exports = pool;
+// Добавляем named export query
+export const query = (text, params) => pool.query(text, params);
+
+// Сохраняем default export
+export default pool;

@@ -1,9 +1,9 @@
-import { getAll as _getAll, getById as _getById, create as _create, update as _update, remove as _remove } from '../services/usersService';
-import { error as _error } from '../logger';
+import usersService from "../services/usersService.js";
+import loggerService from "../logger.js";
 
 async function getAll(req, res) {
   try {
-    const users = await _getAll();
+    const users = await usersService.getAll();
     res.json(users);
   } catch (err) {
     _error(err, 'Controller: error fetching all users');
@@ -13,7 +13,7 @@ async function getAll(req, res) {
 
 async function getById(req, res) {
   try {
-    const user = await _getById(req.params.id);
+    const user = await usersService.getById(req.params.id);
     res.json(user);
   } catch (err) {
     _error(err, 'Controller: error fetching user by id');
@@ -23,7 +23,7 @@ async function getById(req, res) {
 
 async function create(req, res) {
   try {
-    const user = await _create(req.body);
+    const user = await usersService.create(req.body);
     res.status(201).json(user);
   } catch (err) {
     _error(err, 'Controller: error creating user');
@@ -33,7 +33,7 @@ async function create(req, res) {
 
 async function update(req, res) {
   try {
-    const user = await _update(req.params.id, req.body);
+    const user = await usersService.update(req.params.id, req.body);
     res.json(user);
   } catch (err) {
     _error(err, 'Controller: error updating user');
@@ -43,7 +43,7 @@ async function update(req, res) {
 
 async function remove(req, res) {
   try {
-    const user = await _remove(req.params.id);
+    const user = await usersService.remove(req.params.id);
     res.json(user);
   } catch (err) {
     _error(err, 'Controller: error deleting user');

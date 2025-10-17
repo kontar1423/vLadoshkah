@@ -1,23 +1,117 @@
-import { PhotosDao } from '../dao/photosDao.js';
+import minioClient from '../minioClient.js';
+import photosDao from '../dao/photosDao.js';
+import { v4 as uuidv4 } from 'uuid';
 
-export const PhotosService = {
-    async getAllPhotos() {
-        return await PhotosDao.getAll();
-    },
+class PhotosService {
+  async uploadPhoto(file, entity_type, entity_id) {
+    try {
+      // Генерируем уникальное имя файла
+      const fileExtension = file.originalname.split('.').pop();
+      const objectName = `${uuidv4()}.${fileExtension}`;
+      const bucketName = process.env.MINIO_BUCKET || 'uploads';
 
-    async getPhotoById(id) {
-        return await PhotosDao.getById(id);
-    },
+      // Загружаем файл в MinIO
+      await minioClient.putObject(
+        bucketName,
+        objectName,
+        file.buffer,
+        file.size,
+        file.mimetype
+      );
 
-    async getPhotosByEntity(entityType, entityId) {
-        return await PhotosDao.getByEntity(entityType, entityId);
-    },
+      // Сохраняем метаданные в БД
+      const photoData = {
+        original_name: file.originalname,
+        object_name: objectName,
+        bucket: bucketName,
+        size: file.size,
+        mimetype: file.mimetype,
+        entity_type,
+        entity_id: parseInt(entity_id),
+        url: `http://localhost:4000/api/photos/file/${objectName}`
+      };
 
-    async createPhoto(data) {
-        return await PhotosDao.create(data);
-    },
+      return await photosDao.create(photoData);
+    } catch (error) {
+      console.error('PhotosService: error uploading photo', error);
+      throw error;
+    }
+  }
 
-    async deletePhoto(id) {
-        return await PhotosDao.delete(id);
-    },
-};
+  async getPhotoFile(objectName) {
+    try {
+      const photo = await photosDao.getByObjectName(objectName);
+      
+      if (!photo) {
+        throw new Error('Photo not found');
+      }
+
+      // Получаем файл из MinIO
+      return await minioClient.getObject(photo.bucket, photo.object_name);
+    } catch (error) {
+      console.error('PhotosService: error getting photo file', error);
+      throw error;
+    }
+  }
+
+  async getPhotoFileInfo(objectName) {
+    try {
+      const photo = await photosDao.getByObjectName(objectName);
+      
+      if (!photo) {
+        throw new Error('Photo not found');
+      }
+
+      return photo;
+    } catch (error) {
+      console.error('PhotosService: error getting photo info', error);
+      throw error;
+    }
+  }
+
+  async deletePhoto(id) {
+    try {
+      const photo = await photosDao.getById(id);
+      
+      if (!photo) {
+        throw new Error('Photo not found');
+      }
+
+      // Удаляем из MinIO
+      await minioClient.removeObject(photo.bucket, photo.object_name);
+      
+      // Удаляем запись из БД
+      return await photosDao.remove(id);
+    } catch (error) {
+      console.error('PhotosService: error deleting photo', error);
+      throw error;
+    }
+  }
+
+  // Сохраняем существующие методы
+  async createPhoto(photoData) {
+    return await photosDao.create(photoData);
+  }
+
+  async getPhoto(id) {
+    return await photosDao.getById(id);
+  }
+
+  async getPhotoByObjectName(objectName) {
+    return await photosDao.getByObjectName(objectName);
+  }
+
+  async getPhotosByEntity(entityType, entityId) {
+    return await photosDao.getByEntity(entityType, entityId);
+  }
+
+  async getAllPhotos() {
+    return await photosDao.getAll();
+  }
+
+  async getPhotosByEntityType(entityType) {
+    return await photosDao.getByEntityType(entityType);
+  }
+}
+
+export default new PhotosService();

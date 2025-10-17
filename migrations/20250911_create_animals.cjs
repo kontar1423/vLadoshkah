@@ -14,9 +14,9 @@ exports.up = (pgm) => {
     health: { type: 'varchar(30)' },
     gender: { type: 'varchar(10)' },
     color: { type: 'varchar(50)' },
-    weight: { type: 'int' },
+    weight: { type: 'float(2)' },
     personality: { type: 'varchar(100)' },
-    size: { type: 'int' },
+    animal_size: { type: 'varchar(40)' },
     history: { type: 'varchar(1000)' },
   });
 };

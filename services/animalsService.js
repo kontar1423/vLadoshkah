@@ -1,67 +1,200 @@
-import { object, string, number } from 'joi';
-import animalsDao from '../dao/animalsDao';
-import photosDao from '../dao/photosDao';
+import Joi from 'joi';
+const { object, string, number } = Joi;
+import animalsDao from '../dao/animalsDao.js';
+import photosDao from '../dao/photosDao.js';
 
 // Joi-схема для валидации animal
-const animalSchema = object({
-  name: string().min(2).required(),
-  age: number().integer().min(0).required(),
-  type: string().valid('dog','cat','other').required(),
-  shelter_id: number().integer().required()
-});
+// const animalSchema = object({
+//   name: string().min(2).required(),
+//   age: number().integer().min(0).required(),
+//   type: string().valid('dog','cat','other').required(),
+//   shelter_id: number().integer().required()
+// });
 
 // Получить всех животных
 async function getAllAnimals() {
-    const photos = await photosDao.getByEntityType('animal');
-    const animals = await animalsDao.getAll()
+  try {
+    
+    // Два параллельных запроса вместо N+1
+    const [animals, allPhotos] = await Promise.all([
+      animalsDao.getAll(),
+      photosDao.getByEntityType('animal')
+    ]);
+  
+    
+    // Объединяем в JavaScript
     const animalsWithPhotos = animals.map(animal => ({
-    ...animal,
-    photos: photos
-      .filter(p => p.entity_id === animal.id)
-      .map(p => p.url)
-  }));
+      ...animal,
+      photos: allPhotos
+        .filter(photo => photo.entity_id === animal.id)
+        .map(photo => ({
+          url: photo.url,
+        }))
+    }));
+    
     return animalsWithPhotos;
+  } catch (err) {
+    console.error('Service: error fetching animals with photos', err);
+    throw err;
   }
+}
 
 // Получить животное по id
 async function getAnimalById(id) {
-  animal = await animalsDao.getById(id);
-  photo = await photosDao.getByEntity('animal', animal.id);
-  return {
-    ...animal,
-    photos: photos.map(photo => photo.url)
-  };
+  try {
+    const [animal, photos] = await Promise.all([
+      animalsDao.getById(id),
+      photosDao.getByEntityType('animal', id) // ← исправлено: должно быть getByEntityType или getByEntity
+    ]);
+    
+    if (!animal) {
+      return null;
+    }
+    
+    return {
+      ...animal,
+      photos: photos.map(photo => ({
+        id: photo.id,
+        url: photo.url,
+        original_name: photo.original_name,
+        object_name: photo.object_name,
+        size: photo.size,
+        mimetype: photo.mimetype,
+        uploaded_at: photo.uploaded_at
+      }))
+    };
+  } catch (err) {
+    console.error('Service: error fetching animal by id', err);
+    throw err;
+  }
 }
 
-async function getAnimalsByShelterId(id) {
-  const animals = animalsDao.getAnimalsByShelter(id);
-  const photos = await photosDao.getByEntityType('animal');
-  const animalsWithPhotos = animals.map(animal => ({
-    ...animal,
-    photos: photos
-      .filter(p => p.entity_id === animal.id)
-      .map(p => p.url)
-  }));
+// Получить животных по приюту
+async function getAnimalsByShelterId(shelterId) {
+  try {
+    const [animals, allPhotos] = await Promise.all([
+      animalsDao.getAnimalsByShelter(shelterId), // ← исправлено: должно быть getAnimalsByShelter
+      photosDao.getByEntityType('animal')
+    ]);
+    
+    const animalsWithPhotos = animals.map(animal => ({
+      ...animal,
+      photos: allPhotos
+        .filter(photo => photo.entity_id === animal.id)
+        .map(photo => ({
+          id: photo.id,
+          url: photo.url,
+          original_name: photo.original_name,
+          object_name: photo.object_name,
+          size: photo.size,
+          mimetype: photo.mimetype,
+          uploaded_at: photo.uploaded_at,
+        }))
+    }));
+    
     return animalsWithPhotos;
+  } catch (err) {
+    console.error('Service: error fetching animals by shelter', err);
+    throw err;
+  }
 }
 
-// Создать животное
-async function createAnimal(data) {
-  // const { error, value } = animalSchema.validate(data);
-  // if (error) throw new Error(error.details[0].message);
-  return animalsDao.create(data);
+// Создать животное (с поддержкой фото)
+// services/animalsService.js
+import photosService from './photosService.js';
+
+async function createAnimal(animalData, photoFile = null) {
+  try {
+    console.log('Service: creating animal with data:', animalData);
+    
+    // 1. Создаем животное
+    const animal = await animalsDao.create(animalData);
+    
+    // 2. Если есть фото - загружаем через photosService
+    if (photoFile) {
+      await photosService.uploadPhoto(
+        photoFile, 
+        'animal', 
+        animal.id
+      );
+      console.log('Service: photo uploaded for animal', animal.id);
+    }
+    
+    // 3. Возвращаем животное с фото
+    const animalWithPhotos = await getAnimalById(animal.id);
+    return animalWithPhotos;
+    
+  } catch (err) {
+    console.error('Service: error creating animal', err);
+    throw err;
+  }
 }
+
 
 // Обновить животное
 async function updateAnimal(id, data) {
-  const { error, value } = animalSchema.validate(data);
-  if (error) throw new Error(error.details[0].message);
-  return animalsDao.update(id, value);
+  try {
+    // const { error, value } = animalSchema.validate(data);
+    // if (error) throw new Error(error.details[0].message);
+    
+    const updatedAnimal = await animalsDao.update(id, animalData);
+    if (!updatedAnimal) {
+      return null;
+    }
+    
+    // Возвращаем обновленное животное с фото
+    return await getAnimalById(id);
+  } catch (err) {
+    console.error('Service: error updating animal', err);
+    throw err;
+  }
 }
 
 // Удалить животное
 async function removeAnimal(id) {
-  return animalsDao.remove(id);
+  try {
+    // При удалении животного каскадно удалятся его фото (если настроены CASCADE constraints)
+    return await animalsDao.remove(id);
+  } catch (err) {
+    console.error('Service: error removing animal', err);
+    throw err;
+  }
 }
 
-export default { getAllAnimals, getAnimalById, createAnimal, updateAnimal, removeAnimal, getAnimalsByShelterId };
+// Поиск животных с фильтрами
+async function findAnimals(filters) {
+  try {
+    const animals = await animalsDao.findAnimals(filters);
+    const allPhotos = await photosDao.getByEntityType('animal');
+    
+    const animalsWithPhotos = animals.map(animal => ({
+      ...animal,
+      photos: allPhotos
+        .filter(photo => photo.entity_id === animal.id)
+        .map(photo => ({
+          id: photo.id,
+          url: photo.url,
+          original_name: photo.original_name,
+          object_name: photo.object_name,
+          size: photo.size,
+          mimetype: photo.mimetype,
+          uploaded_at: photo.uploaded_at
+        }))
+    }));
+    
+    return animalsWithPhotos;
+  } catch (err) {
+    console.error('Service: error finding animals with filters', err);
+    throw err;
+  }
+}
+
+export default { 
+  getAllAnimals, 
+  getAnimalById, 
+  createAnimal, 
+  updateAnimal, 
+  removeAnimal, 
+  getAnimalsByShelterId,
+  findAnimals        // ← ДОБАВЛЯЕМ
+};
