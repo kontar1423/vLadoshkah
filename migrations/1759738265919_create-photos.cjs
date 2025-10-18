@@ -22,7 +22,7 @@ exports.up = (pgm) => {
         url: { type: 'varchar(500)', notNull: true },
         
         // Связь с сущностями
-        entity_id: { type: 'integer', notNull: true },
+        entity_id: { type: 'integer', notNull: true},
         entity_type: { type: 'varchar(30)', notNull: true },
         
         // Временные метки

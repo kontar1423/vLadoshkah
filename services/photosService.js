@@ -88,6 +88,42 @@ class PhotosService {
     }
   }
 
+async deletePhotosOfAnimal(animalId) {
+  try {
+    // Получаем все фото животного
+    const photos = await photosDao.getByEntity('animal', animalId);
+    
+    if (!photos || photos.length === 0) {
+      console.log(`No photos found for animal ${animalId}`);
+      return { deleted: 0 };
+    }
+
+    let deletedCount = 0;
+    
+    // Удаляем каждое фото
+    for (let i = 0; i < photos.length; i++) {
+      const photo = photos[i];
+      try {
+        // Удаляем из MinIO
+        await minioClient.removeObject(photo.bucket, photo.object_name);
+        // Удаляем из БД
+        await photosDao.remove(photo.id);
+        deletedCount++;
+      } catch (error) {
+        console.error(`Error deleting photo ${photo.id}:`, error);
+        // Продолжаем удалять остальные фото даже если одна ошибка
+      }
+    }
+
+    console.log(`Deleted ${deletedCount} photos for animal ${animalId}`);
+    return { deleted: deletedCount };
+    
+  } catch (error) {
+    console.error('PhotosService: error deleting animal photos', error);
+    throw error;
+  }
+}
+
   // Сохраняем существующие методы
   async createPhoto(photoData) {
     return await photosDao.create(photoData);

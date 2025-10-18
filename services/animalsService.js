@@ -154,6 +154,7 @@ async function updateAnimal(id, data) {
 async function removeAnimal(id) {
   try {
     // При удалении животного каскадно удалятся его фото (если настроены CASCADE constraints)
+    await photosService.deletePhotosOfAnimal(id);
     return await animalsDao.remove(id);
   } catch (err) {
     console.error('Service: error removing animal', err);
