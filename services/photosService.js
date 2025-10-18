@@ -28,7 +28,7 @@ class PhotosService {
         mimetype: file.mimetype,
         entity_type,
         entity_id: parseInt(entity_id),
-        url: `http://localhost:4000/api/photos/file/${objectName}`
+        url: `http://localhost:9000/${bucketName}/${objectName}`
       };
 
       return await photosDao.create(photoData);
