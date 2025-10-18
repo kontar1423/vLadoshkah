@@ -8,15 +8,17 @@ import diagnosticRouter from './routes/diagnostic.js';
 import { error as _error, info } from './logger.js';
 import pinoHttp from 'pino-http';
 import initMinio from './initMinio.js';
+import cors from 'cors';
 import pool from './db.js'; // импортируем пул подключений
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 
-app.use(json());
-app.use(express.urlencoded({ extended: true })); // для FormData ← ВАЖНО!app.use(express.urlencoded({ extended: true })); // для FormData ← ВАЖНО!
 
+app.use(json());
+app.use(express.urlencoded({ extended: true })); // для FormData
 // Structured HTTP logging with request id
+app.use(cors());
 app.use(pinoHttp({
   genReqId: (req, res) => {
     const existing = req.id || req.headers['x-request-id'];

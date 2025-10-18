@@ -88,13 +88,13 @@ class PhotosService {
     }
   }
 
-async deletePhotosOfAnimal(animalId) {
+async deletePhotosOfEntity(EntityId, EntityType) {
   try {
     // Получаем все фото животного
-    const photos = await photosDao.getByEntity('animal', animalId);
+    const photos = await photosDao.getByEntity(EntityType, EntityId);
     
     if (!photos || photos.length === 0) {
-      console.log(`No photos found for animal ${animalId}`);
+      console.log(`No photos found for ${EntityType} ${EntityId}`);
       return { deleted: 0 };
     }
 
@@ -115,11 +115,11 @@ async deletePhotosOfAnimal(animalId) {
       }
     }
 
-    console.log(`Deleted ${deletedCount} photos for animal ${animalId}`);
+    console.log(`Deleted ${deletedCount} photos for ${EntityType} ${EntityId}`);
     return { deleted: deletedCount };
     
   } catch (error) {
-    console.error('PhotosService: error deleting animal photos', error);
+    console.error(`PhotosService: error deleting ${EntityType} photos`, error);
     throw error;
   }
 }

@@ -125,7 +125,7 @@ async function updateAnimal(id, data) {
     // const { error, value } = animalSchema.validate(data);
     // if (error) throw new Error(error.details[0].message);
     
-    const updatedAnimal = await animalsDao.update(id, animalData);
+    const updatedAnimal = await animalsDao.update(id, data);
     if (!updatedAnimal) {
       return null;
     }
@@ -142,7 +142,7 @@ async function updateAnimal(id, data) {
 async function removeAnimal(id) {
   try {
     // При удалении животного каскадно удалятся его фото (если настроены CASCADE constraints)
-    await photosService.deletePhotosOfAnimal(id);
+    await photosService.deletePhotosOfEntity(id, 'animal');
     return await animalsDao.remove(id);
   } catch (err) {
     console.error('Service: error removing animal', err);
