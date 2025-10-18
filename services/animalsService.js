@@ -54,13 +54,7 @@ async function getAnimalById(id) {
     return {
       ...animal,
       photos: photos.map(photo => ({
-        id: photo.id,
         url: photo.url,
-        original_name: photo.original_name,
-        object_name: photo.object_name,
-        size: photo.size,
-        mimetype: photo.mimetype,
-        uploaded_at: photo.uploaded_at
       }))
     };
   } catch (err) {
@@ -82,13 +76,7 @@ async function getAnimalsByShelterId(shelterId) {
       photos: allPhotos
         .filter(photo => photo.entity_id === animal.id)
         .map(photo => ({
-          id: photo.id,
           url: photo.url,
-          original_name: photo.original_name,
-          object_name: photo.object_name,
-          size: photo.size,
-          mimetype: photo.mimetype,
-          uploaded_at: photo.uploaded_at,
         }))
     }));
     
@@ -173,13 +161,7 @@ async function findAnimals(filters) {
       photos: allPhotos
         .filter(photo => photo.entity_id === animal.id)
         .map(photo => ({
-          id: photo.id,
           url: photo.url,
-          original_name: photo.original_name,
-          object_name: photo.object_name,
-          size: photo.size,
-          mimetype: photo.mimetype,
-          uploaded_at: photo.uploaded_at
         }))
     }));
     
