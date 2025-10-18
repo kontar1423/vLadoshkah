@@ -29,6 +29,7 @@ The Volunteer API provides the following endpoints:
 - `/animals`: CRUD operations for animal data
 - `/shelters`: CRUD operations for shelter data
 - `/users`: CRUD operations for user data
+- `/photos`: CRUD operations for photo data
 
 You can use a tool like Postman or cURL to interact with the API.
 
