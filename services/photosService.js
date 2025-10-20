@@ -5,21 +5,34 @@ import { v4 as uuidv4 } from 'uuid';
 class PhotosService {
   async uploadPhoto(file, entity_type, entity_id) {
     try {
-      // Генерируем уникальное имя файла
       const fileExtension = file.originalname.split('.').pop();
       const objectName = `${uuidv4()}.${fileExtension}`;
       const bucketName = process.env.MINIO_BUCKET || 'uploads';
 
-      // Загружаем файл в MinIO
+      console.log('Uploading file:', {
+        originalName: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size
+      });
+
+      // РЕШЕНИЕ: Передаем метаданные как ОБЪЕКТ, а не строку
+      const metaData = {
+        'Content-Type': file.mimetype,
+        'X-Amz-Meta-Original-Name': file.originalname,
+        'X-Amz-Meta-Uploaded-At': new Date().toISOString()
+      };
+
+      // Загружаем с правильными метаданными
       await minioClient.putObject(
         bucketName,
         objectName,
         file.buffer,
         file.size,
-        file.mimetype
+        metaData  // передаем ОБЪЕКТ метаданных
       );
 
-      // Сохраняем метаданные в БД
+      console.log('File uploaded successfully:', objectName);
+
       const photoData = {
         original_name: file.originalname,
         object_name: objectName,
@@ -34,22 +47,6 @@ class PhotosService {
       return await photosDao.create(photoData);
     } catch (error) {
       console.error('PhotosService: error uploading photo', error);
-      throw error;
-    }
-  }
-
-  async getPhotoFile(objectName) {
-    try {
-      const photo = await photosDao.getByObjectName(objectName);
-      
-      if (!photo) {
-        throw new Error('Photo not found');
-      }
-
-      // Получаем файл из MinIO
-      return await minioClient.getObject(photo.bucket, photo.object_name);
-    } catch (error) {
-      console.error('PhotosService: error getting photo file', error);
       throw error;
     }
   }
