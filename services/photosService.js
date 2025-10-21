@@ -50,6 +50,22 @@ class PhotosService {
       throw error;
     }
   }
+  
+  async getPhotoFile(objectName) {
+    try {
+      const photo = await photosDao.getByObjectName(objectName);
+      
+      if (!photo) {
+        throw new Error('Photo not found');
+      }
+
+      // Получаем файл из MinIO
+      return await minioClient.getObject(photo.bucket, photo.object_name);
+    } catch (error) {
+      console.error('PhotosService: error getting photo file', error);
+      throw error;
+    }
+  }
 
   async getPhotoFileInfo(objectName) {
     try {
