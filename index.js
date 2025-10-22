@@ -4,7 +4,6 @@ import animalsRouter from './routes/animals.js';
 import sheltersRouter from './routes/shelters.js';
 import usersRouter from './routes/users.js';
 import photosRouter from './routes/photos.js';
-import diagnosticRouter from './routes/diagnostic.js';
 import { error as _error, info } from './logger.js';
 import pinoHttp from 'pino-http';
 import initMinio from './initMinio.js';
@@ -36,7 +35,6 @@ app.use('/api/animals', animalsRouter);
 app.use('/api/shelters', sheltersRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/photos', photosRouter);
-app.use('/api/diagnostic', diagnosticRouter);
 
 // Liveness/Readiness probe
 app.get('/healthz', async (req, res) => {
