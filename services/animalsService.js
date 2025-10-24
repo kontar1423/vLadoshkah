@@ -27,9 +27,7 @@ async function getAllAnimals() {
       ...animal,
       photos: allPhotos
         .filter(photo => photo.entity_id === animal.id)
-        .map(photo => ({
-          url: photo.url,
-        }))
+        .map(photo => photo.url)
     }));
     
     return animalsWithPhotos;
@@ -44,7 +42,7 @@ async function getAnimalById(id) {
   try {
     const [animal, photos] = await Promise.all([
       animalsDao.getById(id),
-      photosDao.getByEntityType('animal', id) // ← исправлено: должно быть getByEntityType или getByEntity
+      photosDao.getByEntity('animal', id) // ← исправлено: должно быть getByEntityType или getByEntity
     ]);
     
     if (!animal) {

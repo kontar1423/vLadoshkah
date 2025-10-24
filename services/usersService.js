@@ -1,51 +1,136 @@
 import userDAO from '../dao/usersDao.js';
-import photoDAO from '../dao/photosDao.js';
+import photosDao from '../dao/photosDao.js';
 import logger from '../logger.js';
+import photosService from './photosService.js';
 
 async function getAll() {
-  const photos = await photoDAO.getByEntityType('user');
-  const users = await userDAO.getAll()
-  const usersWithPhotos = users.map(user => ({
-  ...user,
-  photos: photos
-    .filter(p => p.entity_id === user.id)
-    .map(p => p.url)
-}));
-  return usersWithPhotos;
+  try {
+    // Два параллельных запроса для оптимизации
+    const [users, allPhotos] = await Promise.all([
+      userDAO.getAll(),
+      photosDao.getByEntityType('user')
+    ]);
+    
+    const usersWithPhotos = users.map(user => ({
+      ...user,
+      photos: allPhotos
+        .filter(photo => photo.entity_id === user.id)
+        .map(photo => photo.url)
+    }));
+    
+    return usersWithPhotos;
+  } catch (err) {
+    logger.error('Service: error fetching users with photos', err);
+    throw err;
+  }
 }
 
 async function getById(id) {
-  const user = await userDAO.getById(id);
-  if (!user) {
-    const err = new Error('User not found');
-    err.status = 404;
+  try {
+    const [user, photos] = await Promise.all([
+      userDAO.getById(id),
+      photosDao.getByEntity('user', id)
+    ]);
+    
+    if (!user) {
+      const err = new Error('User not found');
+      err.status = 404;
+      throw err;
+    }
+    
+    return {
+      ...user,
+      photos: photos.map(photo => ({
+        url: photo.url,
+      }))
+    };
+  } catch (err) {
+    logger.error('Service: error fetching user by id', err);
     throw err;
   }
-  return user;
 }
 
-async function create(data) {
-  return await userDAO.create(data);
-}
-
-async function update(id, data) {
-  const updated = await userDAO.update(id, data);
-  if (!updated) {
-    const err = new Error('User not found or not updated');
-    err.status = 404;
+async function create(userData, photoFile = null) {
+  try {
+    logger.info('Service: creating user with data:', userData);
+    
+    // 1. Создаем пользователя
+    const user = await userDAO.create(userData);
+    
+    // 2. Если есть фото - загружаем через photosService
+    if (photoFile) {
+      await photosService.uploadPhoto(
+        photoFile, 
+        'user', 
+        user.id
+      );
+      logger.info('Service: photo uploaded for user', user.id);
+    }
+    
+    // 3. Возвращаем пользователя с фото
+    const userWithPhotos = await getById(user.id);
+    return userWithPhotos;
+    
+  } catch (err) {
+    logger.error('Service: error creating user', err);
     throw err;
   }
-  return updated;
+}
+
+async function update(id, data, photoFile = null) {
+  try {
+    const updatedUser = await userDAO.update(id, data);
+    if (!updatedUser) {
+      const err = new Error('User not found or not updated');
+      err.status = 404;
+      throw err;
+    }
+    
+    // Если передано новое фото - обновляем
+    if (photoFile) {
+      // Сначала удаляем старые фото пользователя
+      await photosDao.deletePhotosOfEntity(id, 'user');
+      
+      // Загружаем новое фото
+      await photosService.uploadPhoto(
+        photoFile, 
+        'user', 
+        id
+      );
+      logger.info('Service: photo updated for user', id);
+    }
+    
+    // Возвращаем обновленного пользователя с фото
+    return await getById(id);
+  } catch (err) {
+    logger.error('Service: error updating user', err);
+    throw err;
+  }
 }
 
 async function remove(id) {
-  const deleted = await userDAO.remove(id);
-  if (!deleted) {
-    const err = new Error('User not found');
-    err.status = 404;
+  try {
+    // При удалении пользователя удаляем его фото
+    await photosService.deletePhotosOfEntity(id, 'user');
+    
+    const deleted = await userDAO.remove(id);
+    if (!deleted) {
+      const err = new Error('User not found');
+      err.status = 404;
+      throw err;
+    }
+    
+    return deleted;
+  } catch (err) {
+    logger.error('Service: error removing user', err);
     throw err;
   }
-  return deleted;
 }
 
-export default { getAll, getById, create, update, remove };
+export default { 
+  getAll, 
+  getById, 
+  create, 
+  update, 
+  remove, 
+};
