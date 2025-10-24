@@ -22,11 +22,11 @@ async function getById(id) {
   }
 }
 
-async function create({firstname, lastname, role, gender, email }) {
+async function create({firstname, lastname, role, gender, email, phone}) {
   try {
     const result = await query(
-      'INSERT INTO users(firstname, lastname, role, gender, email) VALUES($1,$2,$3,$4,$5) RETURNING *',
-      [firstname, lastname, role, gender, email]
+      'INSERT INTO users(firstname, lastname, role, gender, email, phone) VALUES($1,$2,$3,$4,$5,$6) RETURNING *',
+      [firstname, lastname, role, gender, email, phone]
     );
     info({ user: result.rows[0] }, 'DAO: created user');
     return result.rows[0];
@@ -36,11 +36,11 @@ async function create({firstname, lastname, role, gender, email }) {
   }
 }
 
-async function update(id, { firstname, lastname, role, gender, email }) {
+async function update(id, { firstname, lastname, role, gender, email, phone}) {
   try {
     const result = await query(
-      'UPDATE users SET firstname=$1, lastname=$2, role=$3, gender=$4, email=$5 WHERE id=$6 RETURNING *',
-      [firstname, lastname, role, gender, email, id]
+      'UPDATE users SET firstname=$1, lastname=$2, role=$3, gender=$4, email=$5, phone=$6 WHERE id=$7 RETURNING *',
+      [firstname, lastname, role, gender, email, phone, id]
     );
     info({ id, updated: result.rowCount }, 'DAO: updated user');
     return result.rows[0];
