@@ -14,7 +14,7 @@ RUN npm ci
 COPY . .
 
 # Устанавливаем зависимости для проверок
-RUN apk add --no-cache postgresql-client curl
+RUN apk add --no-cache postgresql-client curl redis
 
 # Пробрасываем порт
 EXPOSE 4000

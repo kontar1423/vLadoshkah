@@ -68,7 +68,20 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 volumes:
   db_data:
   minio_data:
+  redis_data:

@@ -4,15 +4,30 @@ import animalsRouter from './routes/animals.js';
 import sheltersRouter from './routes/shelters.js';
 import usersRouter from './routes/users.js';
 import photosRouter from './routes/photos.js';
+import applicationsRouter from './routes/applications.js';
 import { error as _error, info } from './logger.js';
 import pinoHttp from 'pino-http';
 import initMinio from './initMinio.js';
 import cors from 'cors';
+import redisClient from './cache/redis-client.js';
 import pool from './db.js'; // импортируем пул подключений
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 
+async function initializeRedis() {
+  try {
+    await redisClient.connect();
+    console.log('✅ Redis connected successfully');
+  } catch (error) {
+    console.error('❌ Redis connection failed:', error);
+    // Приложение может работать без Redis, но с предупреждением
+    console.log('⚠️  Application running without Redis cache');
+  }
+}
+
+// Инициализируем Redis при старте приложения
+initializeRedis();
 
 app.use(json());
 app.use(express.urlencoded({ extended: true })); // для FormData
@@ -35,6 +50,7 @@ app.use('/api/animals', animalsRouter);
 app.use('/api/shelters', sheltersRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/photos', photosRouter);
+app.use('/api/applications', applicationsRouter);
 
 // Liveness/Readiness probe
 app.get('/healthz', async (req, res) => {
@@ -69,6 +85,7 @@ app.use((err, req, res, next) => {
   const status = err.status || 500;
   res.status(status).json({ error: status === 500 ? 'Internal Server Error' : err.message, requestId });
 });
+
 
 // Функция для проверки подключения к БД с повторными попытками
 async function waitForDatabase() {

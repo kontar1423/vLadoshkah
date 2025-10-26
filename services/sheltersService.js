@@ -2,6 +2,7 @@ import Joi from 'joi';
 const { object, string } = Joi;
 import sheltersDao from '../dao/sheltersDao.js';
 import photosService from './photosService.js';
+import redisClient from '../cache/redis-client.js';
 
 // Joi-схема для валидации shelter
 // const shelterSchema = object({
@@ -15,8 +16,13 @@ import photosService from './photosService.js';
 //   working_hours: string().optional()
 // });
 
+const cacheKey = 'shelters:all';
 // Получить все приюты с фото
 async function getAllShelters() {
+  const cached = await redisClient.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
   const shelters = await sheltersDao.getAll();
   const allPhotos = await photosService.getPhotosByEntityType('shelter');
   
@@ -32,7 +38,10 @@ async function getAllShelters() {
 
 // Получить приют по id с фото
 async function getShelterById(id) {
-  console.log('123123')
+  const cached = await redisClient.get(cacheKey(id));
+  if (cached) {
+    return cached;
+  }
   const [shelter, photos] = await Promise.all([
     sheltersDao.getById(id),
     photosService.getPhotosByEntity('shelter', id)
@@ -50,6 +59,10 @@ async function getShelterById(id) {
 
 // Создать приют с возможностью загрузки фото
 async function createShelter(shelterData, photoFiles = null) {
+  const cached = await redisClient.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
   // const { error, value } = shelterSchema.validate(shelterData);
   // if (error) throw new Error(error.details[0].message);
 
@@ -73,6 +86,10 @@ async function createShelter(shelterData, photoFiles = null) {
 
 // Обновить приют
 async function updateShelter(id, data) {
+  const cached = await redisClient.get(cacheKey(id));
+  if (cached) {
+    return cached;
+  }
   // const { error, value } = shelterSchema.validate(data);
   // if (error) throw new Error(error.details[0].message);
   
@@ -86,6 +103,10 @@ async function updateShelter(id, data) {
 
 // Удалить приют и все его фото
 async function removeShelter(id) {
+  const cached = await redisClient.get(cacheKey(id));
+  if (cached) {
+    return cached;
+  }
   try {
     // Удаляем все фото приюта через универсальную функцию
     await photosService.deletePhotosOfEntity(id, 'shelter');
