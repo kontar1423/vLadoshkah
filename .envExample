@@ -1,0 +1,24 @@
+# Database
+PGUSER=postgres
+PGPASSWORD=1234
+PGDATABASE=volunteer_db
+PGHOST=db
+PGPORT=5432
+DB_PORT=5432
+
+# API
+PORT=4000
+NODE_ENV=development
+
+# MinIO
+MINIO_ENDPOINT=minio
+MINIO_PORT=9000
+MINIO_API_PORT=9000
+MINIO_CONSOLE_PORT=9001
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_BUCKET=uploads
+MINIO_USE_SSL=false
+
+# Auto-generated
+DATABASE_URL=postgres://postgres:1234@db:5432/volunteer_db

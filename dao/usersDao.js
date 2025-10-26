@@ -1,65 +1,76 @@
-const pool = require('../db');
-const logger = require('../logger');
-
+import { query } from '../db.js'; // ← ЭТОЙ СТРОКИ НЕТ В ВАШЕМ ФАЙЛЕ!
+import { debug, info, error } from '../logger.js';
 async function getAll() {
   try {
-    const result = await pool.query('SELECT * FROM users');
-    logger.debug({ count: result.rowCount }, 'DAO: fetched all users');
+    const result = await query('SELECT * FROM users');
+    debug({ count: result.rowCount }, 'DAO: fetched all users');
     return result.rows;
   } catch (err) {
-    logger.error(err, 'DAO: error fetching all users');
+    error(err, 'DAO: error fetching all users');
     throw err;
   }
 }
 
 async function getById(id) {
   try {
-    const result = await pool.query('SELECT * FROM users WHERE id=$1', [id]);
-    logger.debug({ id, count: result.rowCount }, 'DAO: fetched user by id');
+    const result = await query('SELECT * FROM users WHERE id=$1', [id]);
+    debug({ id, count: result.rowCount }, 'DAO: fetched user by id');
     return result.rows[0];
   } catch (err) {
-    logger.error(err, 'DAO: error fetching user by id');
+    error(err, 'DAO: error fetching user by id');
     throw err;
   }
 }
 
-async function create({ firstname, lastname, photo, role, gender, email }) {
+async function create({firstname, lastname, role, gender, email, phone}) {
   try {
-    const result = await pool.query(
-      'INSERT INTO users(firstname, lastname, photo, role, gender, email) VALUES($1,$2,$3,$4,$5,$6) RETURNING *',
-      [firstname, lastname, photo, role, gender, email]
+    const result = await query(
+      'INSERT INTO users(firstname, lastname, role, gender, email, phone) VALUES($1,$2,$3,$4,$5,$6) RETURNING *',
+      [firstname, lastname, role, gender, email, phone]
     );
-    logger.info({ user: result.rows[0] }, 'DAO: created user');
+    info({ user: result.rows[0] }, 'DAO: created user');
     return result.rows[0];
   } catch (err) {
-    logger.error(err, 'DAO: error creating user');
+    error(err, 'DAO: error creating user');
     throw err;
   }
 }
 
-async function update(id, { firstname, lastname, photo, role, gender, email }) {
+async function update(id, { firstname, lastname, role, gender, email, phone}) {
   try {
-    const result = await pool.query(
-      'UPDATE users SET firstname=$1, lastname=$2, photo=$3, role=$4, gender=$5, email=$6 WHERE id=$7 RETURNING *',
-      [firstname, lastname, photo, role, gender, email, id]
+    const currentUser = await getById(id);
+    if (!currentUser) {
+      return null;
+    }
+    const updatedData = {
+      firstname: firstname !== undefined ? firstname : currentUser.firstname,
+      lastname: lastname !== undefined ? lastname : currentUser.lastname,
+      role: role !== undefined ? role : currentUser.role,
+      gender: gender !== undefined ? gender : currentUser.gender,
+      email: email !== undefined ? email : currentUser.email,
+      phone: phone !== undefined ? phone : currentUser.phone,
+    };
+    const result = await query(
+      'UPDATE users SET firstname=$1, lastname=$2, role=$3, gender=$4, email=$5, phone=$6, updated_at = CURRENT_TIMESTAMP WHERE id=$7 RETURNING *',
+      [updatedData.firstname, updatedData.lastname, updatedData.role, updatedData.gender, updatedData.email, updatedData.phone, id]
     );
-    logger.info({ id, updated: result.rowCount }, 'DAO: updated user');
-    return result.rows[0];
+    info({ user: result.rows[0] }, 'DAO: updated user');
+    return result.rows[0] || null;
   } catch (err) {
-    logger.error(err, 'DAO: error updating user');
+    error(err, 'DAO: error updating user');
     throw err;
   }
 }
 
 async function remove(id) {
   try {
-    const result = await pool.query('DELETE FROM users WHERE id=$1 RETURNING *', [id]);
-    logger.info({ id, deleted: result.rowCount }, 'DAO: deleted user');
+    const result = await query('DELETE FROM users WHERE id=$1 RETURNING *', [id]);
+    info({ id, deleted: result.rowCount }, 'DAO: deleted user');
     return result.rows[0];
   } catch (err) {
-    logger.error(err, 'DAO: error deleting user');
+    error(err, 'DAO: error deleting user');
     throw err;
   }
 }
 
-module.exports = { getAll, getById, create, update, remove };
+export default { getAll, getById, create, update, remove };

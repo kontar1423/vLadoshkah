@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавление животных и приютов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .form-section h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 14px;
+            display: block;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            box-sizing: border-box;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .submit-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        
+        .submit-btn:hover {
+            background: #0056b3;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .photo-upload {
+            border: 2px dashed #007bff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 6px;
+            background: #f8f9fa;
+            margin-bottom: 15px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .tab {
+            padding: 12px 25px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 5px;
+            border-radius: 6px 6px 0 0;
+            transition: background 0.3s;
+        }
+        
+        .tab.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        .file-input {
+            margin: 10px 0;
+        }
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🐾 Панель управления приютом</h1>
+        <p>Добавление новых животных и приютов</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('animal')">Добавить животное</button>
+        <button class="tab" onclick="switchTab('shelter')">Добавить приют</button>
+        <button class="tab" onclick="switchTab('user')">Добавить пользователя</button>
+        <button class="tab" onclick="switchTab('application')">Создать заявку</button>
+    </div>
+
+    <div id="animalForm" class="tab-content active">
+        <div class="form-container">
+            <div class="form-section">
+                <h2>📝 Добавить новое животное</h2>
+                
+                <div class="form-group">
+                    <label for="animalName">Имя животного *</label>
+                    <input type="text" id="animalName" placeholder="Введите имя животного" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="animalAge">Возраст (лет) *</label>
+                        <input type="number" id="animalAge" placeholder="0" min="0" max="50" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="animalType">Тип животного *</label>
+                        <select id="animalType" required>
+                            <option value="">Выберите тип</option>
+                            <option value="cat">Кошка</option>
+                            <option value="dog">Собака</option>
+                            <option value="rabbit">Кролик</option>
+                            <option value="parrot">Попугай</option>
+                            <option value="hamster">Хомяк</option>
+                            <option value="other">Другое</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="animalGender">Пол *</label>
+                        <select id="animalGender" required>
+                            <option value="">Выберите пол</option>
+                            <option value="male">Мужской</option>
+                            <option value="female">Женский</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="animalWeight">Вес (кг)</label>
+                        <input type="number" id="animalWeight" placeholder="0.0" step="0.1" min="0">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="animalColor">Окрас</label>
+                        <input type="text" id="animalColor" placeholder="Окрас животного">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="animalSize">Размер</label>
+                        <select id="animalSize">
+                            <option value="">Выберите размер</option>
+                            <option value="small">Маленький</option>
+                            <option value="medium">Средний</option>
+                            <option value="large">Крупный</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="animalHealth">Состояние здоровья</label>
+                    <input type="text" id="animalHealth" placeholder="здоров, требует лечения и т.д.">
+                </div>
+                
+                <div class="form-group">
+                    <label for="animalPersonality">Характер и поведение</label>
+                    <textarea id="animalPersonality" placeholder="Опишите характер животного"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="animalHistory">История</label>
+                    <textarea id="animalHistory" placeholder="Откуда появилось животное, его история"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="animalShelter">Приют *</label>
+                    <select id="animalShelter" required>
+                        <option value="">Выберите приют</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Фотографии животного</label>
+                    <div class="photo-upload">
+                        <input type="file" id="animalPhotos" class="file-input" multiple accept="image/*">
+                        <div id="animalPreview" class="preview-container"></div>
+                        <small>Можно выбрать несколько фото</small>
+                    </div>
+                </div>
+                
+                <button class="submit-btn" onclick="createAnimal()">Добавить животное</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="shelterForm" class="tab-content">
+        <div class="form-container">
+            <div class="form-section">
+                <h2>🏠 Добавить новый приют</h2>
+                
+                <div class="form-group">
+                    <label for="shelterName">Название приюта *</label>
+                    <input type="text" id="shelterName" placeholder="Введите название приюта" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="shelterAddress">Адрес *</label>
+                    <input type="text" id="shelterAddress" placeholder="Введите адрес приюта" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="shelterPhone">Телефон</label>
+                        <input type="tel" id="shelterPhone" placeholder="+7 (XXX) XXX-XX-XX">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="shelterEmail">Email</label>
+                        <input type="email" id="shelterEmail" placeholder="email@example.com">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="shelterHours">Часы работы</label>
+                    <input type="text" id="shelterHours" placeholder="Пн-Пт 9:00-18:00">
+                </div>
+                
+                <div class="form-group">
+                    <label for="shelterDescription">Описание приюта</label>
+                    <textarea id="shelterDescription" placeholder="Опишите приют, его миссию и особенности"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Фотографии приюта</label>
+                    <div class="photo-upload">
+                        <input type="file" id="shelterPhotos" class="file-input" multiple accept="image/*">
+                        <div id="shelterPreview" class="preview-container"></div>
+                        <small>Можно выбрать несколько фото</small>
+                    </div>
+                </div>
+                
+                <button class="submit-btn" onclick="createShelter()">Создать приют</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="userForm" class="tab-content">
+        <div class="form-container">
+            <div class="form-section">
+                <h2>👤 Добавить нового пользователя</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="userFirstName">Имя *</label>
+                        <input type="text" id="userFirstName" placeholder="Введите имя" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userLastName">Фамилия *</label>
+                        <input type="text" id="userLastName" placeholder="Введите фамилию" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="userEmail">Email *</label>
+                        <input type="email" id="userEmail" placeholder="email@example.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userPhone">Телефон *</label>
+                        <input type="tel" id="userPhone" placeholder="+7 (XXX) XXX-XX-XX" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    
+                    <div class="form-group">
+                        <label for="userGender">Пол *</label>
+                        <select id="userGender" required>
+                            <option value="">Выберите пол</option>
+                            <option value="male">Мужской</option>
+                            <option value="female">Женский</option>
+                            <option value="other">Другой</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="userRole">Роль *</label>
+                    <select id="userRole" required>
+                        <option value="">Выберите роль</option>
+                        <option value="user">Пользователь</option>
+                        <option value="volunteer">Волонтер</option>
+                        <option value="admin">Администратор</option>
+                        <option value="staff">Сотрудник приюта</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="userPhoto">Фотография</label>
+                    <input type="file" id="userPhoto" class="file-input" accept="image/*">
+                </div>
+               
+                <button class="submit-btn" onclick="createUser()">Создать пользователя</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="applicationForm" class="tab-content">
+        <div class="form-container">
+            <div class="form-section">
+                <h2>📋 Создать заявку на усыновление</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="applicationUser">Пользователь *</label>
+                        <select id="applicationUser" required>
+                            <option value="">Выберите пользователя</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="applicationAnimal">Животное *</label>
+                        <select id="applicationAnimal" required>
+                            <option value="">Выберите животное</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="applicationShelter">Приют *</label>
+                    <select id="applicationShelter" required>
+                        <option value="">Выберите приют</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="applicationStatus">Статус заявки *</label>
+                    <select id="applicationStatus" required>
+                        <option value="">Выберите статус</option>
+                        <option value="pending">Ожидает рассмотрения</option>
+                        <option value="approved">Одобрена</option>
+                        <option value="rejected">Отклонена</option>
+                        <option value="completed">Завершена</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="applicationReason">Причина усыновления</label>
+                    <textarea id="applicationReason" placeholder="Почему вы хотите усыновить это животное?"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="applicationNotes">Дополнительные заметки</label>
+                    <textarea id="applicationNotes" placeholder="Дополнительная информация от сотрудников приюта"></textarea>
+                </div>
+                
+                <button class="submit-btn" onclick="createApplication()">Создать заявку</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="message"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:4000/api';
+        let animalPhotos = [];
+        let shelterPhotos = [];
+
+        // Загрузка приютов при открытии страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            loadShelters();
+            setupPhotoUploads();
+        });
+
+        function setupPhotoUploads() {
+            // Обработка загрузки фото для животных
+            document.getElementById('animalPhotos').addEventListener('change', function(e) {
+                handlePhotoUpload(e, 'animal');
+            });
+
+            // Обработка загрузки фото для приютов
+            document.getElementById('shelterPhotos').addEventListener('change', function(e) {
+                handlePhotoUpload(e, 'shelter');
+            });
+        }
+
+        function handlePhotoUpload(event, entityType) {
+            const files = Array.from(event.target.files);
+            const previewContainer = document.getElementById(entityType + 'Preview');
+            
+            files.forEach(file => {
+                if (!file.type.startsWith('image/')) {
+                    showMessage('❌ Можно загружать только изображения', 'error');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    previewItem.innerHTML = `
+                        <img src="${e.target.result}" class="preview-image">
+                        <button type="button" class="remove-btn" onclick="removePhoto('${entityType}', '${file.name}')">×</button>
+                    `;
+                    previewContainer.appendChild(previewItem);
+
+                    // Сохраняем файл
+                    if (entityType === 'animal') {
+                        animalPhotos.push(file);
+                    } else {
+                        shelterPhotos.push(file);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Очищаем input
+            event.target.value = '';
+        }
+
+        function removePhoto(entityType, fileName) {
+            const previewContainer = document.getElementById(entityType + 'Preview');
+            const items = previewContainer.getElementsByClassName('preview-item');
+            
+            for (let item of items) {
+                if (item.querySelector('img').src.includes(fileName)) {
+                    item.remove();
+                    break;
+                }
+            }
+
+            // Удаляем из массива
+            if (entityType === 'animal') {
+                animalPhotos = animalPhotos.filter(file => file.name !== fileName);
+            } else {
+                shelterPhotos = shelterPhotos.filter(file => file.name !== fileName);
+            }
+        }
+
+        async function loadShelters() {
+            try {
+                const response = await fetch(`${API_BASE}/shelters`);
+                if (response.ok) {
+                    const shelters = await response.json();
+                    updateShelterSelect(shelters);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки приютов:', error);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/users`);
+                if (response.ok) {
+                    const users = await response.json();
+                    updateUserSelect(users);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки пользователей:', error);
+            }
+        }
+
+        async function loadAnimals() {
+            try {
+                const response = await fetch(`${API_BASE}/animals`);
+                if (response.ok) {
+                    const animals = await response.json();
+                    updateAnimalSelect(animals);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки животных:', error);
+            }
+        }
+
+        function updateShelterSelect(shelters) {
+            const select = document.getElementById('animalShelter');
+            select.innerHTML = '<option value="">Выберите приют</option>';
+            
+            shelters.forEach(shelter => {
+                const option = document.createElement('option');
+                option.value = shelter.id;
+                option.textContent = shelter.name;
+                select.appendChild(option);
+            });
+
+            // Также обновляем селект приютов в форме заявки
+            const applicationShelterSelect = document.getElementById('applicationShelter');
+            if (applicationShelterSelect) {
+                applicationShelterSelect.innerHTML = '<option value="">Выберите приют</option>';
+                shelters.forEach(shelter => {
+                    const option = document.createElement('option');
+                    option.value = shelter.id;
+                    option.textContent = shelter.name;
+                    applicationShelterSelect.appendChild(option);
+                });
+            }
+        }
+
+        function updateUserSelect(users) {
+            const select = document.getElementById('applicationUser');
+            select.innerHTML = '<option value="">Выберите пользователя</option>';
+            
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = `${user.firstname} ${user.lastname} (${user.email})`;
+                select.appendChild(option);
+            });
+        }
+
+        function updateAnimalSelect(animals) {
+            const select = document.getElementById('applicationAnimal');
+            select.innerHTML = '<option value="">Выберите животное</option>';
+            
+            animals.forEach(animal => {
+                const option = document.createElement('option');
+                option.value = animal.id;
+                option.textContent = `${animal.name} (${animal.type}, ${animal.age} лет)`;
+                select.appendChild(option);
+            });
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName + 'Form').classList.add('active');
+            event.target.classList.add('active');
+
+            // Загружаем данные для формы заявки
+            if (tabName === 'application') {
+                loadUsers();
+                loadAnimals();
+                loadShelters(); // Обновляем приюты для заявки
+            }
+        }
+
+        async function createAnimal() {
+            const formData = {
+                name: document.getElementById('animalName').value,
+                age: parseInt(document.getElementById('animalAge').value),
+                type: document.getElementById('animalType').value,
+                gender: document.getElementById('animalGender').value,
+                shelter_id: parseInt(document.getElementById('animalShelter').value),
+                color: document.getElementById('animalColor').value,
+                weight: document.getElementById('animalWeight').value ? parseFloat(document.getElementById('animalWeight').value) : null,
+                animal_size: document.getElementById('animalSize').value,
+                health: document.getElementById('animalHealth').value,
+                personality: document.getElementById('animalPersonality').value,
+                history: document.getElementById('animalHistory').value
+            };
+
+            if (!formData.name || !formData.age || !formData.type || !formData.gender || !formData.shelter_id) {
+                showMessage('Пожалуйста, заполните все обязательные поля (отмечены *)', 'error');
+                return;
+            }
+
+            try {
+                showMessage('Добавление животного...', 'loading');
+                
+                // 1. Создаем животное
+                const response = await fetch(`${API_BASE}/animals`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                // В createAnimal после создания животного:
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Animal creation response:', result);
+                    
+                    // Извлекаем ID разными способами
+                    const animalId = result.animal?.id;
+                    console.log('Extracted animal ID:', animalId);
+                    
+                    if (animalId) {
+                        if (animalPhotos.length > 0) {
+                            // ПЕРЕДАЕМ animalId В ФУНКЦИЮ
+                            await uploadPhotos(animalPhotos, 'animal', animalId);
+                        }
+                        showMessage('✅ Животное успешно добавлено!', 'success');
+                        resetAnimalForm();
+                    } else {
+                        showMessage('❌ Ошибка: не получен ID созданного животного. Ответ:', animal, 'error');
+                    }
+                }
+            } catch (error) {
+                showMessage('❌ Ошибка сети: ' + error.message, 'error');
+            }
+        }
+
+        async function createShelter() {
+            const formData = {
+                name: document.getElementById('shelterName').value,
+                address: document.getElementById('shelterAddress').value,
+                phone: document.getElementById('shelterPhone').value,
+                email: document.getElementById('shelterEmail').value,
+                working_hours: document.getElementById('shelterHours').value,
+                description: document.getElementById('shelterDescription').value
+            };
+
+            if (!formData.name || !formData.address) {
+                showMessage('Пожалуйста, заполните все обязательные поля (отмечены *)', 'error');
+                return;
+            }
+
+            try {
+                showMessage('Создание приюта...', 'loading');
+                
+                // 1. Создаем приют
+                const response = await fetch(`${API_BASE}/shelters`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                // В createShelter после создания приюта:
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Shelter creation response:', result);
+                    
+                    // Предполагаемая структура (проверьте в консоли)
+                    const shelterId = result.shelter?.id || result.id;
+                    console.log('Extracted shelter ID:', shelterId);
+                    
+                    if (shelterId) {
+                        if (shelterPhotos.length > 0) {
+                            await uploadPhotos(shelterPhotos, 'shelter', shelterId);
+                        }
+                        showMessage('✅ Приют успешно создан!', 'success');
+                        resetShelterForm();
+                        loadShelters();
+                    } else {
+                        showMessage('❌ Ошибка: не получен ID созданного приюта', 'error');
+                    }
+                }
+            } catch (error) {
+                showMessage('❌ Ошибка сети: ' + error.message, 'error');
+            } 
+        }
+
+        async function createUser() {
+            // Проверяем обязательные поля
+            const firstname = document.getElementById('userFirstName').value;
+            const lastname = document.getElementById('userLastName').value;
+            const email = document.getElementById('userEmail').value;
+            const phone = document.getElementById('userPhone').value;
+            const gender = document.getElementById('userGender').value;
+            const role = document.getElementById('userRole').value;
+
+            if (!firstname || !lastname || !email || !phone || !gender || !role) {
+                showMessage('Пожалуйста, заполните все обязательные поля (отмечены *)', 'error');
+                return;
+            }
+
+            try {
+                showMessage('Создание пользователя...', 'loading');
+                
+                // Создаем FormData для отправки файлов
+                const formData = new FormData();
+                formData.append('firstname', firstname);
+                formData.append('lastname', lastname);
+                formData.append('email', email);
+                formData.append('phone', phone);
+                formData.append('gender', gender);
+                formData.append('role', role);
+
+                // Добавляем фото если выбрано
+                const photoInput = document.getElementById('userPhoto');
+                if (photoInput.files && photoInput.files[0]) {
+                    formData.append('photo', photoInput.files[0]);
+                }
+
+                const response = await fetch(`${API_BASE}/users`, {
+                    method: 'POST',
+                    body: formData // FormData автоматически устанавливает правильный Content-Type
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('User creation response:', result);
+                    const userId = result.user?.id || result.id;
+                    if (userId) {
+                        showMessage('✅ Пользователь успешно создан!', 'success');
+                        resetUserForm();
+                        loadUsers();
+                    } else {
+                        showMessage('❌ Ошибка: не получен ID созданного пользователя', 'error');
+                    }
+                } else {
+                    const error = await response.text();
+                    console.error('❌ User creation failed:', error);
+                    showMessage('❌ Ошибка создания пользователя: ' + error, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Ошибка сети: ' + error.message, 'error');
+            }
+        }
+
+        async function createApplication() {
+            const formData = {
+                user_id: parseInt(document.getElementById('applicationUser').value),
+                animal_id: parseInt(document.getElementById('applicationAnimal').value),
+                shelter_id: parseInt(document.getElementById('applicationShelter').value), // Добавляем shelter_id
+                status: document.getElementById('applicationStatus').value,
+                reason: document.getElementById('applicationReason').value,
+                notes: document.getElementById('applicationNotes').value
+            };
+
+            if (!formData.user_id || !formData.animal_id || !formData.status || !formData.shelter_id) { // Добавляем проверку shelter_id
+                showMessage('Пожалуйста, заполните все обязательные поля (отмечены *)', 'error');
+                return;
+            }
+
+            try {
+                showMessage('Создание заявки...', 'loading');
+                
+                const response = await fetch(`${API_BASE}/applications`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Application creation response:', result);
+                    const applicationId = result.application?.id || result.id;
+                    if (applicationId) {
+                        showMessage('✅ Заявка успешно создана!', 'success');
+                        resetApplicationForm();
+                    } else {
+                        showMessage('❌ Ошибка: не получен ID созданной заявки', 'error');
+                    }
+                } else {
+                    const error = await response.text();
+                    console.error('❌ Application creation failed:', error);
+                    showMessage('❌ Ошибка создания заявки: ' + error, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Ошибка сети: ' + error.message, 'error');
+            }
+        }
+
+        async function uploadPhotos(files, entityType, entityId) {
+            console.log('=== UPLOAD PHOTOS START ===');
+            console.log('Files:', files);
+            console.log('Entity Type:', entityType);
+            console.log('Entity ID:', entityId);
+            console.log('Entity ID type:', typeof entityId);
+            
+            if (!entityId || isNaN(entityId)) {
+                console.error('❌ Invalid entity ID:', entityId);
+                return;
+            }
+
+            for (const [index, file] of files.entries()) {
+                console.log(`Uploading photo ${index + 1}/${files.length}:`, file.name);
+                
+                const formData = new FormData();
+                formData.append('photo', file);
+                formData.append('entity_type', entityType);
+                formData.append('entity_id', entityId.toString());
+
+                // Проверим что в FormData
+                for (let [key, value] of formData.entries()) {
+                    console.log(`FormData: ${key} =`, value);
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE}/photos/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    console.log('Photo upload response status:', response.status);
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('✅ Photo upload success:', result);
+                    } else {
+                        const error = await response.text();
+                        console.error('❌ Photo upload failed:', error);
+                    }
+                } catch (error) {
+                    console.error('❌ Photo upload error:', error);
+                }
+            }
+            console.log('=== UPLOAD PHOTOS END ===');
+        }
+
+        function resetAnimalForm() {
+            document.getElementById('animalName').value = '';
+            document.getElementById('animalAge').value = '';
+            document.getElementById('animalType').value = '';
+            document.getElementById('animalGender').value = '';
+            document.getElementById('animalWeight').value = '';
+            document.getElementById('animalColor').value = '';
+            document.getElementById('animalSize').value = '';
+            document.getElementById('animalHealth').value = '';
+            document.getElementById('animalPersonality').value = '';
+            document.getElementById('animalHistory').value = '';
+            document.getElementById('animalShelter').value = '';
+            document.getElementById('animalPreview').innerHTML = '';
+            animalPhotos = [];
+        }
+
+        function resetShelterForm() {
+            document.getElementById('shelterName').value = '';
+            document.getElementById('shelterAddress').value = '';
+            document.getElementById('shelterPhone').value = '';
+            document.getElementById('shelterEmail').value = '';
+            document.getElementById('shelterHours').value = '';
+            document.getElementById('shelterDescription').value = '';
+            document.getElementById('shelterPreview').innerHTML = '';
+            shelterPhotos = [];
+        }
+
+        function resetUserForm() {
+            document.getElementById('userFirstName').value = '';
+            document.getElementById('userLastName').value = '';
+            document.getElementById('userEmail').value = '';
+            document.getElementById('userPhone').value = '';
+            document.getElementById('userGender').value = '';
+            document.getElementById('userRole').value = '';
+            document.getElementById('userPhoto').value = '';
+        }
+
+        function resetApplicationForm() {
+            document.getElementById('applicationUser').value = '';
+            document.getElementById('applicationAnimal').value = '';
+            document.getElementById('applicationShelter').value = ''; // Сбрасываем приют
+            document.getElementById('applicationStatus').value = '';
+            document.getElementById('applicationReason').value = '';
+            document.getElementById('applicationNotes').value = '';
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="${type}">${text}</div>`;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

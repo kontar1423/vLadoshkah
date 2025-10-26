@@ -1,38 +1,145 @@
-const Joi = require('joi');
-const sheltersDao = require('../dao/sheltersDao');
-
+import Joi from 'joi';
+const { object, string } = Joi;
+import sheltersDao from '../dao/sheltersDao.js';  
+import redisClient from '../cache/redis-client.js';
+import photosDao from '../dao/photosDao.js';
+import photosService from './photosService.js';
 // Joi-схема для валидации shelter
-const shelterSchema = Joi.object({
-  name: Joi.string().min(2).required()
-});
+// const shelterSchema = object({
+//   name: string().min(2).required(),
+//   address: string().optional(),
+//   phone: string().optional(),
+//   email: string().email().optional(),
+//   description: string().optional(),
+//   capacity: Joi.number().integer().min(0).optional(),
+//   website: string().uri().optional(),
+//   working_hours: string().optional()
+// });
 
-// Получить все приюты
+const CACHE_KEYS = {
+  ALL_SHELTERS: 'shelters:all',
+  SHELTER_BY_ID: (id) => `shelter:${id}`,
+};
+// Получить все приюты с фото
 async function getAllShelters() {
-  return sheltersDao.getAll();
+  const cached = await redisClient.get(CACHE_KEYS.ALL_SHELTERS);
+  if (cached) {
+    return cached;
+  }
+  const shelters = await sheltersDao.getAll();
+  const allPhotos = await photosDao.getByEntityType('shelter');
+  
+  const sheltersWithPhotos = shelters.map(shelter => ({
+    ...shelter,
+    photos: allPhotos
+      .filter(photo => photo.entity_id === shelter.id)
+      .map(photo => ({
+        url: photo.url,
+      }))
+  }));
+  
+  return sheltersWithPhotos;
 }
 
-// Получить приют по id
+// Получить приют по id с фото
 async function getShelterById(id) {
-  return sheltersDao.getById(id);
+  const shelterCacheKey = CACHE_KEYS.SHELTER_BY_ID(id);
+  const cached = await redisClient.get(CACHE_KEYS.SHELTER_BY_ID(id));
+  if (cached) {
+    return cached;
+  }
+  const [shelter, photos] = await Promise.all([
+    sheltersDao.getById(id),
+    photosDao.getByEntity('shelter', id)
+  ]);
+  
+  if (!shelter) {
+    return null;
+  }
+  
+  const result = {
+    ...shelter,
+    photos: photos.map(photo => ({
+      url: photo.url,
+    }))
+  };
+  
+  // Cache the result
+  await redisClient.set(CACHE_KEYS.SHELTER_BY_ID(id), result, 3600);
+  
+  return result;
 }
 
-// Создать приют
-async function createShelter(data) {
-  // const { error, value } = shelterSchema.validate(data);
+// Создать приют с возможностью загрузки фото
+async function createShelter(shelterData, photoFiles = null) {
+  // Clear the all shelters cache since we're adding a new one
+  await redisClient.delete(CACHE_KEYS.ALL_SHELTERS);
+  
+  // const { error, value } = shelterSchema.validate(shelterData);
   // if (error) throw new Error(error.details[0].message);
-  return sheltersDao.create(data);
+
+  // Создаем приют
+  const shelter = await sheltersDao.create(shelterData);
+  
+  // Если есть фото - загружаем их
+  if (photoFiles) {
+    const filesArray = Array.isArray(photoFiles) ? photoFiles : [photoFiles];
+    if (filesArray.length > 0) {
+      await Promise.all(filesArray.map(photoFile => photosService.uploadPhoto(photoFile, 'shelter', shelter.id)));
+    }
+  }
+  
+  // Возвращаем приют с фото
+  return await getShelterById(shelter.id);
 }
 
 // Обновить приют
 async function updateShelter(id, data) {
-  const { error, value } = shelterSchema.validate(data);
-  if (error) throw new Error(error.details[0].message);
-  return sheltersDao.update(id, value.name);
+  // Clear both the all shelters cache and the specific shelter cache
+  await Promise.all([
+    redisClient.delete(CACHE_KEYS.ALL_SHELTERS),
+    redisClient.delete(CACHE_KEYS.SHELTER_BY_ID(id))
+  ]);
+  
+  // const { error, value } = shelterSchema.validate(data);
+  // if (error) throw new Error(error.details[0].message);
+  
+  const updatedShelter = await sheltersDao.update(id, data);
+  if (!updatedShelter) {
+    return null;
+  }
+  
+  return await getShelterById(id);
 }
 
-// Удалить приют
+// Удалить приют и все его фото
 async function removeShelter(id) {
-  return sheltersDao.remove(id);
+  // Clear both the all shelters cache and the specific shelter cache
+  await Promise.all([
+    redisClient.delete(CACHE_KEYS.ALL_SHELTERS),
+    redisClient.delete(CACHE_KEYS.SHELTER_BY_ID(id))
+  ]);
+  
+  try {
+    // Удаляем все фото приюта через универсальную функцию
+    const photos = await photosDao.getByEntity('shelter', id);
+    if (photos.length > 0) {
+      await Promise.all(photos.map(photo => photosDao.remove(photo.id)));
+    }
+    
+    // Затем удаляем сам приют
+    return await sheltersDao.remove(id);
+  } catch (error) {
+    console.error('Error removing shelter:', error);
+    throw error;
+  }
 }
 
-module.exports = { getAllShelters, getShelterById, createShelter, updateShelter, removeShelter };
+export default { 
+  getAllShelters, 
+  getShelterById, 
+  createShelter, 
+  updateShelter, 
+  removeShelter
+  // НЕТ отдельной функции addPhotoToShelter
+};

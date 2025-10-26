@@ -3,44 +3,87 @@ services:
     image: postgres:16
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: volunteer_db
+      POSTGRES_USER: ${PGUSER:-postgres}
+      POSTGRES_PASSWORD: ${PGPASSWORD:-1234}
+      POSTGRES_DB: ${PGDATABASE:-volunteer_db}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-postgres} -d ${PGDATABASE:-volunteer_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: always
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"   # API
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"   # Web-консоль
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":${MINIO_CONSOLE_PORT:-9001}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MINIO_API_PORT:-9000}/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   api:
     build: .
     restart: always
     ports:
-      - "4000:4000"
+      - "${PORT:-4000}:4000"
     environment:
-      PORT: 4000
-      PGHOST: db
-      PGUSER: postgres
-      PGPASSWORD: 1234
-      PGDATABASE: volunteer_db
-      PGPORT: 5432
-      NODE_ENV: development
-      DATABASE_URL: postgres://postgres:1234@db:5432/volunteer_db
+      - PORT=${PORT:-4000}
+      - PGHOST=${PGHOST:-db}
+      - PGUSER=${PGUSER:-postgres}
+      - PGPASSWORD=${PGPASSWORD:-1234}
+      - PGDATABASE=${PGDATABASE:-volunteer_db}
+      - PGPORT=${PGPORT:-5432}
+      - NODE_ENV=${NODE_ENV:-development}
+      - DATABASE_URL=postgres://${PGUSER:-postgres}:${PGPASSWORD:-1234}@${PGHOST:-db}:${PGPORT:-5432}/${PGDATABASE:-volunteer_db}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-minio}
+      - MINIO_PORT=${MINIO_PORT:-9000}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - MINIO_BUCKET=${MINIO_BUCKET:-uploads}
+      - MINIO_USE_SSL=${MINIO_USE_SSL:-false}
     depends_on:
-      - db
-
-  test:
-    build: .
-    environment:
-      PGHOST: db
-      PGUSER: postgres
-      PGPASSWORD: 1234
-      PGDATABASE: volunteer_db
-      PGPORT: 5432
-      NODE_ENV: test
-      DATABASE_URL: postgres://postgres:1234@db:5432/volunteer_db
-    depends_on:
-      - db
-    command: npm test
-
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT:-4000}/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 volumes:
   db_data:
+  minio_data:
+  redis_data:

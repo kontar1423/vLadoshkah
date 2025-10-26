@@ -1,5 +1,5 @@
-const sheltersService = require('../services/sheltersService');
-const logger = require('../logger');
+import sheltersService from "../services/sheltersService.js";
+import logger from '../logger.js';
 
 // Получить все приюты
 async function getAll(req, res) {
@@ -76,4 +76,4 @@ async function remove(req, res) {
   }
 }
 
-module.exports = { getAll, getById, create, update, remove };
+export default { getAll, getById, create, update, remove };
