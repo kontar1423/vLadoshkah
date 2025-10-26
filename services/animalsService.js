@@ -41,10 +41,11 @@ async function invalidateAnimalCaches(animalId = null) {
     patterns.push(CACHE_KEYS.ANIMAL_BY_ID(animalId));
   }
   
-  // Удаляем все ключи по паттернам
-  for (const pattern of patterns) {
-    await redisClient.deleteByPattern(pattern);
-  }
+  // Clear the all animals cache since we're fetching all animals
+  await Promise.all([
+    redisClient.delete(CACHE_KEYS.ALL_ANIMALS),
+    redisClient.delete(CACHE_KEYS.ANIMAL_BY_ID(animalId)),
+  ]);
 }
 
 // Получить всех животных
@@ -70,7 +71,9 @@ async function getAllAnimals() {
       ...animal,
       photos: allPhotos
         .filter(photo => photo.entity_id === animal.id)
-        .map(photo => photo.url)
+        .map(photo => ({
+          url: photo.url,
+        }))
     }));
     
     // Сохраняем в кэш
@@ -168,7 +171,11 @@ async function createAnimal(animalData, photoFile = null) {
     
     // 1. Создаем животное
     const animal = await animalsDao.create(animalData);
-    
+    // Clear the all animals cache since we're adding a new animal
+    await Promise.all([
+      redisClient.delete(CACHE_KEYS.ALL_ANIMALS),
+      redisClient.delete(CACHE_KEYS.ANIMAL_BY_ID(animal.id))
+    ]);
     // 2. Если есть фото - загружаем через photosService
     if (photoFile) {
       await photosService.uploadPhoto(
@@ -195,6 +202,11 @@ async function createAnimal(animalData, photoFile = null) {
 // Обновить животное
 async function updateAnimal(id, data) {
   try {
+    // Clear the specific animal cache since we're updating a single animal
+    await Promise.all([
+      redisClient.delete(CACHE_KEYS.ALL_ANIMALS),
+      redisClient.delete(CACHE_KEYS.ANIMAL_BY_ID(id))
+    ]);
     const updatedAnimal = await animalsDao.update(id, data);
     if (!updatedAnimal) {
       return null;
@@ -215,6 +227,11 @@ async function updateAnimal(id, data) {
 async function removeAnimal(id) {
   try {
     // При удалении животного каскадно удалятся его фото
+    // Clear the specific animal cache since we're removing a single animal
+    await Promise.all([
+      redisClient.delete(CACHE_KEYS.ALL_ANIMALS),
+      redisClient.delete(CACHE_KEYS.ANIMAL_BY_ID(id))
+    ]);
     await photosService.deletePhotosOfEntity(id, 'animal');
     const result = await animalsDao.remove(id);
     

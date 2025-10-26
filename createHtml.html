@@ -394,14 +394,10 @@
                 </div>
                 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="userAge">Возраст</label>
-                        <input type="number" id="userAge" placeholder="0" min="18" max="100">
-                    </div>
                     
                     <div class="form-group">
-                        <label for="userGender">Пол</label>
-                        <select id="userGender">
+                        <label for="userGender">Пол *</label>
+                        <select id="userGender" required>
                             <option value="">Выберите пол</option>
                             <option value="male">Мужской</option>
                             <option value="female">Женский</option>
@@ -411,25 +407,20 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="userAddress">Адрес</label>
-                    <input type="text" id="userAddress" placeholder="Введите адрес">
+                    <label for="userRole">Роль *</label>
+                    <select id="userRole" required>
+                        <option value="">Выберите роль</option>
+                        <option value="user">Пользователь</option>
+                        <option value="volunteer">Волонтер</option>
+                        <option value="admin">Администратор</option>
+                        <option value="staff">Сотрудник приюта</option>
+                    </select>
                 </div>
-                
                 <div class="form-group">
-                    <label for="userOccupation">Профессия</label>
-                    <input type="text" id="userOccupation" placeholder="Введите профессию">
+                    <label for="userPhoto">Фотография</label>
+                    <input type="file" id="userPhoto" class="file-input" accept="image/*">
                 </div>
-                
-                <div class="form-group">
-                    <label for="userExperience">Опыт с животными</label>
-                    <textarea id="userExperience" placeholder="Опишите ваш опыт содержания животных"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="userHousing">Жилищные условия</label>
-                    <textarea id="userHousing" placeholder="Опишите ваши жилищные условия (квартира/дом, площадь, есть ли двор и т.д.)"></textarea>
-                </div>
-                
+               
                 <button class="submit-btn" onclick="createUser()">Создать пользователя</button>
             </div>
         </div>
@@ -634,7 +625,7 @@
             users.forEach(user => {
                 const option = document.createElement('option');
                 option.value = user.id;
-                option.textContent = `${user.first_name} ${user.last_name} (${user.email})`;
+                option.textContent = `${user.firstname} ${user.lastname} (${user.email})`;
                 select.appendChild(option);
             });
         }
@@ -776,24 +767,19 @@
                 }
             } catch (error) {
                 showMessage('❌ Ошибка сети: ' + error.message, 'error');
-            }
+            } 
         }
 
         async function createUser() {
-            const formData = {
-                first_name: document.getElementById('userFirstName').value,
-                last_name: document.getElementById('userLastName').value,
-                email: document.getElementById('userEmail').value,
-                phone: document.getElementById('userPhone').value,
-                age: document.getElementById('userAge').value ? parseInt(document.getElementById('userAge').value) : null,
-                gender: document.getElementById('userGender').value,
-                address: document.getElementById('userAddress').value,
-                occupation: document.getElementById('userOccupation').value,
-                experience: document.getElementById('userExperience').value,
-                housing_conditions: document.getElementById('userHousing').value
-            };
+            // Проверяем обязательные поля
+            const firstname = document.getElementById('userFirstName').value;
+            const lastname = document.getElementById('userLastName').value;
+            const email = document.getElementById('userEmail').value;
+            const phone = document.getElementById('userPhone').value;
+            const gender = document.getElementById('userGender').value;
+            const role = document.getElementById('userRole').value;
 
-            if (!formData.first_name || !formData.last_name || !formData.email || !formData.phone) {
+            if (!firstname || !lastname || !email || !phone || !gender || !role) {
                 showMessage('Пожалуйста, заполните все обязательные поля (отмечены *)', 'error');
                 return;
             }
@@ -801,12 +787,24 @@
             try {
                 showMessage('Создание пользователя...', 'loading');
                 
+                // Создаем FormData для отправки файлов
+                const formData = new FormData();
+                formData.append('firstname', firstname);
+                formData.append('lastname', lastname);
+                formData.append('email', email);
+                formData.append('phone', phone);
+                formData.append('gender', gender);
+                formData.append('role', role);
+
+                // Добавляем фото если выбрано
+                const photoInput = document.getElementById('userPhoto');
+                if (photoInput.files && photoInput.files[0]) {
+                    formData.append('photo', photoInput.files[0]);
+                }
+
                 const response = await fetch(`${API_BASE}/users`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
+                    body: formData // FormData автоматически устанавливает правильный Content-Type
                 });
 
                 if (response.ok) {
@@ -816,6 +814,7 @@
                     if (userId) {
                         showMessage('✅ Пользователь успешно создан!', 'success');
                         resetUserForm();
+                        loadUsers();
                     } else {
                         showMessage('❌ Ошибка: не получен ID созданного пользователя', 'error');
                     }
@@ -954,12 +953,9 @@
             document.getElementById('userLastName').value = '';
             document.getElementById('userEmail').value = '';
             document.getElementById('userPhone').value = '';
-            document.getElementById('userAge').value = '';
             document.getElementById('userGender').value = '';
-            document.getElementById('userAddress').value = '';
-            document.getElementById('userOccupation').value = '';
-            document.getElementById('userExperience').value = '';
-            document.getElementById('userHousing').value = '';
+            document.getElementById('userRole').value = '';
+            document.getElementById('userPhoto').value = '';
         }
 
         function resetApplicationForm() {

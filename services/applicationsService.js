@@ -1,7 +1,10 @@
 import applicationsDao from '../dao/applicationsDao.js';
 import logger from '../logger.js';
 import redisClient from '../cache/redis-client.js';
-
+const CACHE_KEYS = {
+    ALL_APPLICATIONS: 'applications:all',
+    APPLICATION_BY_ID: (id) => `application:${id}`,
+};
 async function create(applicationData) {
     try {
         const application = await applicationsDao.create(applicationData);
@@ -10,7 +13,10 @@ async function create(applicationData) {
         }
         
         // Инвалидируем кэш
-        await redisClient.delete('applications:all');
+        await Promise.all([
+            redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS),
+            redisClient.delete(CACHE_KEYS.APPLICATION_BY_ID(application.id))
+        ]);
         
         return application;
     } catch (err) {
@@ -20,11 +26,11 @@ async function create(applicationData) {
 }
 async function getById(id) {
     try {
-        const cacheKey = `applications:${id}`;
-        const cached = await redisClient.get(cacheKey);
-        if (cached) {
-            return cached;
-        }
+        // Clear the specific application cache since we're fetching a single application
+        await Promise.all([
+            redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS),
+            redisClient.delete(CACHE_KEYS.APPLICATION_BY_ID(id))
+        ]);
         
         const application = await applicationsDao.getById(id);
         if (!application) {
@@ -41,14 +47,11 @@ async function getById(id) {
 
 async function getAll() {
     try {
-        const cacheKey = 'applications:all';
-        const cached = await redisClient.get(cacheKey);
-        if (cached) {
-            return cached;
-        }
+        // Clear the all applications cache since we're fetching all applications
+        await redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS);
         
         const applications = await applicationsDao.getAll();
-        await redisClient.set(cacheKey, applications, 300); // кэш на 5 минут
+        await redisClient.set(CACHE_KEYS.ALL_APPLICATIONS, applications, 300); // кэш на 5 минут
         return applications;
     } catch (err) {
         logger.error(err, 'Service: error fetching all applications');
@@ -58,14 +61,21 @@ async function getAll() {
 
 async function update(id, applicationData) {
     try {
+        // Clear the specific application cache since we're updating a single application
+        await Promise.all([
+            redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS),
+            redisClient.delete(CACHE_KEYS.APPLICATION_BY_ID(id))
+        ]);
         const application = await applicationsDao.update(id, applicationData);
         if (!application) {
             throw new Error('Application not found');
         }
         
         // Инвалидируем кэш
-        await redisClient.delete('applications:all');
-        await redisClient.delete(`applications:${id}`);
+        await Promise.all([
+            redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS),
+            redisClient.delete(CACHE_KEYS.APPLICATION_BY_ID(id))
+        ]);
         
         return application;
     } catch (err) {
@@ -76,14 +86,21 @@ async function update(id, applicationData) {
 
 async function remove(id) {
     try {
+        // Clear the specific application cache since we're removing a single application
+        await Promise.all([
+            redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS),
+            redisClient.delete(CACHE_KEYS.APPLICATION_BY_ID(id))
+        ]);
         const application = await applicationsDao.remove(id);
         if (!application) {
             throw new Error('Application not found');
         }
         
         // Инвалидируем кэш
-        await redisClient.delete('applications:all');
-        await redisClient.delete(`applications:${id}`);
+        await Promise.all([
+            redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS),
+            redisClient.delete(CACHE_KEYS.APPLICATION_BY_ID(id))
+        ]);
         
         return application;
     } catch (err) {

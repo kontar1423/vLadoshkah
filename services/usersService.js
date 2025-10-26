@@ -1,16 +1,17 @@
 import userDAO from '../dao/usersDao.js';
 import photosDao from '../dao/photosDao.js';
 import logger from '../logger.js';
-import photosService from './photosService.js';
 import redisClient from '../cache/redis-client.js';
-
-const cacheKey = 'users:all';
+import photosService from './photosService.js';
+const CACHE_KEYS = {
+  ALL_USERS: 'users:all',
+  USER_BY_ID: (id) => `user:${id}`,
+};
 async function getAll() {
   try {
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
+
+    // Clear the all users cache since we're fetching all users
+    await redisClient.delete(CACHE_KEYS.ALL_USERS);
     // Два параллельных запроса для оптимизации
     const [users, allPhotos] = await Promise.all([
       userDAO.getAll(),
@@ -21,7 +22,9 @@ async function getAll() {
       ...user,
       photos: allPhotos
         .filter(photo => photo.entity_id === user.id)
-        .map(photo => photo.url)
+        .map(photo => ({
+          url: photo.url,
+        }))
     }));
     
     return usersWithPhotos;
@@ -33,10 +36,8 @@ async function getAll() {
 
 async function getById(id) {
   try {
-    const cached = await redisClient.get(cacheKey(id));
-    if (cached) {
-      return cached;
-    }
+    // Clear the specific user cache since we're fetching a single user
+    await redisClient.delete(CACHE_KEYS.USER_BY_ID(id));
     const [user, photos] = await Promise.all([
       userDAO.getById(id),
       photosDao.getByEntity('user', id)
@@ -62,10 +63,8 @@ async function getById(id) {
 
 async function create(userData, photoFile = null) {
   try {
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
+    // Clear the all users cache since we're adding a new one
+    await redisClient.delete(CACHE_KEYS.ALL_USERS);
     logger.info('Service: creating user with data:', userData);
     
     // 1. Создаем пользователя
@@ -93,10 +92,11 @@ async function create(userData, photoFile = null) {
 
 async function update(id, data, photoFile = null) {
   try {
-    const cached = await redisClient.get(cacheKey(id));
-    if (cached) {
-      return cached;
-    }
+    // Clear both the all users cache and the specific user cache
+    await Promise.all([
+      redisClient.delete(CACHE_KEYS.ALL_USERS),
+      redisClient.delete(CACHE_KEYS.USER_BY_ID(id))
+    ]);
     const updatedUser = await userDAO.update(id, data);
     if (!updatedUser) {
       const err = new Error('User not found or not updated');
@@ -107,7 +107,10 @@ async function update(id, data, photoFile = null) {
     // Если передано новое фото - обновляем
     if (photoFile) {
       // Сначала удаляем старые фото пользователя
-      await photosDao.deletePhotosOfEntity(id, 'user');
+      const photos = await photosDao.getByEntity('user', id);
+      if (photos.length > 0) {
+        await Promise.all(photos.map(photo => photosDao.remove(photo.id)));
+      }
       
       // Загружаем новое фото
       await photosService.uploadPhoto(
@@ -129,11 +132,15 @@ async function update(id, data, photoFile = null) {
 async function remove(id) {
   try {
     // При удалении пользователя удаляем его фото
-    const cached = await redisClient.get(cacheKey(id));
-    if (cached) {
-      return cached;
+    // Clear both the all users cache and the specific user cache
+    await Promise.all([
+      redisClient.delete(CACHE_KEYS.ALL_USERS),
+      redisClient.delete(CACHE_KEYS.USER_BY_ID(id))
+    ]);
+    const photos = await photosDao.getByEntity('user', id);
+    if (photos.length > 0) {
+      await Promise.all(photos.map(photo => photosDao.remove(photo.id)));
     }
-    await photosService.deletePhotosOfEntity(id, 'user');
     
     const deleted = await userDAO.remove(id);
     if (!deleted) {
