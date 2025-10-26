@@ -38,12 +38,24 @@ async function create({firstname, lastname, role, gender, email, phone}) {
 
 async function update(id, { firstname, lastname, role, gender, email, phone}) {
   try {
+    const currentUser = await getById(id);
+    if (!currentUser) {
+      return null;
+    }
+    const updatedData = {
+      firstname: firstname !== undefined ? firstname : currentUser.firstname,
+      lastname: lastname !== undefined ? lastname : currentUser.lastname,
+      role: role !== undefined ? role : currentUser.role,
+      gender: gender !== undefined ? gender : currentUser.gender,
+      email: email !== undefined ? email : currentUser.email,
+      phone: phone !== undefined ? phone : currentUser.phone,
+    };
     const result = await query(
-      'UPDATE users SET firstname=$1, lastname=$2, role=$3, gender=$4, email=$5, phone=$6 WHERE id=$7 RETURNING *',
-      [firstname, lastname, role, gender, email, phone, id]
+      'UPDATE users SET firstname=$1, lastname=$2, role=$3, gender=$4, email=$5, phone=$6, updated_at = CURRENT_TIMESTAMP WHERE id=$7 RETURNING *',
+      [updatedData.firstname, updatedData.lastname, updatedData.role, updatedData.gender, updatedData.email, updatedData.phone, id]
     );
-    info({ id, updated: result.rowCount }, 'DAO: updated user');
-    return result.rows[0];
+    info({ user: result.rows[0] }, 'DAO: updated user');
+    return result.rows[0] || null;
   } catch (err) {
     error(err, 'DAO: error updating user');
     throw err;

@@ -68,17 +68,29 @@ async function create({ name, age, type, health, gender, color, weight, personal
 
 async function update(id, { name, age, type, health, gender, color, weight, personality, animal_size, history, shelter_id }) {
   try {
+    const currentAnimal = await getById(id);
+    if (!currentAnimal) {
+      return null;
+    }
+    const updatedData = {
+      name: name !== undefined ? name : currentAnimal.name,
+      age: age !== undefined ? age : currentAnimal.age,
+      type: type !== undefined ? type : currentAnimal.type,
+      health: health !== undefined ? health : currentAnimal.health,
+      gender: gender !== undefined ? gender : currentAnimal.gender,
+      color: color !== undefined ? color : currentAnimal.color,
+      weight: weight !== undefined ? weight : currentAnimal.weight,
+      personality: personality !== undefined ? personality : currentAnimal.personality,
+      animal_size: animal_size !== undefined ? animal_size : currentAnimal.animal_size,
+      history: history !== undefined ? history : currentAnimal.history,
+      shelter_id: shelter_id !== undefined ? shelter_id : currentAnimal.shelter_id,
+    };
     const result = await query(
-      `UPDATE animals SET 
-        name = $1, age = $2, type = $3, health = $4, gender = $5, 
-        color = $6, weight = $7, personality = $8, animal_size = $9, 
-        history = $10, shelter_id = $11, updated_at = NOW() 
-      WHERE id = $12 
-      RETURNING *`,
-      [name, age, type, health, gender, color, weight, personality, animal_size, history, shelter_id, id]
+      `UPDATE animals SET name = $1, age = $2, type = $3, health = $4, gender = $5, color = $6, weight = $7, personality = $8, animal_size = $9, history = $10, shelter_id = $11 WHERE id = $12 RETURNING *`,
+      [updatedData.name, updatedData.age, updatedData.type, updatedData.health, updatedData.gender, updatedData.color, updatedData.weight, updatedData.personality, updatedData.animal_size, updatedData.history, updatedData.shelter_id, id]
     );
-    info({ id, updated: result.rowCount }, 'DAO: updated animal');
-    return result.rows[0];
+    info({ animal: result.rows[0] }, 'DAO: updated animal');
+    return result.rows[0] || null;
   } catch (err) {
     error(err, 'DAO: error updating animal');
     throw err;
@@ -88,7 +100,7 @@ async function update(id, { name, age, type, health, gender, color, weight, pers
 async function remove(id) {
   try {
     const result = await query('DELETE FROM animals WHERE id = $1 RETURNING *', [id]);
-    info({ id, deleted: result.rowCount }, 'DAO: deleted animal');
+    info({ animal: result.rows[0] }, 'DAO: deleted animal');
     return result.rows[0];
   } catch (err) {
     error(err, 'DAO: error deleting animal');

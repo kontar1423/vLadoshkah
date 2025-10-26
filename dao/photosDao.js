@@ -91,17 +91,45 @@ async function getByEntityType(entityType) {
   }
 }
 
+async function update(id, photoData) {
+  try {
+    const currentPhoto = await getById(id);
+    if (!currentPhoto) {
+      return null;
+    }
+    const updatedData = {
+      original_name: original_name !== undefined ? original_name : currentPhoto.original_name,
+      object_name: object_name !== undefined ? object_name : currentPhoto.object_name,
+      bucket: bucket !== undefined ? bucket : currentPhoto.bucket,
+      size: size !== undefined ? size : currentPhoto.size,
+      mimetype: mimetype !== undefined ? mimetype : currentPhoto.mimetype,
+      entity_id: entity_id !== undefined ? entity_id : currentPhoto.entity_id,
+      entity_type: entity_type !== undefined ? entity_type : currentPhoto.entity_type,
+      url: url !== undefined ? url : currentPhoto.url,
+    };
+    const result = await query(
+      `UPDATE photos SET original_name = $1, object_name = $2, bucket = $3, size = $4, mimetype = $5, entity_id = $6, entity_type = $7, url = $8, updated_at = CURRENT_TIMESTAMP WHERE id = $9 RETURNING *`,
+      [updatedData.original_name, updatedData.object_name, updatedData.bucket, updatedData.size, updatedData.mimetype, updatedData.entity_id, updatedData.entity_type, updatedData.url, id]
+    );
+    info({ photo: result.rows[0] }, 'DAO: updated photo');
+    return result.rows[0] || null;
+  }
+  catch (err) {
+    error(err, 'DAO: error updating photo');
+    throw err;
+  }
+}
 async function remove(id) {
   try {
     const result = await query('DELETE FROM photos WHERE id = $1 RETURNING *', [id]);
     info({ id, deleted: result.rowCount }, 'DAO: deleted photo');
     return result.rows[0];
-  } catch (err) {
+  }
+  catch (err) {
     error(err, 'DAO: error deleting photo');
     throw err;
   }
 }
-
 export default {
   getAll,
   getById,
@@ -109,5 +137,6 @@ export default {
   getByEntity,
   getByEntityType,
   create,
+  update,
   remove
 };

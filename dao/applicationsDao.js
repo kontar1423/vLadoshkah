@@ -44,14 +44,29 @@ async function getAll() {
 }
 
 async function update(id, applicationData) {
-    const { user_id, shelter_id, animal_id, is_active, description = null } = applicationData;
+    
     try {
-    const result = await query(
-        `UPDATE applications SET user_id = $1, shelter_id = $2, animal_id = $3, is_active = $4, description = $5 WHERE id = $6 RETURNING *`,
-        [user_id, shelter_id, animal_id, is_active, description, id]
-    );
-    info({ application: result.rows[0] }, 'DAO: updated application');
-    return result.rows[0] || null;
+            // Сначала получаем текущие данные заявки
+            const currentApp = await getById(id);
+            if (!currentApp) {
+                return null;
+            }
+    
+            // Объединяем текущие данные с новыми
+            const updatedData = {
+                user_id: applicationData.user_id !== undefined ? applicationData.user_id : currentApp.user_id,
+                shelter_id: applicationData.shelter_id !== undefined ? applicationData.shelter_id : currentApp.shelter_id,
+                animal_id: applicationData.animal_id !== undefined ? applicationData.animal_id : currentApp.animal_id,
+                is_active: applicationData.is_active !== undefined ? applicationData.is_active : currentApp.is_active,
+                description: applicationData.description !== undefined ? applicationData.description : currentApp.description
+            };
+    
+            const result = await query(
+                `UPDATE applications SET user_id = $1, shelter_id = $2, animal_id = $3, is_active = $4, description = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING *`,
+                [updatedData.user_id, updatedData.shelter_id, updatedData.animal_id, updatedData.is_active, updatedData.description, id]
+            );
+            info({ application: result.rows[0] }, 'DAO: updated application');
+            return result.rows[0] || null;
     } catch (err) {
         error(err, 'DAO: error updating application');
         throw err;

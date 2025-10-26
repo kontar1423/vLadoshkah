@@ -42,17 +42,27 @@ async function create({ name, address, phone, email, website, description, capac
 
 async function update(id, { name, address, phone, email, website, description, capacity, working_hours, status }) {
   try {
+    const currentShelter = await getById(id);
+    if (!currentShelter) {
+      return null;
+    }
+    const updatedData = {
+      name: name !== undefined ? name : currentShelter.name,
+      address: address !== undefined ? address : currentShelter.address,
+      phone: phone !== undefined ? phone : currentShelter.phone,
+      email: email !== undefined ? email : currentShelter.email,
+      website: website !== undefined ? website : currentShelter.website,
+      description: description !== undefined ? description : currentShelter.description,
+      capacity: capacity !== undefined ? capacity : currentShelter.capacity,
+      working_hours: working_hours !== undefined ? working_hours : currentShelter.working_hours,
+      status: status !== undefined ? status : currentShelter.status,
+    };
     const result = await query(
-      `UPDATE shelters SET 
-        name = $1, address = $2, phone = $3, email = $4, website = $5, 
-        description = $6, capacity = $7, working_hours = $8, status = $9,
-        updated_at = NOW() 
-      WHERE id = $10 
-      RETURNING *`,
-      [name, address, phone, email, website, description, capacity, working_hours, status, id]
+      `UPDATE shelters SET name = $1, address = $2, phone = $3, email = $4, website = $5, description = $6, capacity = $7, working_hours = $8, status = $9, updated_at = CURRENT_TIMESTAMP WHERE id = $10 RETURNING *`,
+      [updatedData.name, updatedData.address, updatedData.phone, updatedData.email, updatedData.website, updatedData.description, updatedData.capacity, updatedData.working_hours, updatedData.status, id]
     );
-    info({ id, updated: result.rowCount }, 'DAO: updated shelter');
-    return result.rows[0];
+    info({ shelter: result.rows[0] }, 'DAO: updated shelter');
+    return result.rows[0] || null;
   } catch (err) {
     error(err, 'DAO: error updating shelter');
     throw err;
