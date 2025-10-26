@@ -2,9 +2,15 @@ import userDAO from '../dao/usersDao.js';
 import photosDao from '../dao/photosDao.js';
 import logger from '../logger.js';
 import photosService from './photosService.js';
+import redisClient from '../cache/redis-client.js';
 
+const cacheKey = 'users:all';
 async function getAll() {
   try {
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
     // Два параллельных запроса для оптимизации
     const [users, allPhotos] = await Promise.all([
       userDAO.getAll(),
@@ -27,6 +33,10 @@ async function getAll() {
 
 async function getById(id) {
   try {
+    const cached = await redisClient.get(cacheKey(id));
+    if (cached) {
+      return cached;
+    }
     const [user, photos] = await Promise.all([
       userDAO.getById(id),
       photosDao.getByEntity('user', id)
@@ -52,6 +62,10 @@ async function getById(id) {
 
 async function create(userData, photoFile = null) {
   try {
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
     logger.info('Service: creating user with data:', userData);
     
     // 1. Создаем пользователя
@@ -79,6 +93,10 @@ async function create(userData, photoFile = null) {
 
 async function update(id, data, photoFile = null) {
   try {
+    const cached = await redisClient.get(cacheKey(id));
+    if (cached) {
+      return cached;
+    }
     const updatedUser = await userDAO.update(id, data);
     if (!updatedUser) {
       const err = new Error('User not found or not updated');
@@ -111,6 +129,10 @@ async function update(id, data, photoFile = null) {
 async function remove(id) {
   try {
     // При удалении пользователя удаляем его фото
+    const cached = await redisClient.get(cacheKey(id));
+    if (cached) {
+      return cached;
+    }
     await photosService.deletePhotosOfEntity(id, 'user');
     
     const deleted = await userDAO.remove(id);

@@ -21,6 +21,15 @@ until curl -f http://minio:9000/minio/health/live; do
 done
 
 echo "✅ MinIO is ready"
+echo "⏳ Waiting for Redis..."
+
+# Проверяем Redis endpoint
+until redis-cli -h redis ping; do
+  echo "Redis is unavailable - sleeping"
+  sleep 2
+done
+
+echo "✅ Redis is ready"
 
 echo "🚀 Running migrations..."
 npx node-pg-migrate up || echo "Migrations failed or already applied"

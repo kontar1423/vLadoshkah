@@ -40,6 +40,7 @@
     "pino": "^9.9.5",
     "pino-http": "^10.5.0",
     "pino-multi-stream": "^6.0.0",
+    "redis": "^5.9.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
