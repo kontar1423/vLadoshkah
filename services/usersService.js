@@ -3,6 +3,9 @@ import photosDao from '../dao/photosDao.js';
 import logger from '../logger.js';
 import redisClient from '../cache/redis-client.js';
 import photosService from './photosService.js';
+import bcrypt from 'bcrypt';
+import authConfig from '../config/auth.js';
+const bcryptConfig = authConfig.bcrypt;
 const CACHE_KEYS = {
   ALL_USERS: 'users:all',
   USER_BY_ID: (id) => `user:${id}`,
@@ -67,8 +70,15 @@ async function create(userData, photoFile = null) {
     await redisClient.delete(CACHE_KEYS.ALL_USERS);
     logger.info('Service: creating user with data:', userData);
     
+    // Хешируем пароль, если он передан
+    const processedUserData = { ...userData };
+    if (processedUserData.password && !processedUserData.password.startsWith('$2b$')) {
+      // Хешируем только если пароль не уже захеширован
+      processedUserData.password = await bcrypt.hash(processedUserData.password, bcryptConfig.saltRounds);
+    }
+    
     // 1. Создаем пользователя
-    const user = await userDAO.create(userData);
+    const user = await userDAO.create(processedUserData);
     
     // 2. Если есть фото - загружаем через photosService
     if (photoFile) {
@@ -97,7 +107,14 @@ async function update(id, data, photoFile = null) {
       redisClient.delete(CACHE_KEYS.ALL_USERS),
       redisClient.delete(CACHE_KEYS.USER_BY_ID(id))
     ]);
-    const updatedUser = await userDAO.update(id, data);
+    
+    // Хешируем пароль, если он передан и еще не захеширован
+    const processedData = { ...data };
+    if (processedData.password && !processedData.password.startsWith('$2b$')) {
+      processedData.password = await bcrypt.hash(processedData.password, bcryptConfig.saltRounds);
+    }
+    
+    const updatedUser = await userDAO.update(id, processedData);
     if (!updatedUser) {
       const err = new Error('User not found or not updated');
       err.status = 404;

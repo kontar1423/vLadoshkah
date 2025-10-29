@@ -5,6 +5,7 @@ import sheltersRouter from './routes/shelters.js';
 import usersRouter from './routes/users.js';
 import photosRouter from './routes/photos.js';
 import applicationsRouter from './routes/applications.js';
+import authRouter from './routes/auth.js';
 import { error as _error, info } from './logger.js';
 import pinoHttp from 'pino-http';
 import initMinio from './initMinio.js';
@@ -46,6 +47,7 @@ app.use(pinoHttp({
 }));
 
 // Routes
+app.use('/api/auth', authRouter);
 app.use('/api/animals', animalsRouter);
 app.use('/api/shelters', sheltersRouter);
 app.use('/api/users', usersRouter);

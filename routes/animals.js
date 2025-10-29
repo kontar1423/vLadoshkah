@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import animalsController from '../controllers/animalsController.js';
+import { authenticateToken, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -22,31 +23,31 @@ const upload = multer({
 
 // ✅ Multer middleware для парсинга form-data
 router.use(express.urlencoded({ extended: true }));
-// GET /api/animals - получить всех животных
+// GET /api/animals - получить всех животных (публичный)
 router.get('/', animalsController.getAll);
 
-// GET /api/animals/filters - получить животных с фильтрами
+// GET /api/animals/filters - получить животных с фильтрами (публичный)
 router.get('/filters', animalsController.getAnimalsWithFilters);
 
-// GET /api/animals/:id - получить животное по ID
+// GET /api/animals/:id - получить животное по ID (публичный)
 router.get('/:id', animalsController.getById);
 
-// GET /api/animals/shelter/:shelterId - получить животных по приюту
+// GET /api/animals/shelter/:shelterId - получить животных по приюту (публичный)
 router.get('/shelter/:shelterId', animalsController.getAllByShelterId);
 
-// POST /api/animals - создать новое животное
-router.post('/', upload.single('photo'),animalsController.create);
+// POST /api/animals - создать новое животное (только админ сайта или админ приюта)
+router.post('/', authenticateToken, authorize('admin', 'shelter_admin'), upload.single('photo'), animalsController.create);
 
-// PUT /api/animals/:id - обновить животное
-router.put('/:id', animalsController.update);
+// PUT /api/animals/:id - обновить животное (только админ сайта или админ приюта)
+router.put('/:id', authenticateToken, authorize('admin', 'shelter_admin'), animalsController.update);
 
-// PATCH /api/animals/:id - частично обновить животное
-router.patch('/:id', animalsController.update);
+// PATCH /api/animals/:id - частично обновить животное (только админ сайта или админ приюта)
+router.patch('/:id', authenticateToken, authorize('admin', 'shelter_admin'), animalsController.update);
 
-// DELETE /api/animals/:id - удалить животное
-router.delete('/:id', animalsController.remove);
+// DELETE /api/animals/:id - удалить животное (только админ сайта или админ приюта)
+router.delete('/:id', authenticateToken, authorize('admin', 'shelter_admin'), animalsController.remove);
 
-// GET /api/animals/search/:term - поиск животных
+// GET /api/animals/search/:term - поиск животных (публичный)
 router.get('/search/:term', animalsController.getAnimalsWithFilters);
 
 export default router;

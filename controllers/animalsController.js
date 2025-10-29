@@ -1,4 +1,6 @@
 import animalsService from "../services/animalsService.js";
+import sheltersDao from "../dao/sheltersDao.js";
+import animalsDao from "../dao/animalsDao.js";
 import logger from '../logger.js';
 
 async function getAll(req, res) {
@@ -79,6 +81,28 @@ async function create(req, res) {
     const animalData = req.body;
     const photoFile = req.file; // Фото из multer
     
+    // Проверка доступа для админов приютов
+    if (req.user && req.user.role === 'shelter_admin') {
+      const shelterId = Number(animalData.shelter_id);
+      if (!shelterId) {
+        return res.status(400).json({
+          success: false,
+          error: 'shelter_id is required for shelter_admin'
+        });
+      }
+      
+      // Проверяем, что приют принадлежит этому админу
+      const userShelters = await sheltersDao.getByAdminId(req.user.userId);
+      const hasAccess = userShelters.some(shelter => shelter.id === shelterId);
+      
+      if (!hasAccess) {
+        return res.status(403).json({
+          success: false,
+          error: 'You can only create animals in your own shelter'
+        });
+      }
+    }
+    
     console.log('🟡 Creating animal:', animalData);
     console.log('🟡 Photo file:', photoFile ? `Yes (${photoFile.originalname})` : 'No');
     
@@ -93,7 +117,7 @@ async function create(req, res) {
   } catch (err) {
     const log = req.log || logger;
     log.error(err, 'Controller: error creating animal');
-    res.status(400).json({ 
+    res.status(err.status || 400).json({ 
       success: false,
       error: err.message 
     });
@@ -107,6 +131,25 @@ async function update(req, res) {
     return res.status(400).json({ error: 'Invalid id' });
   }
   try {
+    // Проверка доступа для админов приютов
+    if (req.user && req.user.role === 'shelter_admin') {
+      const animal = await animalsDao.getById(id);
+      if (!animal) {
+        return res.status(404).json({ error: 'Animal not found' });
+      }
+      
+      // Проверяем, что животное принадлежит приюту этого админа
+      const userShelters = await sheltersDao.getByAdminId(req.user.userId);
+      const hasAccess = userShelters.some(shelter => shelter.id === animal.shelter_id);
+      
+      if (!hasAccess) {
+        return res.status(403).json({
+          success: false,
+          error: 'You can only update animals from your own shelter'
+        });
+      }
+    }
+    
     const updated = await animalsService.updateAnimal(id, req.body);
     if (!updated) {
       const log = req.log || logger;
@@ -117,7 +160,7 @@ async function update(req, res) {
   } catch (err) {
     const log = req.log || logger;
     log.error(err, 'Controller: error updating animal');
-    res.status(400).json({ error: err.message });
+    res.status(err.status || 400).json({ error: err.message });
   }
 }
 
@@ -127,6 +170,25 @@ async function remove(req, res) {
     return res.status(400).json({ error: 'Invalid id' });
   }
   try {
+    // Проверка доступа для админов приютов
+    if (req.user && req.user.role === 'shelter_admin') {
+      const animal = await animalsDao.getById(id);
+      if (!animal) {
+        return res.status(404).json({ error: 'Animal not found' });
+      }
+      
+      // Проверяем, что животное принадлежит приюту этого админа
+      const userShelters = await sheltersDao.getByAdminId(req.user.userId);
+      const hasAccess = userShelters.some(shelter => shelter.id === animal.shelter_id);
+      
+      if (!hasAccess) {
+        return res.status(403).json({
+          success: false,
+          error: 'You can only delete animals from your own shelter'
+        });
+      }
+    }
+    
     const deleted = await animalsService.removeAnimal(id);
     if (!deleted) {
       const log = req.log || logger;
@@ -137,7 +199,7 @@ async function remove(req, res) {
   } catch (err) {
     const log = req.log || logger;
     log.error(err, 'Controller: error deleting animal');
-    res.status(500).json({ error: 'Database error' });
+    res.status(err.status || 500).json({ error: err.message || 'Database error' });
   }
 }
 

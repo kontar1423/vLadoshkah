@@ -23,14 +23,25 @@ async function getById(id) {
   }
 }
 
-async function create({ name, address, phone, email, website, description, capacity, working_hours }) {
+async function getByAdminId(adminId) {
+  try {
+    const result = await query('SELECT * FROM shelters WHERE admin_id = $1', [adminId]);
+    debug({ adminId, count: result.rowCount }, 'DAO: fetched shelters by admin_id');
+    return result.rows;
+  } catch (err) {
+    error(err, 'DAO: error fetching shelters by admin_id');
+    throw err;
+  }
+}
+
+async function create({ name, address, phone, email, website, description, capacity, working_hours, admin_id }) {
   try {
     const result = await query(
       `INSERT INTO shelters (
-        name, address, phone, email, website, description, capacity, working_hours
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+        name, address, phone, email, website, description, capacity, working_hours, admin_id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
       RETURNING *`,
-      [name, address, phone, email, website, description, capacity, working_hours]
+      [name, address, phone, email, website, description, capacity, working_hours, admin_id || null]
     );
     info({ shelter: result.rows[0] }, 'DAO: created shelter');
     return result.rows[0];
@@ -83,6 +94,7 @@ async function remove(id) {
 export default { 
   getAll, 
   getById, 
+  getByAdminId,
   create, 
   update, 
   remove
