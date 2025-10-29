@@ -23,11 +23,14 @@ async function getAnimalsWithFilters(req, res) {
       gender: req.query.gender,
       age_min: req.query.age_min ? parseInt(req.query.age_min) : undefined,
       age_max: req.query.age_max ? parseInt(req.query.age_max) : undefined,
-      size: req.query.size,
+      animal_size: req.query.size || req.query.animal_size, // Поддержка обоих вариантов
       health: req.query.health,
       shelter_id: req.query.shelter_id ? parseInt(req.query.shelter_id) : undefined,
       search: req.query.search
     };
+    
+    // Убираем undefined значения
+    Object.keys(filters).forEach(key => filters[key] === undefined && delete filters[key]);
 
     const animals = await animalsService.findAnimals(filters);
     res.json(animals);

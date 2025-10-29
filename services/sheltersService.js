@@ -1,20 +1,7 @@
-import Joi from 'joi';
-const { object, string } = Joi;
 import sheltersDao from '../dao/sheltersDao.js';  
 import redisClient from '../cache/redis-client.js';
 import photosDao from '../dao/photosDao.js';
 import photosService from './photosService.js';
-// Joi-схема для валидации shelter
-// const shelterSchema = object({
-//   name: string().min(2).required(),
-//   address: string().optional(),
-//   phone: string().optional(),
-//   email: string().email().optional(),
-//   description: string().optional(),
-//   capacity: Joi.number().integer().min(0).optional(),
-//   website: string().uri().optional(),
-//   working_hours: string().optional()
-// });
 
 const CACHE_KEYS = {
   ALL_SHELTERS: 'shelters:all',
@@ -75,9 +62,6 @@ async function createShelter(shelterData, photoFiles = null) {
   // Clear the all shelters cache since we're adding a new one
   await redisClient.delete(CACHE_KEYS.ALL_SHELTERS);
   
-  // const { error, value } = shelterSchema.validate(shelterData);
-  // if (error) throw new Error(error.details[0].message);
-
   // Создаем приют
   const shelter = await sheltersDao.create(shelterData);
   
@@ -100,9 +84,6 @@ async function updateShelter(id, data) {
     redisClient.delete(CACHE_KEYS.ALL_SHELTERS),
     redisClient.delete(CACHE_KEYS.SHELTER_BY_ID(id))
   ]);
-  
-  // const { error, value } = shelterSchema.validate(data);
-  // if (error) throw new Error(error.details[0].message);
   
   const updatedShelter = await sheltersDao.update(id, data);
   if (!updatedShelter) {

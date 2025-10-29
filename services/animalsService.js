@@ -1,6 +1,4 @@
 // services/animalsService.js
-import Joi from 'joi';
-const { object, string, number } = Joi;
 import animalsDao from '../dao/animalsDao.js';
 import photosDao from '../dao/photosDao.js';
 import photosService from './photosService.js';
