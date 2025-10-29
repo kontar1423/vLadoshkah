@@ -17,7 +17,6 @@
   },
   "type": "module",
   "scripts": {
-    "knex": "knex",
     "dev": "nodemon index.js",
     "start": "node index.js",
     "test": "jest --runInBand",
