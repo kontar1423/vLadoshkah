@@ -2,11 +2,11 @@ import { query } from '../db.js';
 import { debug, info, error } from '../logger.js';
 
 async function create(applicationData) {
-    const { user_id, shelter_id, animal_id, is_active, description } = applicationData;
+    const { user_id, shelter_id, animal_id, status, description } = applicationData;
     try {
     const result = await query(
-        `INSERT INTO applications (user_id, shelter_id, animal_id, is_active, description) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-        [user_id, shelter_id, animal_id, is_active, description]
+        `INSERT INTO applications (user_id, shelter_id, animal_id, status, description) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+        [user_id, shelter_id, animal_id, status, description]
     );
     info({ application: result.rows[0] }, 'DAO: created application');
     return result.rows[0];
@@ -57,13 +57,13 @@ async function update(id, applicationData) {
                 user_id: applicationData.user_id !== undefined ? applicationData.user_id : currentApp.user_id,
                 shelter_id: applicationData.shelter_id !== undefined ? applicationData.shelter_id : currentApp.shelter_id,
                 animal_id: applicationData.animal_id !== undefined ? applicationData.animal_id : currentApp.animal_id,
-                is_active: applicationData.is_active !== undefined ? applicationData.is_active : currentApp.is_active,
+                status: applicationData.status !== undefined ? applicationData.status : currentApp.status,
                 description: applicationData.description !== undefined ? applicationData.description : currentApp.description
             };
     
             const result = await query(
-                `UPDATE applications SET user_id = $1, shelter_id = $2, animal_id = $3, is_active = $4, description = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING *`,
-                [updatedData.user_id, updatedData.shelter_id, updatedData.animal_id, updatedData.is_active, updatedData.description, id]
+                `UPDATE applications SET user_id = $1, shelter_id = $2, animal_id = $3, status = $4, description = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING *`,
+                [updatedData.user_id, updatedData.shelter_id, updatedData.animal_id, updatedData.status, updatedData.description, id]
             );
             info({ application: result.rows[0] }, 'DAO: updated application');
             return result.rows[0] || null;
@@ -87,4 +87,18 @@ async function remove(id) {
     }
 }
 
-export default { create, getById, getAll, update, remove };
+async function countByStatus(status) {
+    try {
+        const result = await query(
+            `SELECT COUNT(*) as count FROM applications WHERE status = $1`,
+            [status]
+        );
+        info({ status, count: result.rows[0].count }, 'DAO: counted applications by status');
+        return parseInt(result.rows[0].count, 10);
+    } catch (err) {
+        error(err, 'DAO: error counting applications by status');
+        throw err;
+    }
+}
+
+export default { create, getById, getAll, update, remove, countByStatus };

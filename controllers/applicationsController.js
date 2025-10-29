@@ -60,10 +60,22 @@ async function remove(req, res) {
     }
 }
 
+async function countApproved(req, res) {
+    try {
+        const result = await applicationsService.countApproved();
+        res.json(result);
+    } catch (err) {
+        const log = req.log || logger;
+        log.error(err, 'Controller: error counting approved applications');
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
 export default {
     create,
     getById,
     getAll,
     update,
-    remove
+    remove,
+    countApproved
 };
