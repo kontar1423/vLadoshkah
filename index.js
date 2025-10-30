@@ -27,8 +27,10 @@ async function initializeRedis() {
   }
 }
 
-// Инициализируем Redis при старте приложения
-initializeRedis();
+// Инициализируем Redis при старте приложения (только если не в тестовом режиме)
+if (process.env.NODE_ENV !== 'test') {
+  initializeRedis();
+}
 
 app.use(json());
 app.use(express.urlencoded({ extended: true })); // для FormData

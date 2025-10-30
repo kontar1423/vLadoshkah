@@ -37,7 +37,7 @@ async function getById(id) {
             throw new Error('Application not found');
         }
         
-        await redisClient.set(cacheKey, application, 300); // кэш на 5 минут
+        await redisClient.set(CACHE_KEYS.APPLICATION_BY_ID(id), application, 300); // кэш на 5 минут
         return application;
     } catch (err) {
         logger.error(err, 'Service: error fetching application by id');

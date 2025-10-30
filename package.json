@@ -6,6 +6,7 @@
   "jest": {
     "testEnvironment": "node",
     "verbose": false,
+    "silent": true,
     "collectCoverage": false,
     "moduleFileExtensions": [
       "js",
@@ -13,13 +14,15 @@
     ],
     "testMatch": [
       "**/__tests__/**/*.test.js"
-    ]
+    ],
+    "transform": {},
+    "setupFiles": ["<rootDir>/__tests__/setup.js"]
   },
   "type": "module",
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "test": "jest --runInBand",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --testTimeout=5000",
     "test:watch": "jest --watch",
     "migrate": "node-pg-migrate up",
     "migrate:down": "node-pg-migrate down"

@@ -60,7 +60,7 @@ async function getById(req, res) {
 }
 
 async function getAllByShelterId(req, res) {
-  const id = Number(req.params.id);
+  const id = Number(req.params.shelterId || req.params.id);
   if (!Number.isInteger(id)) {
     return res.status(400).json({ error: 'Invalid id' });
   }

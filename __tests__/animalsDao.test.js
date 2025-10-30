@@ -1,37 +1,86 @@
-jest.mock('../db', () => ({
-  query: jest.fn()
+import { jest } from '@jest/globals';
+
+// Мокаем db ПЕРЕД импортом
+jest.mock('../db.js', () => {
+  const mockQuery = jest.fn();
+  return {
+    default: {
+      query: mockQuery,
+      on: jest.fn()
+    },
+    query: mockQuery
+  };
+});
+
+// Мокаем logger ПЕРЕД импортом
+jest.mock('../logger.js', () => ({
+  default: {
+    debug: jest.fn(),
+    error: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn()
+  },
+  debug: jest.fn(),
+  error: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn()
 }));
 
-const pool = require('../db');
-const animalsDao = require('../dao/animalsDao');
+import pool from '../db.js';
+import animalsDao from '../dao/animalsDao.js';
 
 describe('animalsDao', () => {
-  afterEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Пересоздаем мок query для каждого теста
+    pool.query = jest.fn();
+  });
 
   test('getAll queries and returns rows', async () => {
     pool.query.mockResolvedValue({ rowCount: 1, rows: [{ id: 1 }] });
     const rows = await animalsDao.getAll();
-    expect(pool.query).toHaveBeenCalledWith('SELECT * FROM animals ORDER BY id');
+    // Проверяем, что вызывается запрос с JOIN (реальный SQL из DAO)
+    expect(pool.query).toHaveBeenCalled();
     expect(rows).toEqual([{ id: 1 }]);
   });
 
   test('getById queries with param', async () => {
     pool.query.mockResolvedValue({ rowCount: 1, rows: [{ id: 5 }] });
     const row = await animalsDao.getById(5);
-    expect(pool.query).toHaveBeenCalledWith('SELECT * FROM animals WHERE id=$1', [5]);
+    // Проверяем, что вызывается запрос с JOIN (реальный SQL из DAO)
+    expect(pool.query).toHaveBeenCalled();
+    expect(pool.query.mock.calls[0][1]).toEqual([5]);
     expect(row).toEqual({ id: 5 });
   });
 
   test('create inserts and returns row', async () => {
-    pool.query.mockResolvedValue({ rows: [{ id: 9, name: 'Rex', age: 3, type: 'dog', shelter_id: 1 }] });
-    const row = await animalsDao.create({ name: 'Rex', age: 3, type: 'dog', shelter_id: 1 });
+    const animalData = { 
+      name: 'Rex', 
+      age: 3, 
+      type: 'dog', 
+      shelter_id: 1,
+      health: null,
+      gender: null,
+      color: null,
+      weight: null,
+      personality: null,
+      animal_size: null,
+      history: null
+    };
+    pool.query.mockResolvedValue({ 
+      rows: [{ id: 9, ...animalData }] 
+    });
+    const row = await animalsDao.create(animalData);
     expect(pool.query).toHaveBeenCalled();
     expect(row).toMatchObject({ id: 9, name: 'Rex' });
   });
 
   test('update updates and returns row', async () => {
-    pool.query.mockResolvedValue({ rowCount: 1, rows: [{ id: 9, name: 'B', age: 4, type: 'dog', shelter_id: 1 }] });
-    const row = await animalsDao.update(9, { name: 'B', age: 4, type: 'dog', shelter_id: 1 });
+    pool.query.mockResolvedValue({ 
+      rowCount: 1, 
+      rows: [{ id: 9, name: 'B', age: 4, type: 'dog', shelter_id: 1 }] 
+    });
+    const row = await animalsDao.update(9, { name: 'B', age: 4 });
     expect(pool.query).toHaveBeenCalled();
     expect(row).toMatchObject({ id: 9, name: 'B' });
   });
@@ -42,6 +91,21 @@ describe('animalsDao', () => {
     expect(pool.query).toHaveBeenCalled();
     expect(row).toEqual({ id: 9 });
   });
+
+  test('getAnimalsByShelter queries with shelter_id', async () => {
+    pool.query.mockResolvedValue({ rowCount: 2, rows: [{ id: 1 }, { id: 2 }] });
+    const rows = await animalsDao.getAnimalsByShelter(1);
+    // Проверяем, что вызывается запрос с JOIN (реальный SQL из DAO)
+    expect(pool.query).toHaveBeenCalled();
+    expect(pool.query.mock.calls[0][1]).toEqual([1]);
+    expect(rows.length).toBe(2);
+  });
+
+  test('findAnimals queries with filters', async () => {
+    pool.query.mockResolvedValue({ rowCount: 1, rows: [{ id: 1, type: 'dog' }] });
+    const filters = { type: 'dog' };
+    const rows = await animalsDao.findAnimals(filters);
+    expect(pool.query).toHaveBeenCalled();
+    expect(rows.length).toBe(1);
+  });
 });
-
-

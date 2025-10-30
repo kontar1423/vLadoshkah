@@ -5,6 +5,13 @@ class RedisClient {
   constructor() {
     const redisUrl = process.env.REDIS_URL || 'redis://redis:6379';
     
+    // В тестовом режиме не создаем реальный клиент
+    if (process.env.NODE_ENV === 'test') {
+      this.client = null;
+      this.isOpen = false;
+      return;
+    }
+    
     console.log('Connecting to Redis:', redisUrl.replace(/:[^:]*@/, ':****@')); // Скрываем пароль в логах
     
     this.client = createClient({
@@ -33,6 +40,9 @@ class RedisClient {
   }
 
   async connect() {
+    if (process.env.NODE_ENV === 'test' || !this.client) {
+      return; // В тестовом режиме не подключаемся
+    }
     try {
       if (!this.client.isOpen) {
         await this.client.connect();
@@ -44,6 +54,9 @@ class RedisClient {
   }
 
   async set(key, value, ttl = null) {
+    if (process.env.NODE_ENV === 'test' || !this.client) {
+      return null; // В тестовом режиме просто возвращаем null
+    }
     try {
       await this.connect();
       if (ttl) {
@@ -58,6 +71,9 @@ class RedisClient {
   }
 
   async get(key) {
+    if (process.env.NODE_ENV === 'test' || !this.client) {
+      return null; // В тестовом режиме просто возвращаем null
+    }
     try {
       await this.connect();
       const value = await this.client.get(key);
@@ -69,6 +85,9 @@ class RedisClient {
   }
 
   async delete(key) {
+    if (process.env.NODE_ENV === 'test' || !this.client) {
+      return 0; // В тестовом режиме просто возвращаем 0
+    }
     try {
       await this.connect();
       return await this.client.del(key);
@@ -79,6 +98,9 @@ class RedisClient {
   }
 
   async deleteByPattern(pattern) {
+    if (process.env.NODE_ENV === 'test' || !this.client) {
+      return 0; // В тестовом режиме просто возвращаем 0
+    }
     try {
       await this.connect();
       const keys = await this.client.keys(pattern);
@@ -93,6 +115,9 @@ class RedisClient {
   }
 
   isConnected() {
+    if (process.env.NODE_ENV === 'test' || !this.client) {
+      return false; // В тестовом режиме всегда false
+    }
     return this.client?.isOpen || false;
   }
 }
