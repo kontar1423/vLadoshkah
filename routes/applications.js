@@ -8,7 +8,7 @@ const router = express.Router();
 
 // Все роуты заявок требуют авторизации
 router.post('/', authenticateToken, validate(createApplicationSchema), applicationsController.create);
-router.get('/count/approved', authenticateToken, applicationsController.countApproved);
+router.get('/count/approved', applicationsController.countApproved);
 router.get('/:id', authenticateToken, validate(applicationIdSchema, 'params'), applicationsController.getById);
 router.get('/', authenticateToken, applicationsController.getAll);
 router.put('/:id', authenticateToken, validate(applicationIdSchema, 'params'), validate(updateApplicationSchema), applicationsController.update);
