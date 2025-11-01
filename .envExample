@@ -43,6 +43,49 @@ MINIO_BUCKET=uploads
 MINIO_USE_SSL=false
 
 # ============================================================================
+# KAFKA (Message Broker)
+# ============================================================================
+
+# Kafka brokers (можно указать несколько через запятую)
+# Для Docker: kafka:29092
+# Для локальной разработки: localhost:9092
+KAFKA_BROKERS=localhost:9092
+KAFKA_PORT=9092
+# Подавить предупреждение о партиционере (опционально)
+KAFKAJS_NO_PARTITIONER_WARNING=1
+
+# ============================================================================
+# EMAIL (SMTP для отправки уведомлений)
+# ============================================================================
+
+# Если не указаны SMTP настройки, используется тестовый режим (логирование)
+# Для реальной отправки email раскомментируйте и настройте следующие переменные:
+
+# Пример для Gmail:
+# SMTP_HOST=smtp.gmail.com
+# SMTP_PORT=587
+# SMTP_SECURE=false
+# SMTP_USER=your-email@gmail.com
+# SMTP_PASSWORD=your-app-password  # Для Gmail нужен App Password, не обычный пароль
+# SMTP_FROM=noreply@vladoshkah.ru
+
+# Пример для Yandex:
+# SMTP_HOST=smtp.yandex.ru
+# SMTP_PORT=465
+# SMTP_SECURE=true
+# SMTP_USER=your-email@yandex.ru
+# SMTP_PASSWORD=your-password
+# SMTP_FROM=noreply@vladoshkah.ru
+
+# Пример для Mail.ru:
+# SMTP_HOST=smtp.mail.ru
+# SMTP_PORT=465
+# SMTP_SECURE=true
+# SMTP_USER=your-email@mail.ru
+# SMTP_PASSWORD=your-password
+# SMTP_FROM=noreply@vladoshkah.ru
+
+# ============================================================================
 # AUTHENTICATION & SECURITY
 # ============================================================================
 
@@ -62,6 +105,7 @@ JWT_REFRESH_EXPIRES_IN=30d
 # - PGHOST=db (вместо localhost)
 # - MINIO_ENDPOINT=minio (вместо localhost)
 # - REDIS_URL=redis://redis:6379
+# - KAFKA_BROKERS=kafka:29092 (внутренний порт для Docker)
 #
 # Для production:
 # 1. Измените JWT_SECRET на случайную строку

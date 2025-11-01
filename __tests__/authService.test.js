@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import authService from '../services/authService.js';
 import usersDao from '../dao/usersDao.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 describe('authService', () => {

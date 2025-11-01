@@ -3,7 +3,7 @@ import photosDao from '../dao/photosDao.js';
 import logger from '../logger.js';
 import redisClient from '../cache/redis-client.js';
 import photosService from './photosService.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import authConfig from '../config/auth.js';
 const bcryptConfig = authConfig.bcrypt;
 const CACHE_KEYS = {

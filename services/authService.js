@@ -1,8 +1,9 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userDAO from '../dao/usersDao.js';
 import logger from '../logger.js';
 import authConfig from '../config/auth.js';
+import kafkaProducer from '../messaging/kafka-producer.js';
 const jwtConfig = authConfig.jwt;
 const bcryptConfig = authConfig.bcrypt;
 
@@ -68,6 +69,24 @@ async function register(userData) {
     const tokens = generateTokens(user.id, user.email, user.role);
 
     logger.info({ userId: user.id, email: user.email }, 'User registered successfully');
+
+    // Отправляем событие в Kafka для асинхронного оповещения
+    try {
+      await kafkaProducer.sendEvent('user-notifications', {
+        eventType: 'user.registered',
+        timestamp: new Date().toISOString(),
+        data: {
+          userId: user.id,
+          email: user.email,
+          role: user.role,
+          firstname: user.firstname,
+          lastname: user.lastname
+        }
+      }, user.id.toString());
+    } catch (err) {
+      // Логируем ошибку, но не прерываем регистрацию
+      logger.error({ err, userId: user.id }, 'Failed to send registration event to Kafka');
+    }
 
     return {
       user: userWithoutPassword,
