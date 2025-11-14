@@ -21,14 +21,18 @@ async function getAll() {
       photosDao.getByEntityType('user')
     ]);
     
-    const usersWithPhotos = users.map(user => ({
-      ...user,
-      photos: allPhotos
-        .filter(photo => photo.entity_id === user.id)
-        .map(photo => ({
-          url: photo.url,
-        }))
-    }));
+    const usersWithPhotos = users.map(user => {
+      // Удаляем пароль из ответа для безопасности
+      const { password: _, ...userWithoutPassword } = user;
+      return {
+        ...userWithoutPassword,
+        photos: allPhotos
+          .filter(photo => photo.entity_id === user.id)
+          .map(photo => ({
+            url: photo.url,
+          }))
+      };
+    });
     
     return usersWithPhotos;
   } catch (err) {
@@ -52,8 +56,11 @@ async function getById(id) {
       throw err;
     }
     
+    // Удаляем пароль из ответа для безопасности
+    const { password: _, ...userWithoutPassword } = user;
+    
     return {
-      ...user,
+      ...userWithoutPassword,
       photos: photos.map(photo => ({
         url: photo.url,
       }))
@@ -68,7 +75,9 @@ async function create(userData, photoFile = null) {
   try {
     // Clear the all users cache since we're adding a new one
     await redisClient.delete(CACHE_KEYS.ALL_USERS);
-    logger.info('Service: creating user with data:', userData);
+    // Логируем без пароля для безопасности
+    const { password: _, ...userDataForLog } = userData;
+    logger.info({ userData: userDataForLog }, 'Service: creating user');
     
     // Хешируем пароль, если он передан
     const processedUserData = { ...userData };

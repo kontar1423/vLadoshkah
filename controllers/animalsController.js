@@ -5,7 +5,6 @@ import logger from '../logger.js';
 
 async function getAll(req, res) {
   try {
-    console.log('controller get')
     const animals = await animalsService.getAllAnimals();
     res.json(animals);
   } catch (err) {
@@ -106,8 +105,8 @@ async function create(req, res) {
       }
     }
     
-    console.log('🟡 Creating animal:', animalData);
-    console.log('🟡 Photo file:', photoFile ? `Yes (${photoFile.originalname})` : 'No');
+    const log = req.log || logger;
+    log.info({ hasPhoto: !!photoFile }, 'Controller: creating animal');
     
     const newAnimal = await animalsService.createAnimal(animalData, photoFile);
     

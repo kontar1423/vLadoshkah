@@ -3,6 +3,8 @@ import animalsDao from '../dao/animalsDao.js';
 import photosDao from '../dao/photosDao.js';
 import photosService from './photosService.js';
 import redisClient from '../cache/redis-client.js';
+import { normalizePhotos, toRelativeUploadUrl } from '../utils/urlUtils.js';
+import logger from '../logger.js';
 
 // Константы для кэширования
 const CACHE_TTL = 3600; // 1 час
@@ -13,11 +15,37 @@ const CACHE_KEYS = {
   ANIMALS_SEARCH: (filtersHash) => `animals:search:${filtersHash}`
 };
 
+function normalizeAnimalPhotos(animal) {
+  if (!animal) {
+    return animal;
+  }
+
+  const photos = Array.isArray(animal.photos)
+    ? animal.photos.map((photo) => ({
+        ...photo,
+        url: toRelativeUploadUrl(photo?.url),
+      }))
+    : [];
+
+  return {
+    ...animal,
+    photos,
+  };
+}
+
+function normalizeAnimalsCollection(animals) {
+  if (Array.isArray(animals)) {
+    return animals.map(normalizeAnimalPhotos);
+  }
+
+  return normalizeAnimalPhotos(animals);
+}
+
 // Вспомогательная функция для получения животных с фото
 async function getAnimalsWithPhotos(animals) {
-  const allPhotos = await photosDao.getByEntityType('animal');
+  const allPhotos = normalizePhotos(await photosDao.getByEntityType('animal'));
   
-  return animals.map(animal => ({
+  return animals.map(animal => normalizeAnimalPhotos({
     ...animal,
     photos: allPhotos
       .filter(photo => photo.entity_id === animal.id)
@@ -52,20 +80,21 @@ async function getAllAnimals() {
     // Пытаемся получить из кэша
     const cached = await redisClient.get(CACHE_KEYS.ALL_ANIMALS);
     if (cached) {
-      console.log('Cache hit: all animals');
-      return cached;
+      logger.debug('Cache hit: all animals');
+      return normalizeAnimalsCollection(cached);
     }
 
-    console.log('Cache miss: all animals');
+    logger.debug('Cache miss: all animals');
     
     // Два параллельных запроса вместо N+1
-    const [animals, allPhotos] = await Promise.all([
+    const [animals, allPhotosRaw] = await Promise.all([
       animalsDao.getAll(),
       photosDao.getByEntityType('animal')
     ]);
   
     // Объединяем в JavaScript
-    const animalsWithPhotos = animals.map(animal => ({
+    const allPhotos = normalizePhotos(allPhotosRaw);
+    const animalsWithPhotos = animals.map(animal => normalizeAnimalPhotos({
       ...animal,
       photos: allPhotos
         .filter(photo => photo.entity_id === animal.id)
@@ -79,7 +108,7 @@ async function getAllAnimals() {
     
     return animalsWithPhotos;
   } catch (err) {
-    console.error('Service: error fetching animals with photos', err);
+    logger.error(err, 'Service: error fetching animals with photos');
     throw err;
   }
 }
@@ -92,13 +121,13 @@ async function getAnimalById(id) {
     // Пытаемся получить из кэша
     const cached = await redisClient.get(cacheKey);
     if (cached) {
-      console.log(`Cache hit: animal ${id}`);
-      return cached;
+      logger.debug({ id }, 'Cache hit: animal');
+      return normalizeAnimalPhotos(cached);
     }
 
-    console.log(`Cache miss: animal ${id}`);
+    logger.debug({ id }, 'Cache miss: animal');
     
-    const [animal, photos] = await Promise.all([
+    const [animal, photosRaw] = await Promise.all([
       animalsDao.getById(id),
       photosDao.getByEntity('animal', id)
     ]);
@@ -107,19 +136,21 @@ async function getAnimalById(id) {
       return null;
     }
     
-    const animalWithPhotos = {
+    const photos = normalizePhotos(photosRaw);
+
+    const animalWithPhotos = normalizeAnimalPhotos({
       ...animal,
       photos: photos.map(photo => ({
         url: photo.url,
       }))
-    };
+    });
     
     // Сохраняем в кэш
     await redisClient.set(cacheKey, animalWithPhotos, CACHE_TTL);
     
     return animalWithPhotos;
   } catch (err) {
-    console.error('Service: error fetching animal by id', err);
+    logger.error(err, 'Service: error fetching animal by id');
     throw err;
   }
 }
@@ -132,18 +163,19 @@ async function getAnimalsByShelterId(shelterId) {
     // Пытаемся получить из кэша
     const cached = await redisClient.get(cacheKey);
     if (cached) {
-      console.log(`Cache hit: animals for shelter ${shelterId}`);
-      return cached;
+      logger.debug({ shelterId }, 'Cache hit: animals for shelter');
+      return normalizeAnimalsCollection(cached);
     }
 
-    console.log(`Cache miss: animals for shelter ${shelterId}`);
+    logger.debug({ shelterId }, 'Cache miss: animals for shelter');
     
-    const [animals, allPhotos] = await Promise.all([
+    const [animals, allPhotosRaw] = await Promise.all([
       animalsDao.getAnimalsByShelter(shelterId),
       photosDao.getByEntityType('animal')
     ]);
     
-    const animalsWithPhotos = animals.map(animal => ({
+    const allPhotos = normalizePhotos(allPhotosRaw);
+    const animalsWithPhotos = animals.map(animal => normalizeAnimalPhotos({
       ...animal,
       photos: allPhotos
         .filter(photo => photo.entity_id === animal.id)
@@ -157,7 +189,7 @@ async function getAnimalsByShelterId(shelterId) {
     
     return animalsWithPhotos;
   } catch (err) {
-    console.error('Service: error fetching animals by shelter', err);
+    logger.error(err, 'Service: error fetching animals by shelter');
     throw err;
   }
 }
@@ -165,7 +197,7 @@ async function getAnimalsByShelterId(shelterId) {
 // Создать животное (с поддержкой фото)
 async function createAnimal(animalData, photoFile = null) {
   try {
-    console.log('Service: creating animal with data:', animalData);
+    logger.info({ hasPhoto: !!photoFile }, 'Service: creating animal');
     
     // 1. Создаем животное
     const animal = await animalsDao.create(animalData);
@@ -181,7 +213,7 @@ async function createAnimal(animalData, photoFile = null) {
         'animal', 
         animal.id
       );
-      console.log('Service: photo uploaded for animal', animal.id);
+      logger.info({ animalId: animal.id }, 'Service: photo uploaded for animal');
     }
     
     // 3. Инвалидируем кэш
@@ -192,7 +224,7 @@ async function createAnimal(animalData, photoFile = null) {
     return animalWithPhotos;
     
   } catch (err) {
-    console.error('Service: error creating animal', err);
+    logger.error(err, 'Service: error creating animal');
     throw err;
   }
 }
@@ -216,7 +248,7 @@ async function updateAnimal(id, data) {
     // Возвращаем обновленное животное с фото
     return await getAnimalById(id);
   } catch (err) {
-    console.error('Service: error updating animal', err);
+    logger.error(err, 'Service: error updating animal');
     throw err;
   }
 }
@@ -238,7 +270,7 @@ async function removeAnimal(id) {
     
     return result;
   } catch (err) {
-    console.error('Service: error removing animal', err);
+    logger.error(err, 'Service: error removing animal');
     throw err;
   }
 }
@@ -253,11 +285,11 @@ async function findAnimals(filters) {
     // Пытаемся получить из кэша
     const cached = await redisClient.get(cacheKey);
     if (cached) {
-      console.log('Cache hit: animals search');
-      return cached;
+      logger.debug('Cache hit: animals search');
+      return normalizeAnimalsCollection(cached);
     }
 
-    console.log('Cache miss: animals search');
+    logger.debug('Cache miss: animals search');
     
     const animals = await animalsDao.findAnimals(filters);
     const animalsWithPhotos = await getAnimalsWithPhotos(animals);
@@ -267,7 +299,7 @@ async function findAnimals(filters) {
     
     return animalsWithPhotos;
   } catch (err) {
-    console.error('Service: error finding animals with filters', err);
+    logger.error(err, 'Service: error finding animals with filters');
     throw err;
   }
 }
