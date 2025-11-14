@@ -1,35 +1,50 @@
-import Joi from 'joi';
-const { object, string } = Joi;
 import sheltersDao from '../dao/sheltersDao.js';  
 import redisClient from '../cache/redis-client.js';
 import photosDao from '../dao/photosDao.js';
 import photosService from './photosService.js';
-// Joi-схема для валидации shelter
-// const shelterSchema = object({
-//   name: string().min(2).required(),
-//   address: string().optional(),
-//   phone: string().optional(),
-//   email: string().email().optional(),
-//   description: string().optional(),
-//   capacity: Joi.number().integer().min(0).optional(),
-//   website: string().uri().optional(),
-//   working_hours: string().optional()
-// });
+import { normalizePhotos, toRelativeUploadUrl } from '../utils/urlUtils.js';
+import logger from '../logger.js';
 
 const CACHE_KEYS = {
   ALL_SHELTERS: 'shelters:all',
   SHELTER_BY_ID: (id) => `shelter:${id}`,
 };
+
+function normalizeShelterPhotos(shelter) {
+  if (!shelter) {
+    return shelter;
+  }
+
+  const photos = Array.isArray(shelter.photos)
+    ? shelter.photos.map((photo) => ({
+        ...photo,
+        url: toRelativeUploadUrl(photo?.url),
+      }))
+    : [];
+
+  return {
+    ...shelter,
+    photos,
+  };
+}
+
+function normalizeSheltersCollection(shelters) {
+  if (Array.isArray(shelters)) {
+    return shelters.map(normalizeShelterPhotos);
+  }
+
+  return normalizeShelterPhotos(shelters);
+}
 // Получить все приюты с фото
 async function getAllShelters() {
   const cached = await redisClient.get(CACHE_KEYS.ALL_SHELTERS);
   if (cached) {
-    return cached;
+    return normalizeSheltersCollection(cached);
   }
   const shelters = await sheltersDao.getAll();
-  const allPhotos = await photosDao.getByEntityType('shelter');
+  const allPhotos = normalizePhotos(await photosDao.getByEntityType('shelter'));
   
-  const sheltersWithPhotos = shelters.map(shelter => ({
+  const sheltersWithPhotos = shelters.map(shelter => normalizeShelterPhotos({
     ...shelter,
     photos: allPhotos
       .filter(photo => photo.entity_id === shelter.id)
@@ -44,9 +59,9 @@ async function getAllShelters() {
 // Получить приют по id с фото
 async function getShelterById(id) {
   const shelterCacheKey = CACHE_KEYS.SHELTER_BY_ID(id);
-  const cached = await redisClient.get(CACHE_KEYS.SHELTER_BY_ID(id));
+  const cached = await redisClient.get(shelterCacheKey);
   if (cached) {
-    return cached;
+    return normalizeShelterPhotos(cached);
   }
   const [shelter, photos] = await Promise.all([
     sheltersDao.getById(id),
@@ -57,15 +72,15 @@ async function getShelterById(id) {
     return null;
   }
   
-  const result = {
+  const result = normalizeShelterPhotos({
     ...shelter,
-    photos: photos.map(photo => ({
+    photos: normalizePhotos(photos).map(photo => ({
       url: photo.url,
     }))
-  };
+  });
   
   // Cache the result
-  await redisClient.set(CACHE_KEYS.SHELTER_BY_ID(id), result, 3600);
+  await redisClient.set(shelterCacheKey, result, 3600);
   
   return result;
 }
@@ -75,9 +90,6 @@ async function createShelter(shelterData, photoFiles = null) {
   // Clear the all shelters cache since we're adding a new one
   await redisClient.delete(CACHE_KEYS.ALL_SHELTERS);
   
-  // const { error, value } = shelterSchema.validate(shelterData);
-  // if (error) throw new Error(error.details[0].message);
-
   // Создаем приют
   const shelter = await sheltersDao.create(shelterData);
   
@@ -100,9 +112,6 @@ async function updateShelter(id, data) {
     redisClient.delete(CACHE_KEYS.ALL_SHELTERS),
     redisClient.delete(CACHE_KEYS.SHELTER_BY_ID(id))
   ]);
-  
-  // const { error, value } = shelterSchema.validate(data);
-  // if (error) throw new Error(error.details[0].message);
   
   const updatedShelter = await sheltersDao.update(id, data);
   if (!updatedShelter) {
@@ -130,7 +139,7 @@ async function removeShelter(id) {
     // Затем удаляем сам приют
     return await sheltersDao.remove(id);
   } catch (error) {
-    console.error('Error removing shelter:', error);
+    logger.error(error, 'Error removing shelter');
     throw error;
   }
 }

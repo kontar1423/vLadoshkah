@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .auth-section {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .admin-panel {
+            display: none;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: white;
+            border: none;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #667eea;
+        }
+
+        .tab:hover {
+            background: #f8f9fa;
+        }
+
+        .tab.active {
+            background: white;
+            color: #764ba2;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 40px;
+            border-radius: 0 20px 20px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            margin-bottom: 25px;
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        label.required::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        input, select, textarea {
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 14px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .file-upload {
+            border: 2px dashed #667eea;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: #764ba2;
+            background: #f0f0f0;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .message {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .auth-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logout-btn {
+            padding: 8px 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                border-radius: 10px;
+            }
+
+            .tab-content {
+                border-radius: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👑 Панель администратора</h1>
+            <p>Управление системой приюта для животных</p>
+        </div>
+
+        <!-- Секция авторизации -->
+        <div id="authSection" class="auth-section">
+            <div class="form-section">
+                <h2>Регистрация администратора</h2>
+                <form id="registerForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="regEmail" class="required">Email</label>
+                            <input type="email" id="regEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regPassword" class="required">Пароль</label>
+                            <input type="password" id="regPassword" minlength="6" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Зарегистрироваться как админ</button>
+                </form>
+            </div>
+
+            <div class="form-section" style="border-top: 2px solid #e1e5e9; padding-top: 30px; margin-top: 30px;">
+                <h2>Вход</h2>
+                <form id="loginForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="loginEmail" class="required">Email</label>
+                            <input type="email" id="loginEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword" class="required">Пароль</label>
+                            <input type="password" id="loginPassword" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">Войти</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Панель администратора -->
+        <div id="adminPanel" class="admin-panel">
+            <div class="auth-info">
+                <div class="user-info">
+                    <span>👤 Вы вошли как: <strong id="userEmail"></strong></span>
+                </div>
+                <button class="logout-btn" onclick="logout()">Выйти</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('users')">👥 Пользователи</button>
+                <button class="tab" onclick="switchTab('animals')">🐾 Животные</button>
+                <button class="tab" onclick="switchTab('shelters')">🏠 Приюты</button>
+            </div>
+
+            <!-- Вкладка пользователей -->
+            <div id="usersTab" class="tab-content active">
+                <div class="form-section">
+                    <h2>Добавить нового пользователя</h2>
+                    <form id="userForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="newUserEmail" class="required">Email</label>
+                                <input type="email" id="newUserEmail" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="userPassword" class="required">Пароль</label>
+                                <input type="password" id="userPassword" minlength="6" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="userFirstname">Имя</label>
+                                <input type="text" id="userFirstname">
+                            </div>
+                            <div class="form-group">
+                                <label for="userLastname">Фамилия</label>
+                                <input type="text" id="userLastname">
+                            </div>
+                            <div class="form-group">
+                                <label for="userRole">Роль</label>
+                                <select id="userRole">
+                                    <option value="user">Пользователь</option>
+                                    <option value="admin">Администратор</option>
+                                    <option value="shelter_admin">Администратор приюта</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="userGender">Пол</label>
+                                <select id="userGender">
+                                    <option value="">Не указан</option>
+                                    <option value="male">Мужской</option>
+                                    <option value="female">Женский</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="userPhone">Телефон</label>
+                                <input type="tel" id="userPhone">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="userPhoto">Фотография</label>
+                                <div class="file-upload" onclick="document.getElementById('userPhoto').click()">
+                                    <input type="file" id="userPhoto" accept="image/*">
+                                    <p>📷 Нажмите для выбора фотографии</p>
+                                </div>
+                                <div id="userPhotoPreview" class="preview-container"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Добавить пользователя</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Вкладка животных -->
+            <div id="animalsTab" class="tab-content">
+                <div class="form-section">
+                    <h2>Добавить новое животное</h2>
+                    <form id="animalForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="animalName" class="required">Имя</label>
+                                <input type="text" id="animalName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalAge" class="required">Возраст (лет)</label>
+                                <input type="number" id="animalAge" min="0" max="30" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalType" class="required">Тип</label>
+                                <select id="animalType" required>
+                                    <option value="">Выберите тип</option>
+                                    <option value="cat">Кошка</option>
+                                    <option value="dog">Собака</option>
+                                    <option value="rabbit">Кролик</option>
+                                    <option value="parrot">Попугай</option>
+                                    <option value="hamster">Хомяк</option>
+                                    <option value="other">Другое</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalGender">Пол</label>
+                                <select id="animalGender">
+                                    <option value="">Не указан</option>
+                                    <option value="male">Мужской</option>
+                                    <option value="female">Женский</option>
+                                    <option value="unknown">Неизвестно</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalShelter" class="required">Приют</label>
+                                <select id="animalShelter" required>
+                                    <option value="">Загрузка приютов...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalWeight">Вес (кг)</label>
+                                <input type="number" id="animalWeight" min="0" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label for="animalColor">Окрас</label>
+                                <input type="text" id="animalColor">
+                            </div>
+                            <div class="form-group">
+                                <label for="animalSize">Размер</label>
+                                <select id="animalSize">
+                                    <option value="">Не указан</option>
+                                    <option value="small">Маленький</option>
+                                    <option value="medium">Средний</option>
+                                    <option value="large">Крупный</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalHealth">Состояние здоровья</label>
+                                <input type="text" id="animalHealth" placeholder="здоров, требует лечения и т.д.">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="animalPersonality">Характер</label>
+                                <textarea id="animalPersonality"></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="animalHistory">История</label>
+                                <textarea id="animalHistory"></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Фотографии</label>
+                                <div class="file-upload" onclick="document.getElementById('animalPhotos').click()">
+                                    <input type="file" id="animalPhotos" multiple accept="image/*">
+                                    <p>📷 Нажмите для выбора фотографий (можно несколько)</p>
+                                </div>
+                                <div id="animalPhotosPreview" class="preview-container"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Добавить животное</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Вкладка приютов -->
+            <div id="sheltersTab" class="tab-content">
+                <div class="form-section">
+                    <h2>Добавить новый приют</h2>
+                    <form id="shelterForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="shelterName" class="required">Название</label>
+                                <input type="text" id="shelterName" required>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="shelterAddress">Адрес</label>
+                                <input type="text" id="shelterAddress">
+                            </div>
+                            <div class="form-group">
+                                <label for="shelterPhone">Телефон</label>
+                                <input type="tel" id="shelterPhone">
+                            </div>
+                            <div class="form-group">
+                                <label for="shelterEmail">Email</label>
+                                <input type="email" id="shelterEmail">
+                            </div>
+                            <div class="form-group">
+                                <label for="shelterWebsite">Веб-сайт</label>
+                                <input type="url" id="shelterWebsite" placeholder="https://example.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="shelterCapacity">Вместимость</label>
+                                <input type="number" id="shelterCapacity" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="shelterWorkingHours">Часы работы</label>
+                                <input type="text" id="shelterWorkingHours" placeholder="Пн-Пт 9:00-18:00">
+                            </div>
+                            <div class="form-group">
+                                <label for="shelterStatus">Статус</label>
+                                <select id="shelterStatus">
+                                    <option value="active">Активен</option>
+                                    <option value="inactive">Неактивен</option>
+                                    <option value="suspended">Приостановлен</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="shelterDescription">Описание</label>
+                                <textarea id="shelterDescription"></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Фотографии</label>
+                                <div class="file-upload" onclick="document.getElementById('shelterPhotos').click()">
+                                    <input type="file" id="shelterPhotos" multiple accept="image/*">
+                                    <p>📷 Нажмите для выбора фотографий (можно несколько)</p>
+                                </div>
+                                <div id="shelterPhotosPreview" class="preview-container"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Создать приют</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="messageContainer"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:4000/api';
+        let accessToken = localStorage.getItem('accessToken');
+        let userEmail = localStorage.getItem('userEmail');
+        let animalPhotos = [];
+        let shelterPhotos = [];
+
+        // Проверка авторизации при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            if (accessToken && userEmail) {
+                showAdminPanel();
+            } else {
+                showAuthSection();
+            }
+            setupFileUploads();
+            loadShelters();
+        });
+
+        function setupFileUploads() {
+            // Фото пользователя
+            document.getElementById('userPhoto').addEventListener('change', function(e) {
+                handlePhotoUpload(e, 'user');
+            });
+
+            // Фото животных
+            document.getElementById('animalPhotos').addEventListener('change', function(e) {
+                handlePhotoUpload(e, 'animal');
+            });
+
+            // Фото приютов
+            document.getElementById('shelterPhotos').addEventListener('change', function(e) {
+                handlePhotoUpload(e, 'shelter');
+            });
+        }
+
+        function handlePhotoUpload(event, type) {
+            const files = Array.from(event.target.files);
+            const previewContainer = document.getElementById(type === 'user' ? 'userPhotoPreview' : 
+                                                              type === 'animal' ? 'animalPhotosPreview' : 
+                                                              'shelterPhotosPreview');
+            
+            files.forEach(file => {
+                if (!file.type.startsWith('image/')) {
+                    showMessage('Можно загружать только изображения', 'error');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    previewItem.innerHTML = `
+                        <img src="${e.target.result}" class="preview-image">
+                        <button type="button" class="remove-btn" onclick="removePhoto('${type}', '${file.name}')">×</button>
+                    `;
+                    previewContainer.appendChild(previewItem);
+
+                    if (type === 'animal') {
+                        animalPhotos.push(file);
+                    } else if (type === 'shelter') {
+                        shelterPhotos.push(file);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+
+            event.target.value = '';
+        }
+
+        function removePhoto(type, fileName) {
+            const previewContainer = document.getElementById(type === 'user' ? 'userPhotoPreview' : 
+                                                              type === 'animal' ? 'animalPhotosPreview' : 
+                                                              'shelterPhotosPreview');
+            const items = previewContainer.getElementsByClassName('preview-item');
+            
+            for (let item of items) {
+                if (item.querySelector('img').src.includes(fileName.split('.')[0])) {
+                    item.remove();
+                    break;
+                }
+            }
+
+            if (type === 'animal') {
+                animalPhotos = animalPhotos.filter(file => file.name !== fileName);
+            } else if (type === 'shelter') {
+                shelterPhotos = shelterPhotos.filter(file => file.name !== fileName);
+            }
+        }
+
+        // Регистрация
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        role: 'admin'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('Регистрация успешна! Теперь вы можете войти.', 'success');
+                    document.getElementById('registerForm').reset();
+                } else {
+                    showMessage(result.error || 'Ошибка регистрации', 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка сети: ' + error.message, 'error');
+            }
+        });
+
+        // Вход
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    accessToken = result.accessToken;
+                    userEmail = email;
+                    localStorage.setItem('accessToken', accessToken);
+                    localStorage.setItem('userEmail', userEmail);
+                    showMessage('Вход выполнен успешно!', 'success');
+                    showAdminPanel();
+                } else {
+                    showMessage(result.error || 'Ошибка входа', 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка сети: ' + error.message, 'error');
+            }
+        });
+
+        // Выход
+        function logout() {
+            accessToken = null;
+            userEmail = null;
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('userEmail');
+            showAuthSection();
+            showMessage('Вы вышли из системы', 'info');
+        }
+
+        // Показать/скрыть секции
+        function showAuthSection() {
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('adminPanel').classList.remove('active');
+        }
+
+        function showAdminPanel() {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('adminPanel').classList.add('active');
+            document.getElementById('userEmail').textContent = userEmail;
+        }
+
+        // Переключение вкладок
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        // Загрузка приютов
+        async function loadShelters() {
+            try {
+                const response = await fetch(`${API_BASE}/shelters`);
+                if (response.ok) {
+                    const shelters = await response.json();
+                    const select = document.getElementById('animalShelter');
+                    select.innerHTML = '<option value="">Выберите приют</option>';
+                    shelters.forEach(shelter => {
+                        const option = document.createElement('option');
+                        option.value = shelter.id;
+                        option.textContent = shelter.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки приютов:', error);
+            }
+        }
+
+        // Создание пользователя
+        document.getElementById('userForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('email', document.getElementById('newUserEmail').value);
+            formData.append('password', document.getElementById('userPassword').value);
+            formData.append('firstname', document.getElementById('userFirstname').value);
+            formData.append('lastname', document.getElementById('userLastname').value);
+            formData.append('role', document.getElementById('userRole').value);
+            formData.append('gender', document.getElementById('userGender').value);
+            formData.append('phone', document.getElementById('userPhone').value);
+            
+            const photoFile = document.getElementById('userPhoto').files[0];
+            if (photoFile) {
+                formData.append('photo', photoFile);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/users`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('Пользователь успешно создан!', 'success');
+                    document.getElementById('userForm').reset();
+                    document.getElementById('userPhotoPreview').innerHTML = '';
+                } else {
+                    showMessage(result.error || 'Ошибка создания пользователя', 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка сети: ' + error.message, 'error');
+            }
+        });
+
+        // Создание животного
+        document.getElementById('animalForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const animalData = {
+                name: document.getElementById('animalName').value,
+                age: parseInt(document.getElementById('animalAge').value),
+                type: document.getElementById('animalType').value,
+                shelter_id: parseInt(document.getElementById('animalShelter').value),
+                gender: document.getElementById('animalGender').value || null,
+                weight: document.getElementById('animalWeight').value ? parseFloat(document.getElementById('animalWeight').value) : null,
+                color: document.getElementById('animalColor').value || null,
+                animal_size: document.getElementById('animalSize').value || null,
+                health: document.getElementById('animalHealth').value || null,
+                personality: document.getElementById('animalPersonality').value || null,
+                history: document.getElementById('animalHistory').value || null
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/animals`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify(animalData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    const animalId = result.animal?.id || result.id;
+                    if (animalId && animalPhotos.length > 0) {
+                        await uploadPhotos(animalPhotos, 'animal', animalId);
+                    }
+                    showMessage('Животное успешно создано!', 'success');
+                    document.getElementById('animalForm').reset();
+                    document.getElementById('animalPhotosPreview').innerHTML = '';
+                    animalPhotos = [];
+                } else {
+                    showMessage(result.error || 'Ошибка создания животного', 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка сети: ' + error.message, 'error');
+            }
+        });
+
+        // Создание приюта
+        document.getElementById('shelterForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const shelterData = {
+                name: document.getElementById('shelterName').value,
+                address: document.getElementById('shelterAddress').value || null,
+                phone: document.getElementById('shelterPhone').value || null,
+                email: document.getElementById('shelterEmail').value || null,
+                website: document.getElementById('shelterWebsite').value || null,
+                description: document.getElementById('shelterDescription').value || null,
+                capacity: document.getElementById('shelterCapacity').value ? parseInt(document.getElementById('shelterCapacity').value) : null,
+                working_hours: document.getElementById('shelterWorkingHours').value || null,
+                status: document.getElementById('shelterStatus').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/shelters`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify(shelterData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    const shelterId = result.shelter?.id || result.id;
+                    if (shelterId && shelterPhotos.length > 0) {
+                        await uploadPhotos(shelterPhotos, 'shelter', shelterId);
+                    }
+                    showMessage('Приют успешно создан!', 'success');
+                    document.getElementById('shelterForm').reset();
+                    document.getElementById('shelterPhotosPreview').innerHTML = '';
+                    shelterPhotos = [];
+                    loadShelters();
+                } else {
+                    showMessage(result.error || 'Ошибка создания приюта', 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка сети: ' + error.message, 'error');
+            }
+        });
+
+        // Загрузка фотографий
+        async function uploadPhotos(files, entityType, entityId) {
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('photo', file);
+                formData.append('entity_type', entityType);
+                formData.append('entity_id', entityId.toString());
+
+                try {
+                    const response = await fetch(`${API_BASE}/photos/upload`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`
+                        },
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.text();
+                        console.error('Ошибка загрузки фото:', error);
+                    }
+                } catch (error) {
+                    console.error('Ошибка загрузки фото:', error);
+                }
+            }
+        }
+
+        // Показ сообщений
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            container.appendChild(messageDiv);
+
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
+

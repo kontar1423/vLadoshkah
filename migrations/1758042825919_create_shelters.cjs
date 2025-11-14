@@ -19,6 +19,11 @@ exports.up = (pgm) => {
     description: { type: 'text' },
     capacity: { type: 'integer' },
     working_hours: { type: 'varchar(200)' },
+    admin_id: {
+      type: 'integer',
+      references: 'users(id)',
+      onDelete: 'set null'
+    },
     status: { 
       type: 'varchar(50)', 
       default: 'active'

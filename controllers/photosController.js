@@ -1,4 +1,5 @@
 import photosService from '../services/photosService.js';
+import logger from '../logger.js';
 
 class PhotosController {
     async uploadPhoto(req, res) {
@@ -35,7 +36,8 @@ class PhotosController {
             });
 
         } catch (error) {
-            console.error('Upload photo error:', error);
+            const log = req.log || logger;
+            log.error(error, 'Controller: error uploading photo');
             res.status(500).json({ error: error.message });
         }
     }
@@ -57,7 +59,8 @@ class PhotosController {
             dataStream.pipe(res);
 
         } catch (error) {
-            console.error('Get photo file error:', error);
+            const log = req.log || logger;
+            log.error(error, 'Controller: error getting photo file');
             if (error.code === 'NoSuchKey' || error.message === 'Photo not found') {
                 return res.status(404).json({ error: 'Photo not found' });
             }
@@ -76,7 +79,8 @@ class PhotosController {
 
             res.json(photo);
         } catch (error) {
-            console.error('Get photo info error:', error);
+            const log = req.log || logger;
+            log.error(error, 'Controller: error getting photo info');
             res.status(500).json({ error: error.message });
         }
     }
@@ -91,7 +95,8 @@ class PhotosController {
             res.json({ message: 'Photo deleted successfully' });
 
         } catch (error) {
-            console.error('Delete photo error:', error);
+            const log = req.log || logger;
+            log.error(error, 'Controller: error deleting photo');
             if (error.message === 'Photo not found') {
                 return res.status(404).json({ error: 'Photo not found' });
             }
@@ -105,7 +110,8 @@ class PhotosController {
             const photos = await photosService.getPhotosByEntity(entityType, parseInt(entityId));
             res.json(photos);
         } catch (error) {
-            console.error('Get photos by entity error:', error);
+            const log = req.log || logger;
+            log.error(error, 'Controller: error getting photos by entity');
             res.status(500).json({ error: error.message });
         }
     }
@@ -115,7 +121,8 @@ class PhotosController {
             const photos = await photosService.getAllPhotos();
             res.json(photos);
         } catch (error) {
-            console.error('Get all photos error:', error);
+            const log = req.log || logger;
+            log.error(error, 'Controller: error getting all photos');
             res.status(500).json({ error: error.message });
         }
     }
@@ -126,7 +133,8 @@ class PhotosController {
             const photos = await photosService.getPhotosByEntityType(entityType);
             res.json(photos);
         } catch (error) {
-            console.error('Get photos by entity type error:', error);
+            const log = req.log || logger;
+            log.error(error, 'Controller: error getting photos by entity type');
             res.status(500).json({ error: error.message });
         }
     }

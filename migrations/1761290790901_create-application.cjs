@@ -26,10 +26,10 @@ exports.up = (pgm) => {
       type: 'integer', 
       notNull: true 
     },
-    is_active: { 
-      type: 'boolean', 
+    status: { 
+      type: 'varchar(50)', 
       notNull: true,
-      default: true
+      default: 'pending'
     },
     description: { 
       type: 'text', 
@@ -47,7 +47,7 @@ exports.up = (pgm) => {
   pgm.createIndex('applications', 'user_id');
   pgm.createIndex('applications', 'shelter_id');
   pgm.createIndex('applications', 'animal_id');
-  pgm.createIndex('applications', 'is_active');
+  pgm.createIndex('applications', 'status');
 };
 
 /**

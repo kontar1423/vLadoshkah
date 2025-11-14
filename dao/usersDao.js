@@ -22,11 +22,22 @@ async function getById(id) {
   }
 }
 
-async function create({firstname, lastname, role, gender, email, phone}) {
+async function getByEmail(email) {
+  try {
+    const result = await query('SELECT * FROM users WHERE email=$1', [email]);
+    debug({ email, count: result.rowCount }, 'DAO: fetched user by email');
+    return result.rows[0];
+  } catch (err) {
+    error(err, 'DAO: error fetching user by email');
+    throw err;
+  }
+}
+
+async function create({firstname, lastname, role, gender, email, phone, password}) {
   try {
     const result = await query(
-      'INSERT INTO users(firstname, lastname, role, gender, email, phone) VALUES($1,$2,$3,$4,$5,$6) RETURNING *',
-      [firstname, lastname, role, gender, email, phone]
+      'INSERT INTO users(firstname, lastname, role, gender, email, phone, password) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *',
+      [firstname, lastname, role, gender, email, phone, password]
     );
     info({ user: result.rows[0] }, 'DAO: created user');
     return result.rows[0];
@@ -36,7 +47,7 @@ async function create({firstname, lastname, role, gender, email, phone}) {
   }
 }
 
-async function update(id, { firstname, lastname, role, gender, email, phone}) {
+async function update(id, { firstname, lastname, role, gender, email, phone, password}) {
   try {
     const currentUser = await getById(id);
     if (!currentUser) {
@@ -49,10 +60,11 @@ async function update(id, { firstname, lastname, role, gender, email, phone}) {
       gender: gender !== undefined ? gender : currentUser.gender,
       email: email !== undefined ? email : currentUser.email,
       phone: phone !== undefined ? phone : currentUser.phone,
+      password: password !== undefined ? password : currentUser.password,
     };
     const result = await query(
-      'UPDATE users SET firstname=$1, lastname=$2, role=$3, gender=$4, email=$5, phone=$6, updated_at = CURRENT_TIMESTAMP WHERE id=$7 RETURNING *',
-      [updatedData.firstname, updatedData.lastname, updatedData.role, updatedData.gender, updatedData.email, updatedData.phone, id]
+      'UPDATE users SET firstname=$1, lastname=$2, role=$3, gender=$4, email=$5, phone=$6, password=$7, updated_at = CURRENT_TIMESTAMP WHERE id=$8 RETURNING *',
+      [updatedData.firstname, updatedData.lastname, updatedData.role, updatedData.gender, updatedData.email, updatedData.phone, updatedData.password, id]
     );
     info({ user: result.rows[0] }, 'DAO: updated user');
     return result.rows[0] || null;
@@ -73,4 +85,4 @@ async function remove(id) {
   }
 }
 
-export default { getAll, getById, create, update, remove };
+export default { getAll, getById, getByEmail, create, update, remove };

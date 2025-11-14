@@ -2,6 +2,8 @@ import minioClient from '../minioClient.js';
 import photosDao from '../dao/photosDao.js';
 import redisClient from '../cache/redis-client.js';
 import { v4 as uuidv4 } from 'uuid';
+import { normalizePhoto, normalizePhotos, toRelativeUploadUrl } from '../utils/urlUtils.js';
+import logger from '../logger.js';
 
 // Константы для кэширования
 const CACHE_TTL = 3600; // 1 час
@@ -47,11 +49,11 @@ class PhotosService {
       const objectName = `${uuidv4()}.${fileExtension}`;
       const bucketName = process.env.MINIO_BUCKET || 'uploads';
 
-      console.log('Uploading file:', {
+      logger.debug({
         originalName: file.originalname,
         mimetype: file.mimetype,
         size: file.size
-      });
+      }, 'Uploading file');
 
       // РЕШЕНИЕ: Передаем метаданные как ОБЪЕКТ, а не строку
       const metaData = {
@@ -69,7 +71,9 @@ class PhotosService {
         metaData  // передаем ОБЪЕКТ метаданных
       );
 
-      console.log('File uploaded successfully:', objectName);
+      logger.debug({ objectName }, 'File uploaded successfully');
+
+      const photoUrl = toRelativeUploadUrl(`http://localhost:9000/${bucketName}/${objectName}`);
 
       const photoData = {
         original_name: file.originalname,
@@ -79,19 +83,19 @@ class PhotosService {
         mimetype: file.mimetype,
         entity_type,
         entity_id: parseInt(entity_id),
-        url: `http://localhost:9000/${bucketName}/${objectName}`
+        url: photoUrl
       };
 
-      const photo = await photosDao.create(photoData);
+      const photo = normalizePhoto(await photosDao.create(photoData));
       
       // Инвалидируем кэш после создания фото
       await this.invalidatePhotoCaches(photo, entity_type, entity_id);
       
-      console.log('Photo created and cache invalidated for:', entity_type, entity_id);
+      logger.debug({ entity_type, entity_id }, 'Photo created and cache invalidated');
       
       return photo;
     } catch (error) {
-      console.error('PhotosService: error uploading photo', error);
+      logger.error(error, 'PhotosService: error uploading photo');
       throw error;
     }
   }
@@ -108,7 +112,7 @@ class PhotosService {
       // Получаем файл из MinIO
       return await minioClient.getObject(photo.bucket, photo.object_name);
     } catch (error) {
-      console.error('PhotosService: error getting photo file', error);
+      logger.error(error, 'PhotosService: error getting photo file');
       throw error;
     }
   }
@@ -120,24 +124,26 @@ class PhotosService {
       // Пытаемся получить из кэша
       const cached = await redisClient.get(cacheKey);
       if (cached) {
-        console.log(`Cache hit: photo info ${objectName}`);
-        return cached;
+        logger.debug({ objectName }, 'Cache hit: photo info');
+        return normalizePhoto(cached);
       }
 
-      console.log(`Cache miss: photo info ${objectName}`);
+      logger.debug({ objectName }, 'Cache miss: photo info');
       
-      const photo = await photosDao.getByObjectName(objectName);
+      const photoRecord = await photosDao.getByObjectName(objectName);
       
-      if (!photo) {
+      if (!photoRecord) {
         throw new Error('Photo not found');
       }
+
+      const photo = normalizePhoto(photoRecord);
 
       // Сохраняем в кэш
       await redisClient.set(cacheKey, photo, CACHE_TTL);
       
       return photo;
     } catch (error) {
-      console.error('PhotosService: error getting photo info', error);
+      logger.error(error, 'PhotosService: error getting photo info');
       throw error;
     }
   }
@@ -159,11 +165,11 @@ class PhotosService {
       // Инвалидируем кэш
       await this.invalidatePhotoCaches(photo, photo.entity_type, photo.entity_id);
       
-      console.log('Photo deleted and cache invalidated:', id);
+      logger.debug({ id }, 'Photo deleted and cache invalidated');
       
       return result;
     } catch (error) {
-      console.error('PhotosService: error deleting photo', error);
+      logger.error(error, 'PhotosService: error deleting photo');
       throw error;
     }
   }
@@ -174,7 +180,7 @@ class PhotosService {
       const photos = await photosDao.getByEntity(EntityType, EntityId);
       
       if (!photos || photos.length === 0) {
-        console.log(`No photos found for ${EntityType} ${EntityId}`);
+        logger.debug({ EntityType, EntityId }, 'No photos found for entity');
         return { deleted: 0 };
       }
 
@@ -190,7 +196,7 @@ class PhotosService {
           await photosDao.remove(photo.id);
           deletedCount++;
         } catch (error) {
-          console.error(`Error deleting photo ${photo.id}:`, error);
+          logger.error(error, { photoId: photo.id }, 'Error deleting photo');
           // Продолжаем удалять остальные фото даже если одна ошибка
         }
       }
@@ -198,18 +204,23 @@ class PhotosService {
       // Инвалидируем кэш после удаления всех фото
       await this.invalidatePhotoCaches(null, EntityType, EntityId);
       
-      console.log(`Deleted ${deletedCount} photos for ${EntityType} ${EntityId} and invalidated cache`);
+      logger.info({ EntityType, EntityId, deletedCount }, 'Deleted photos for entity and invalidated cache');
       return { deleted: deletedCount };
       
     } catch (error) {
-      console.error(`PhotosService: error deleting ${EntityType} photos`, error);
+      logger.error(error, { EntityType }, 'PhotosService: error deleting entity photos');
       throw error;
     }
   }
 
   // Сохраняем существующие методы с добавлением кэширования
   async createPhoto(photoData) {
-    const photo = await photosDao.create(photoData);
+    const preparedPhotoData = {
+      ...photoData,
+      url: toRelativeUploadUrl(photoData?.url),
+    };
+
+    const photo = normalizePhoto(await photosDao.create(preparedPhotoData));
     
     // Инвалидируем кэш
     await this.invalidatePhotoCaches(photo, photo.entity_type, photo.entity_id);
@@ -223,14 +234,15 @@ class PhotosService {
     // Пытаемся получить из кэша
     const cached = await redisClient.get(cacheKey);
     if (cached) {
-      console.log(`Cache hit: photo ${id}`);
-      return cached;
+      logger.debug({ id }, 'Cache hit: photo');
+      return normalizePhoto(cached);
     }
 
-    console.log(`Cache miss: photo ${id}`);
+    logger.debug({ id }, 'Cache miss: photo');
     
-    const photo = await photosDao.getById(id);
-    
+    const photoRecord = await photosDao.getById(id);
+    const photo = normalizePhoto(photoRecord);
+
     if (photo) {
       // Сохраняем в кэш
       await redisClient.set(cacheKey, photo, CACHE_TTL);
@@ -245,14 +257,15 @@ class PhotosService {
     // Пытаемся получить из кэша
     const cached = await redisClient.get(cacheKey);
     if (cached) {
-      console.log(`Cache hit: photo by object name ${objectName}`);
-      return cached;
+      logger.debug({ objectName }, 'Cache hit: photo by object name');
+      return normalizePhoto(cached);
     }
 
-    console.log(`Cache miss: photo by object name ${objectName}`);
+    logger.debug({ objectName }, 'Cache miss: photo by object name');
     
-    const photo = await photosDao.getByObjectName(objectName);
-    
+    const photoRecord = await photosDao.getByObjectName(objectName);
+    const photo = normalizePhoto(photoRecord);
+
     if (photo) {
       // Сохраняем в кэш
       await redisClient.set(cacheKey, photo, CACHE_TTL);
@@ -267,13 +280,13 @@ class PhotosService {
     // Пытаемся получить из кэша
     const cached = await redisClient.get(cacheKey);
     if (cached) {
-      console.log(`Cache hit: photos for ${entityType} ${entityId}`);
-      return cached;
+      logger.debug({ entityType, entityId }, 'Cache hit: photos for entity');
+      return normalizePhotos(cached);
     }
 
-    console.log(`Cache miss: photos for ${entityType} ${entityId}`);
+    logger.debug({ entityType, entityId }, 'Cache miss: photos for entity');
     
-    const photos = await photosDao.getByEntity(entityType, entityId);
+    const photos = normalizePhotos(await photosDao.getByEntity(entityType, entityId));
     
     // Сохраняем в кэш
     await redisClient.set(cacheKey, photos, CACHE_TTL);
@@ -287,13 +300,13 @@ class PhotosService {
     // Пытаемся получить из кэша
     const cached = await redisClient.get(cacheKey);
     if (cached) {
-      console.log('Cache hit: all photos');
-      return cached;
+      logger.debug('Cache hit: all photos');
+      return normalizePhotos(cached);
     }
 
-    console.log('Cache miss: all photos');
+    logger.debug('Cache miss: all photos');
     
-    const photos = await photosDao.getAll();
+    const photos = normalizePhotos(await photosDao.getAll());
     
     // Сохраняем в кэш
     await redisClient.set(cacheKey, photos, CACHE_TTL);
@@ -307,13 +320,13 @@ class PhotosService {
     // Пытаемся получить из кэша
     const cached = await redisClient.get(cacheKey);
     if (cached) {
-      console.log(`Cache hit: photos for entity type ${entityType}`);
-      return cached;
+      logger.debug({ entityType }, 'Cache hit: photos for entity type');
+      return normalizePhotos(cached);
     }
 
-    console.log(`Cache miss: photos for entity type ${entityType}`);
+    logger.debug({ entityType }, 'Cache miss: photos for entity type');
     
-    const photos = await photosDao.getByEntityType(entityType);
+    const photos = normalizePhotos(await photosDao.getByEntityType(entityType));
     
     // Сохраняем в кэш
     await redisClient.set(cacheKey, photos, CACHE_TTL);

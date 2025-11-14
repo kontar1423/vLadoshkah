@@ -5,12 +5,16 @@ import sheltersRouter from './routes/shelters.js';
 import usersRouter from './routes/users.js';
 import photosRouter from './routes/photos.js';
 import applicationsRouter from './routes/applications.js';
+import authRouter from './routes/auth.js';
 import { error as _error, info } from './logger.js';
 import pinoHttp from 'pino-http';
 import initMinio from './initMinio.js';
 import cors from 'cors';
 import redisClient from './cache/redis-client.js';
 import pool from './db.js'; // импортируем пул подключений
+import kafkaProducer from './messaging/kafka-producer.js';
+import kafkaConsumer from './messaging/kafka-consumer.js';
+import notificationService from './services/notificationService.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -26,8 +30,36 @@ async function initializeRedis() {
   }
 }
 
-// Инициализируем Redis при старте приложения
-initializeRedis();
+async function initializeKafka() {
+  try {
+    // Подключаем producer
+    await kafkaProducer.connect();
+    
+    // Регистрируем обработчики событий
+    kafkaConsumer.registerHandler('user.registered', async (userData) => {
+      try {
+        await notificationService.sendWelcomeEmail(userData);
+      } catch (error) {
+        console.error('Error processing user.registered event:', error);
+        // Здесь можно добавить retry логику или отправку в DLQ
+      }
+    });
+    
+    // Запускаем consumer для топика user-notifications
+    await kafkaConsumer.start('user-notifications');
+    console.log('✅ Kafka initialized successfully');
+  } catch (error) {
+    console.error('❌ Kafka initialization failed:', error);
+    // Приложение может работать без Kafka, но с предупреждением
+    console.log('⚠️  Application running without Kafka messaging');
+  }
+}
+
+// Инициализируем Redis и Kafka при старте приложения (только если не в тестовом режиме)
+if (process.env.NODE_ENV !== 'test') {
+  initializeRedis();
+  initializeKafka();
+}
 
 app.use(json());
 app.use(express.urlencoded({ extended: true })); // для FormData
@@ -46,6 +78,7 @@ app.use(pinoHttp({
 }));
 
 // Routes
+app.use('/api/auth', authRouter);
 app.use('/api/animals', animalsRouter);
 app.use('/api/shelters', sheltersRouter);
 app.use('/api/users', usersRouter);
@@ -136,6 +169,30 @@ async function startServer() {
   }
 }
 
+// Graceful shutdown
+async function shutdown() {
+  console.log('Shutting down gracefully...');
+  
+  try {
+    await kafkaProducer.disconnect();
+    await kafkaConsumer.stop();
+    console.log('Kafka connections closed');
+  } catch (error) {
+    console.error('Error during Kafka shutdown:', error);
+  }
+  
+  try {
+    if (redisClient.isConnected()) {
+      await redisClient.client?.disconnect();
+      console.log('Redis connection closed');
+    }
+  } catch (error) {
+    console.error('Error during Redis shutdown:', error);
+  }
+  
+  process.exit(0);
+}
+
 // Глобальные обработчики ошибок
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
@@ -146,6 +203,9 @@ process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
   process.exit(1);
 });
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 // Запускаем сервер только если не в test режиме
 if (process.env.NODE_ENV !== 'test') {

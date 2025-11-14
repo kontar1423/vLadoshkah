@@ -37,7 +37,7 @@ async function getById(id) {
             throw new Error('Application not found');
         }
         
-        await redisClient.set(cacheKey, application, 300); // кэш на 5 минут
+        await redisClient.set(CACHE_KEYS.APPLICATION_BY_ID(id), application, 300); // кэш на 5 минут
         return application;
     } catch (err) {
         logger.error(err, 'Service: error fetching application by id');
@@ -109,4 +109,14 @@ async function remove(id) {
     }
 }
 
-export default { create, getById, getAll, update, remove };
+async function countApproved() {
+    try {
+        const count = await applicationsDao.countByStatus('approved');
+        return { count };
+    } catch (err) {
+        logger.error(err, 'Service: error counting approved applications');
+        throw err;
+    }
+}
+
+export default { create, getById, getAll, update, remove, countApproved };

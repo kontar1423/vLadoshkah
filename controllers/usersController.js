@@ -38,8 +38,8 @@ async function create(req, res) {
     const userData = req.body;
     const photoFile = req.file; // Фото из multer
     
-    console.log('🟡 Creating user:', userData);
-    console.log('🟡 Photo file:', photoFile ? `Yes (${photoFile.originalname})` : 'No');
+    const log = req.log || logger;
+    log.info({ hasPhoto: !!photoFile }, 'Controller: creating user');
     
     const newUser = await usersService.create(userData, photoFile);
     
@@ -69,8 +69,8 @@ async function update(req, res) {
     const userData = req.body;
     const photoFile = req.file; // Новое фото из multer
     
-    console.log('🟡 Updating user:', id);
-    console.log('🟡 Photo file:', photoFile ? `Yes (${photoFile.originalname})` : 'No');
+    const log = req.log || logger;
+    log.info({ id, hasPhoto: !!photoFile }, 'Controller: updating user');
     
     const updatedUser = await usersService.update(id, userData, photoFile);
     

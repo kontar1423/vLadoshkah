@@ -1,17 +1,39 @@
-# Database
-PGUSER=postgres
-PGPASSWORD=1234
-PGDATABASE=volunteer_db
-PGHOST=db
+# ============================================================================
+# ОКРУЖЕНИЕ И ПРИЛОЖЕНИЕ
+# ============================================================================
+
+NODE_ENV=development
+PORT=4000
+
+# ============================================================================
+# БАЗА ДАННЫХ (PostgreSQL)
+# ============================================================================
+
+PGHOST=localhost
 PGPORT=5432
+PGUSER=postgres
+PGPASSWORD=your-secure-password-here
+PGDATABASE=volunteer_db
+
+# Docker-specific
 DB_PORT=5432
 
-# API
-PORT=4000
-NODE_ENV=development
+# Auto-generated connection string (не редактировать вручную)
+DATABASE_URL=postgres://postgres:your-secure-password-here@localhost:5432/volunteer_db
 
-# MinIO
-MINIO_ENDPOINT=minio
+# ============================================================================
+# REDIS (Cache)
+# ============================================================================
+
+REDIS_URL=redis://localhost:6379
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# ============================================================================
+# MINIO (Object Storage)
+# ============================================================================
+
+MINIO_ENDPOINT=localhost
 MINIO_PORT=9000
 MINIO_API_PORT=9000
 MINIO_CONSOLE_PORT=9001
@@ -20,5 +42,76 @@ MINIO_SECRET_KEY=minioadmin
 MINIO_BUCKET=uploads
 MINIO_USE_SSL=false
 
-# Auto-generated
-DATABASE_URL=postgres://postgres:1234@db:5432/volunteer_db
+# ============================================================================
+# KAFKA (Message Broker)
+# ============================================================================
+
+# Kafka brokers (можно указать несколько через запятую)
+# Для Docker: kafka:29092
+# Для локальной разработки: localhost:9092
+KAFKA_BROKERS=localhost:9092
+KAFKA_PORT=9092
+# Подавить предупреждение о партиционере (опционально)
+KAFKAJS_NO_PARTITIONER_WARNING=1
+
+# ============================================================================
+# EMAIL (SMTP для отправки уведомлений)
+# ============================================================================
+
+# Если не указаны SMTP настройки, используется тестовый режим (логирование)
+# Для реальной отправки email раскомментируйте и настройте следующие переменные:
+
+# Пример для Gmail:
+# SMTP_HOST=smtp.gmail.com
+# SMTP_PORT=587
+# SMTP_SECURE=false
+# SMTP_USER=your-email@gmail.com
+# SMTP_PASSWORD=your-app-password  # Для Gmail нужен App Password, не обычный пароль
+# SMTP_FROM=noreply@vladoshkah.ru
+
+# Пример для Yandex:
+# SMTP_HOST=smtp.yandex.ru
+# SMTP_PORT=465
+# SMTP_SECURE=true
+# SMTP_USER=your-email@yandex.ru
+# SMTP_PASSWORD=your-password
+# SMTP_FROM=noreply@vladoshkah.ru
+
+# Пример для Mail.ru:
+# SMTP_HOST=smtp.mail.ru
+# SMTP_PORT=465
+# SMTP_SECURE=true
+# SMTP_USER=your-email@mail.ru
+# SMTP_PASSWORD=your-password
+# SMTP_FROM=noreply@vladoshkah.ru
+
+# ============================================================================
+# AUTHENTICATION & SECURITY
+# ============================================================================
+
+# ⚠️ ВАЖНО: В production используйте безопасный секретный ключ!
+# Сгенерируйте с помощью: openssl rand -base64 32
+JWT_SECRET=your-super-secret-key-change-in-production-min-32-chars
+
+# Время жизни токенов
+JWT_EXPIRES_IN=7d
+JWT_REFRESH_EXPIRES_IN=30d
+
+# ============================================================================
+# ПРИМЕЧАНИЯ
+# ============================================================================
+# 
+# Для Docker:
+# - PGHOST=db (вместо localhost)
+# - MINIO_ENDPOINT=minio (вместо localhost)
+# - REDIS_URL=redis://redis:6379
+# - KAFKA_BROKERS=kafka:29092 (внутренний порт для Docker)
+#
+# Для production:
+# 1. Измените JWT_SECRET на случайную строку
+# 2. Установите NODE_ENV=production
+# 3. Используйте безопасные пароли для всех сервисов
+# 4. Включите MINIO_USE_SSL=true если используете HTTPS
+# 5. Настройте REDIS с паролем если доступен извне
+#
+# ============================================================================
