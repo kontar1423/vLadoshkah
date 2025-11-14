@@ -15,7 +15,8 @@ describe('animalsController', () => {
       user: null,
       log: {
         error: jest.fn(),
-        warn: jest.fn()
+        warn: jest.fn(),
+        info: jest.fn()
       }
     };
 

@@ -272,10 +272,12 @@ describe('Applications routes', () => {
       expect(applicationsService.countApproved).toHaveBeenCalled();
     });
 
-    test('возвращает 401 без токена', async () => {
+    test('доступен без токена (публичная метрика)', async () => {
       const res = await request(app).get('/api/applications/count/approved');
       
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(200);
+      expect(res.body.count).toBe(5);
+      expect(applicationsService.countApproved).toHaveBeenCalled();
     });
   });
 });
