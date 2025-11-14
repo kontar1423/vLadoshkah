@@ -99,7 +99,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 25px;
-            margin-bottom: 40px;
+         margin-bottom: 40px;
         }
         
         .animal-card {
@@ -489,7 +489,7 @@
                     <div class="shelter-card">
                         <div class="shelter-header">
                              ${photoUrls.map(photoUrl => `
-                            <img src="${photoUrl}" 
+                            <img src="http://localhost:9000${photoUrl}" 
                                  alt="${shelter.name}" class="shelter-photo"
                                  onerror="this.src='https://via.placeholder.com/80x80/28a745/ffffff?text=🏠'">`
                              ).join('')}
@@ -497,7 +497,7 @@
                                 <h3 class="shelter-name">${escapeHtml(shelter.name)}</h3>
                                 <div style="color: #666; font-size: 0.9rem;">ID: ${shelter.id}</div>
                             </div>
-                        </div>
+                        </div>    
                         
                         <div class="shelter-details">
                             ${shelter.address ? `
@@ -646,7 +646,7 @@
                         ${photoUrls.length > 0 ? `
                             <div class="photos-grid">
                                 ${photoUrls.map(photoUrl => 
-                                    `<img src="${photoUrl}" alt="${animal.name}" class="photo" 
+                                    `<img src="http://localhost:9000${photoUrl}" alt="${animal.name}" class="photo" 
                                           onerror="this.src='https://via.placeholder.com/120x120/cccccc/969696?text=Нет+фото'">`
                                 ).join('')}
                             </div>

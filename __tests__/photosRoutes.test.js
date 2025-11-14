@@ -25,7 +25,7 @@ describe('Photos routes', () => {
         id: 10,
         original_name: file.originalname,
         object_name: 'uuid-photo.jpg',
-        url: 'http://localhost:9000/uploads/uuid-photo.jpg',
+        url: '/uploads/uuid-photo.jpg',
         entity_type: entityType,
         entity_id: parseInt(entityId),
         size: file.size,

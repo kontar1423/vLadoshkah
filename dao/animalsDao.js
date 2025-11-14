@@ -86,7 +86,7 @@ async function update(id, { name, age, type, health, gender, color, weight, pers
       shelter_id: shelter_id !== undefined ? shelter_id : currentAnimal.shelter_id,
     };
     const result = await query(
-      `UPDATE animals SET name = $1, age = $2, type = $3, health = $4, gender = $5, color = $6, weight = $7, personality = $8, animal_size = $9, history = $10, shelter_id = $11 WHERE id = $12 RETURNING *`,
+      `UPDATE animals SET name = $1, age = $2, type = $3, health = $4, gender = $5, color = $6, weight = $7, personality = $8, animal_size = $9, history = $10, shelter_id = $11, updated_at = current_timestamp WHERE id = $12 RETURNING *`,
       [updatedData.name, updatedData.age, updatedData.type, updatedData.health, updatedData.gender, updatedData.color, updatedData.weight, updatedData.personality, updatedData.animal_size, updatedData.history, updatedData.shelter_id, id]
     );
     info({ animal: result.rows[0] }, 'DAO: updated animal');

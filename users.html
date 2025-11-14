@@ -508,7 +508,7 @@
                 return `
                     <div class="user-card">
                         <div class="user-header">
-                            <img src="${photoUrls[0] || getDefaultAvatar(user.gender)}" 
+                            <img src="http://localhost:9000${photoUrls[0] || getDefaultAvatar(user.gender)}" 
                                  alt="${user.firstname} ${user.lastname}" 
                                  class="user-avatar"
                                  onerror="this.src='${getDefaultAvatar(user.gender)}'">

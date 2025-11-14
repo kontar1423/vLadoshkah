@@ -33,7 +33,7 @@ describe('photosController', () => {
         id: 10,
         original_name: 'test.jpg',
         object_name: 'uuid-test.jpg',
-        url: 'http://localhost:9000/uploads/uuid-test.jpg',
+        url: '/uploads/uuid-test.jpg',
         entity_type: 'animal',
         entity_id: 1,
         size: 1024,
