@@ -8,6 +8,23 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const fallbackSerializers = {
+  err: (err) => err,
+  req: (req) => req,
+  res: (res) => res
+};
+
+function getSerializers() {
+  if (!pino || !pino.stdSerializers) {
+    return fallbackSerializers;
+  }
+  return {
+    err: pino.stdSerializers.err || fallbackSerializers.err,
+    req: pino.stdSerializers.req || fallbackSerializers.req,
+    res: pino.stdSerializers.res || fallbackSerializers.res
+  };
+}
+
 // Конфигурация из переменных окружения
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const LOG_LEVEL = process.env.LOG_LEVEL || (NODE_ENV === 'production' ? 'info' : 'debug');
@@ -104,11 +121,7 @@ if (NODE_ENV === 'production') {
           return { level: label.toUpperCase() };
         }
       },
-      serializers: {
-        err: pino.stdSerializers.err,
-        req: pino.stdSerializers.req,
-        res: pino.stdSerializers.res
-      }
+      serializers: getSerializers()
     },
     pino.multistream(streams)
   );
@@ -128,11 +141,7 @@ if (NODE_ENV === 'production') {
           hideObject: false
         }
       },
-      serializers: {
-        err: pino.stdSerializers.err,
-        req: pino.stdSerializers.req,
-        res: pino.stdSerializers.res
-      }
+      serializers: getSerializers()
     });
   } else {
     // Консоль + файлы (если LOG_TO_FILE включен)
@@ -165,11 +174,7 @@ if (NODE_ENV === 'production') {
             return { level: label.toUpperCase() };
           }
         },
-        serializers: {
-          err: pino.stdSerializers.err,
-          req: pino.stdSerializers.req,
-          res: pino.stdSerializers.res
-        }
+        serializers: getSerializers()
       },
       pino.multistream(streams)
     );
