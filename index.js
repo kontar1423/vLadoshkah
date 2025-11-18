@@ -6,7 +6,7 @@ import usersRouter from './routes/users.js';
 import photosRouter from './routes/photos.js';
 import applicationsRouter from './routes/applications.js';
 import authRouter from './routes/auth.js';
-import { error as _error, info } from './logger.js';
+import logger, { error as _error, info, warn, debug } from './logger.js';
 import pinoHttp from 'pino-http';
 import initMinio from './initMinio.js';
 import cors from 'cors';
@@ -22,11 +22,11 @@ const PORT = Number(process.env.PORT) || 4000;
 async function initializeRedis() {
   try {
     await redisClient.connect();
-    console.log('✅ Redis connected successfully');
+    info('Redis connected successfully');
   } catch (error) {
-    console.error('❌ Redis connection failed:', error);
+    _error(error, 'Redis connection failed');
     // Приложение может работать без Redis, но с предупреждением
-    console.log('⚠️  Application running without Redis cache');
+    warn('Application running without Redis cache');
   }
 }
 
@@ -40,18 +40,18 @@ async function initializeKafka() {
       try {
         await notificationService.sendWelcomeEmail(userData);
       } catch (error) {
-        console.error('Error processing user.registered event:', error);
+        _error(error, 'Error processing user.registered event');
         // Здесь можно добавить retry логику или отправку в DLQ
       }
     });
     
     // Запускаем consumer для топика user-notifications
     await kafkaConsumer.start('user-notifications');
-    console.log('✅ Kafka initialized successfully');
+    info('Kafka initialized successfully');
   } catch (error) {
-    console.error('❌ Kafka initialization failed:', error);
+    _error(error, 'Kafka initialization failed');
     // Приложение может работать без Kafka, но с предупреждением
-    console.log('⚠️  Application running without Kafka messaging');
+    warn('Application running without Kafka messaging');
   }
 }
 
@@ -127,18 +127,18 @@ async function waitForDatabase() {
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`⏳ Checking database connection (attempt ${attempt}/${maxRetries})...`);
+      debug({ attempt, maxRetries }, 'Checking database connection');
       await pool.query('SELECT 1');
-      console.log('✅ Database connection established');
+      info('Database connection established');
       return true;
     } catch (error) {
-      console.error(`❌ Database connection failed (attempt ${attempt}/${maxRetries}):`, error.message);
+      warn({ attempt, maxRetries, error: error.message }, 'Database connection failed');
       
       if (attempt === maxRetries) {
         throw new Error(`Failed to connect to database after ${maxRetries} attempts: ${error.message}`);
       }
       
-      console.log(`🔄 Retrying in ${retryInterval/1000} seconds...`);
+      debug({ retryInterval: retryInterval / 1000 }, 'Retrying database connection');
       await new Promise(resolve => setTimeout(resolve, retryInterval));
     }
   }
@@ -147,47 +147,45 @@ async function waitForDatabase() {
 // Start server
 async function startServer() {
   try {
-    console.log('🚀 Starting server initialization...');
+    info('Starting server initialization...');
     
     // 1. Ждем подключения к БД
     await waitForDatabase();
     
     // 2. Инициализируем MinIO
     await initMinio();
-    console.log('✅ MinIO initialization completed');
+    info('MinIO initialization completed');
     
     // 3. Запускаем сервер
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🎉 Server successfully running on port ${PORT}`);
-      info({ port: PORT }, 'Server running');
+      info({ port: PORT }, 'Server successfully running');
     });
     
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    console.error('Error details:', error.stack);
+    _error(error, 'Failed to start server');
     process.exit(1);
   }
 }
 
 // Graceful shutdown
 async function shutdown() {
-  console.log('Shutting down gracefully...');
+  info('Shutting down gracefully...');
   
   try {
     await kafkaProducer.disconnect();
     await kafkaConsumer.stop();
-    console.log('Kafka connections closed');
+    info('Kafka connections closed');
   } catch (error) {
-    console.error('Error during Kafka shutdown:', error);
+    _error(error, 'Error during Kafka shutdown');
   }
   
   try {
     if (redisClient.isConnected()) {
       await redisClient.client?.disconnect();
-      console.log('Redis connection closed');
+      info('Redis connection closed');
     }
   } catch (error) {
-    console.error('Error during Redis shutdown:', error);
+    _error(error, 'Error during Redis shutdown');
   }
   
   process.exit(0);
@@ -195,12 +193,12 @@ async function shutdown() {
 
 // Глобальные обработчики ошибок
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  _error({ reason, promise }, 'Unhandled Rejection');
   process.exit(1);
 });
 
 process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
+  _error(error, 'Uncaught Exception');
   process.exit(1);
 });
 
