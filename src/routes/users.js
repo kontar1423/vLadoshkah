@@ -23,7 +23,7 @@ const upload = multer({
   }
 });
 
-// ✅ Multer middleware для парсинга form-data
+// Middleware для обработки form-data
 router.use(express.urlencoded({ extended: true }));
 
 // GET /api/users - получить всех пользователей (публичный)

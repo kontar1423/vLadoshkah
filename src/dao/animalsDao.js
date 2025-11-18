@@ -1,5 +1,5 @@
-import { query } from '../db.js'; // ← Импортируем query
-import { debug, info, error } from '../logger.js'; // ← Импортируем логгеры
+import { query } from '../db.js';
+import { debug, info, error } from '../logger.js';
 
 async function getAll() {
   try {

@@ -1,5 +1,5 @@
-import { query } from '../db.js'; // ✅ ДОБАВЛЕНО
-import { debug, info, error } from '../logger.js'; // ✅ ДОБАВЛЕНО
+import { query } from '../db.js';
+import { debug, info, error } from '../logger.js';
 
 async function create(photoData) {
   try {

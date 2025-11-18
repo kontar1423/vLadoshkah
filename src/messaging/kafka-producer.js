@@ -53,7 +53,7 @@ class KafkaProducer {
     } catch (error) {
       logger.error({ err: error }, 'Kafka Producer connection failed');
       // Приложение может работать без Kafka, но с предупреждением
-      logger.warn('⚠️  Application running without Kafka messaging');
+      logger.warn('Application running without Kafka messaging');
       this.isConnected = false;
     }
   }
