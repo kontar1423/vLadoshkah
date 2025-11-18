@@ -62,7 +62,7 @@ process.env.PGPASSWORD = 'test';
 process.env.PGPORT = '5432';
 
 // Мокаем minioClient глобально
-jest.mock('../minioClient.js', () => ({
+jest.mock('../src/minioClient.js', () => ({
   default: {
     putObject: jest.fn().mockResolvedValue({ etag: 'mock-etag' }),
     getObject: jest.fn(),
@@ -72,7 +72,7 @@ jest.mock('../minioClient.js', () => ({
 }));
 
 // Мокаем Redis клиент глобально
-jest.mock('../cache/redis-client.js', () => ({
+jest.mock('../src/cache/redis-client.js', () => ({
   default: {
     connect: jest.fn().mockResolvedValue(undefined),
     get: jest.fn().mockResolvedValue(null),
@@ -91,7 +91,7 @@ jest.mock('../cache/redis-client.js', () => ({
 // ВАЖНО: query должен быть замокан с правильными значениями для всех тестов
 const mockQueryFn = jest.fn().mockResolvedValue({ rows: [], rowCount: 0 });
 
-jest.mock('../db.js', () => {
+jest.mock('../src/db.js', () => {
   const mockQuery = jest.fn().mockResolvedValue({ rows: [], rowCount: 0 });
   const mockPool = {
     query: mockQuery,
@@ -105,7 +105,7 @@ jest.mock('../db.js', () => {
 });
 
 // Мокаем logger чтобы не создавать файлы логов и не выводить в консоль в тестах
-jest.mock('../logger.js', () => {
+jest.mock('../src/logger.js', () => {
   // Создаем пустую функцию, которая ничего не делает
   const noop = () => {};
   
@@ -139,7 +139,7 @@ jest.mock('../logger.js', () => {
 // Тесты сервисов используют jest.spyOn
 
 // Мокаем usersDao для использования в authService тестах
-jest.mock('../dao/usersDao.js', () => ({
+jest.mock('../src/dao/usersDao.js', () => ({
   __esModule: true,
   default: {
     getAll: jest.fn().mockResolvedValue([]),
@@ -151,14 +151,14 @@ jest.mock('../dao/usersDao.js', () => ({
   }
 }));
 
-jest.mock('../services/photosService.js', () => ({
+jest.mock('../src/services/photosService.js', () => ({
   default: {
     uploadPhoto: jest.fn().mockResolvedValue(undefined),
     deletePhotosOfEntity: jest.fn().mockResolvedValue(undefined)
   }
 }));
 
-jest.mock('../dao/applicationsDao.js', () => ({
+jest.mock('../src/dao/applicationsDao.js', () => ({
   __esModule: true,
   default: {
     create: jest.fn().mockResolvedValue({ id: 1 }),
@@ -170,7 +170,7 @@ jest.mock('../dao/applicationsDao.js', () => ({
   }
 }));
 
-jest.mock('../dao/photosDao.js', () => ({
+jest.mock('../src/dao/photosDao.js', () => ({
   __esModule: true,
   default: {
     create: jest.fn().mockResolvedValue({ id: 1 }),

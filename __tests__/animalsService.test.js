@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
-import animalsService from '../services/animalsService.js';
-import animalsDao from '../dao/animalsDao.js';
-import photosDao from '../dao/photosDao.js';
+import animalsService from '../src/services/animalsService.js';
+import animalsDao from '../src/dao/animalsDao.js';
+import photosDao from '../src/dao/photosDao.js';
 
 describe('animalsService', () => {
   beforeEach(() => {

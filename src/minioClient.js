@@ -13,13 +13,13 @@ if (process.env.NODE_ENV !== 'test') {
   minioClient.bucketExists(process.env.MINIO_BUCKET)
     .then(exists => {
       if (exists) {
-        console.log(`✅ MinIO connected. Bucket "${process.env.MINIO_BUCKET}" exists`);
+        console.log(`MinIO connected. Bucket "${process.env.MINIO_BUCKET}" exists`);
       } else {
-        console.log(`⚠️ Bucket "${process.env.MINIO_BUCKET}" doesn't exist`);
+        console.log(`Bucket "${process.env.MINIO_BUCKET}" does not exist`);
       }
     })
     .catch(err => {
-      console.error('❌ MinIO connection error:', err.message);
+      console.error('MinIO connection error:', err.message);
     });
 }
 

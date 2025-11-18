@@ -2,14 +2,14 @@ import request from 'supertest';
 import { jest } from '@jest/globals';
 
 // Мокаем initMinio ПЕРЕД импортом app
-jest.mock('../initMinio.js', () => ({
+jest.mock('../src/initMinio.js', () => ({
   default: jest.fn().mockResolvedValue(undefined)
 }));
 
 // Импортируем app и сервисы
-import app from '../index.js';
+import app from '../src/index.js';
 import { generateTestToken, authHeader } from './helpers/authHelper.js';
-import animalsService from '../services/animalsService.js';
+import animalsService from '../src/services/animalsService.js';
 
 describe('Animals routes', () => {
   const adminToken = generateTestToken({ role: 'admin' });
@@ -63,7 +63,7 @@ describe('Animals routes', () => {
     });
 
     test('returns 404 for non-existent id', async () => {
-      const { default: animalsService } = await import('../services/animalsService.js');
+      const { default: animalsService } = await import('../src/services/animalsService.js');
       animalsService.getAnimalById.mockResolvedValueOnce(null);
       const res = await request(app).get('/api/animals/999');
       expect(res.status).toBe(404);
@@ -167,7 +167,7 @@ describe('Animals routes', () => {
     });
 
     test('returns 404 for non-existent id', async () => {
-      const { default: animalsService } = await import('../services/animalsService.js');
+      const { default: animalsService } = await import('../src/services/animalsService.js');
       animalsService.updateAnimal.mockResolvedValueOnce(null);
       const res = await request(app)
         .put('/api/animals/999')

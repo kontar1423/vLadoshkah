@@ -19,6 +19,8 @@ exports.up = (pgm) => {
     description: { type: 'text' },
     capacity: { type: 'integer' },
     working_hours: { type: 'varchar(200)' },
+    can_adopt: { type: 'bool' },
+    region: { type: 'varchar(255)' },
     admin_id: {
       type: 'integer',
       references: 'users(id)',

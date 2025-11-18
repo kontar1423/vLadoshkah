@@ -496,6 +496,21 @@
                             <div>
                                 <h3 class="shelter-name">${escapeHtml(shelter.name)}</h3>
                                 <div style="color: #666; font-size: 0.9rem;">ID: ${shelter.id}</div>
+                                <div style="color: #666; font-size: 0.9rem;">Регион:
+                                ${shelter.region === 'cao' ? 'Центральный' : ''}
+                                ${shelter.region === 'sao' ? 'Северный' : ''}
+                                ${shelter.region === 'svao' ? 'Северо-Восточный' : ''}
+                                ${shelter.region === 'vao' ? 'Восточный' : ''}
+                                ${shelter.region === 'yuvao' ? 'Юго-Восточный' : ''}
+                                ${shelter.region === 'yao' ? 'Южный' : ''}
+                                ${shelter.region === 'yuzao' ? 'Юго-Западный' : ''}
+                                ${shelter.region === 'zao' ? 'Западный' : ''}
+                                ${shelter.region === 'szao' ? 'Северо-Западный' : ''}
+                                ${shelter.region === 'zelao' ? 'Зеленоградский' : ''}
+                                ${shelter.region === 'tinao' ? 'Троицкий' : ''}
+                                ${shelter.region === 'nao' ? 'Новомосковский' : ''}
+                                ${shelter.region === null ? 'Не указан' : ''}
+                                </div>
                             </div>
                         </div>    
                         

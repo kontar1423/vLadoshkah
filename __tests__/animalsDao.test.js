@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 
 // Мокаем db ПЕРЕД импортом
-jest.mock('../db.js', () => {
+jest.mock('../src/db.js', () => {
   const mockQuery = jest.fn();
   return {
     default: {
@@ -13,7 +13,7 @@ jest.mock('../db.js', () => {
 });
 
 // Мокаем logger ПЕРЕД импортом
-jest.mock('../logger.js', () => ({
+jest.mock('../src/logger.js', () => ({
   default: {
     debug: jest.fn(),
     error: jest.fn(),
@@ -26,8 +26,8 @@ jest.mock('../logger.js', () => ({
   warn: jest.fn()
 }));
 
-import pool from '../db.js';
-import animalsDao from '../dao/animalsDao.js';
+import pool from '../src/db.js';
+import animalsDao from '../src/dao/animalsDao.js';
 
 describe('animalsDao', () => {
   beforeEach(() => {

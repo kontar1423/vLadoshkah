@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
-import photosController from '../controllers/photosController.js';
-import photosService from '../services/photosService.js';
+import photosController from '../src/controllers/photosController.js';
+import photosService from '../src/services/photosService.js';
 import { Readable } from 'stream';
 
 describe('photosController', () => {

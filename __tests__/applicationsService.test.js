@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
-import applicationsService from '../services/applicationsService.js';
-import applicationsDao from '../dao/applicationsDao.js';
-import redisClient from '../cache/redis-client.js';
+import applicationsService from '../src/services/applicationsService.js';
+import applicationsDao from '../src/dao/applicationsDao.js';
+import redisClient from '../src/cache/redis-client.js';
 
 describe('applicationsService', () => {
   beforeEach(() => {

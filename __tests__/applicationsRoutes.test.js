@@ -2,14 +2,14 @@ import request from 'supertest';
 import { jest } from '@jest/globals';
 
 // Мокаем initMinio ПЕРЕД импортом app
-jest.mock('../initMinio.js', () => ({
+jest.mock('../src/initMinio.js', () => ({
   default: jest.fn().mockResolvedValue(undefined)
 }));
 
 // Импортируем app и сервисы
-import app from '../index.js';
+import app from '../src/index.js';
 import { generateTestToken, authHeader } from './helpers/authHelper.js';
-import applicationsService from '../services/applicationsService.js';
+import applicationsService from '../src/services/applicationsService.js';
 
 describe('Applications routes', () => {
   const userToken = generateTestToken({ role: 'user', userId: 1 });
@@ -272,10 +272,12 @@ describe('Applications routes', () => {
       expect(applicationsService.countApproved).toHaveBeenCalled();
     });
 
-    test('возвращает 401 без токена', async () => {
+    test('доступен без токена (публичная метрика)', async () => {
       const res = await request(app).get('/api/applications/count/approved');
       
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(200);
+      expect(res.body.count).toBe(5);
+      expect(applicationsService.countApproved).toHaveBeenCalled();
     });
   });
 });

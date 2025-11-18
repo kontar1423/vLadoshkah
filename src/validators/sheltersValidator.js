@@ -41,6 +41,10 @@ export const createShelterSchema = Joi.object({
     .messages({
       'string.max': 'Рабочие часы не должны превышать 200 символов'
     }),
+  can_adopt: Joi.boolean().optional().allow(null)
+    .messages({
+      'boolean.base': 'Поле can_adopt должно быть булевым значением'
+    }),
   admin_id: Joi.number().integer().positive().optional().allow(null)
     .messages({
       'number.base': 'ID администратора должен быть числом',
@@ -50,7 +54,11 @@ export const createShelterSchema = Joi.object({
   status: Joi.string().valid('active', 'inactive', 'suspended').default('active').optional()
     .messages({
       'any.only': 'Статус должен быть одним из: active, inactive, suspended'
-    })
+    }),
+    region: Joi.string().valid('cao', 'sao', 'svao', 'vao', 'yuvao', 'yao', 'yuzao', 'zao', 'szao', 'zelao', 'tinao', 'nao').optional().allow(null, '')
+    .messages({
+      'any.only': 'Регион должен быть одним из: cao, sao, svao, vao, yuvao, yao, yuzao, zao, szao, zelao, tinao, nao'
+    }),
 });
 
 // Схема для обновления приюта (все поля опциональны)
@@ -93,6 +101,10 @@ export const updateShelterSchema = Joi.object({
     .messages({
       'string.max': 'Рабочие часы не должны превышать 200 символов'
     }),
+  can_adopt: Joi.boolean().optional().allow(null)
+    .messages({
+      'boolean.base': 'Поле can_adopt должно быть булевым значением'
+    }),
   admin_id: Joi.number().integer().positive().optional().allow(null)
     .messages({
       'number.base': 'ID администратора должен быть числом',
@@ -102,7 +114,11 @@ export const updateShelterSchema = Joi.object({
   status: Joi.string().valid('active', 'inactive', 'suspended').optional()
     .messages({
       'any.only': 'Статус должен быть одним из: active, inactive, suspended'
-    })
+    }),
+  region: Joi.string().valid('cao', 'sao', 'svao', 'vao', 'yuvao', 'yao', 'yuzao', 'zao', 'szao', 'zelao', 'tinao', 'nao').optional().allow(null, '')
+    .messages({
+      'any.only': 'Регион должен быть одним из: cao, sao, svao, vao, yuvao, yao, yuzao, zao, szao, zelao, tinao, nao'
+    }),
 }).min(1).messages({
   'object.min': 'Должно быть указано хотя бы одно поле для обновления'
 });

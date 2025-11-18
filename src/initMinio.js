@@ -21,9 +21,9 @@ async function setBucketPublic(bucketName) {
     };
 
     await minioClient.setBucketPolicy(bucketName, JSON.stringify(policy));
-    console.log(`✅ Bucket "${bucketName}" set to public`);
+    console.log(`Bucket "${bucketName}" set to public access`);
   } catch (error) {
-    console.error(`❌ Error setting bucket policy for ${bucketName}:`, error.message);
+    console.error(`Error setting bucket policy for ${bucketName}:`, error.message);
     // Если политика уже установлена - это нормально
     if (!error.message.includes('PolicyAlreadyExists')) {
       throw error;
@@ -41,20 +41,20 @@ async function initMinio() {
     if (!bucketExists) {
       // Создаем бакет
       await minioClient.makeBucket(bucketName);
-      console.log(`✅ Bucket "${bucketName}" created`);
+      console.log(`Bucket "${bucketName}" created`);
       
       // Сразу устанавливаем публичный доступ
       await setBucketPublic(bucketName);
     } else {
-      console.log(`✅ Bucket "${bucketName}" already exists`);
+      console.log(`Bucket "${bucketName}" already exists`);
       // Убедимся что политика установлена (на случай перезапуска)
       await setBucketPublic(bucketName);
     }
     
-    console.log('🎉 MinIO initialization completed');
+    console.log('MinIO initialization completed');
     
   } catch (error) {
-    console.error('❌ MinIO initialization failed:', error);
+    console.error('MinIO initialization failed:', error);
     throw error;
   }
 }

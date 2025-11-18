@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import upload from '../middleware/upload.js';
+import upload from '../src/middleware/upload.js';
 
 describe('Upload middleware', () => {
   describe('fileFilter', () => {

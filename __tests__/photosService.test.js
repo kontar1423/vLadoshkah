@@ -1,8 +1,8 @@
 import { jest } from '@jest/globals';
-import photosService from '../services/photosService.js';
-import photosDao from '../dao/photosDao.js';
-import redisClient from '../cache/redis-client.js';
-import minioClient from '../minioClient.js';
+import photosService from '../src/services/photosService.js';
+import photosDao from '../src/dao/photosDao.js';
+import redisClient from '../src/cache/redis-client.js';
+import minioClient from '../src/minioClient.js';
 
 describe('photosService', () => {
   beforeEach(() => {

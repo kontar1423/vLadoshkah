@@ -1,4 +1,4 @@
-import { query } from '../db.js'; // ← ЭТОЙ СТРОКИ НЕТ В ВАШЕМ ФАЙЛЕ!
+import { query } from '../db.js';
 import { debug, info, error } from '../logger.js';
 async function getAll() {
   try {

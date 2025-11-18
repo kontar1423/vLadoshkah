@@ -2,7 +2,7 @@
 
 set -e
 
-echo "⏳ Waiting for database to be ready..."
+echo "[wait] Checking database availability..."
 
 # Проверяем не только порт, но и возможность подключения
 until pg_isready -h db -p 5432 -U postgres; do
@@ -10,9 +10,9 @@ until pg_isready -h db -p 5432 -U postgres; do
   sleep 2
 done
 
-echo "✅ Database is ready"
+echo "[ok] Database is ready"
 
-echo "⏳ Waiting for MinIO..."
+echo "[wait] Checking MinIO availability..."
 
 # Проверяем MinIO API endpoint
 until curl -f http://minio:9000/minio/health/live; do
@@ -20,8 +20,8 @@ until curl -f http://minio:9000/minio/health/live; do
   sleep 2
 done
 
-echo "✅ MinIO is ready"
-echo "⏳ Waiting for Redis..."
+echo "[ok] MinIO is ready"
+echo "[wait] Checking Redis availability..."
 
 # Проверяем Redis endpoint
 until redis-cli -h redis ping; do
@@ -29,10 +29,10 @@ until redis-cli -h redis ping; do
   sleep 2
 done
 
-echo "✅ Redis is ready"
+echo "[ok] Redis is ready"
 
-echo "🚀 Running migrations..."
+echo "[run] Applying migrations..."
 npx node-pg-migrate up || echo "Migrations failed or already applied"
 
-echo "🚀 Starting server..."
+echo "[run] Starting server..."
 exec npm run dev
