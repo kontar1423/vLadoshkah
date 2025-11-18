@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import jwt from 'jsonwebtoken';
-import { authenticateToken, authorize } from '../middleware/auth.js';
-import authConfig from '../config/auth.js';
+import { authenticateToken, authorize } from '../src/middleware/auth.js';
+import authConfig from '../src/config/auth.js';
 
 const jwtConfig = authConfig.jwt;
 

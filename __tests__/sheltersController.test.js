@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
-import sheltersController from '../controllers/sheltersController.js';
-import sheltersService from '../services/sheltersService.js';
+import sheltersController from '../src/controllers/sheltersController.js';
+import sheltersService from '../src/services/sheltersService.js';
 
 describe('sheltersController', () => {
   let req, res;

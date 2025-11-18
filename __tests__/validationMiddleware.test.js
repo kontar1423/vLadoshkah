@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import Joi from 'joi';
-import { validate } from '../middleware/validation.js';
+import { validate } from '../src/middleware/validation.js';
 
 describe('Validation middleware', () => {
   let req, res, next;

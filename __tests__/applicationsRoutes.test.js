@@ -2,14 +2,14 @@ import request from 'supertest';
 import { jest } from '@jest/globals';
 
 // Мокаем initMinio ПЕРЕД импортом app
-jest.mock('../initMinio.js', () => ({
+jest.mock('../src/initMinio.js', () => ({
   default: jest.fn().mockResolvedValue(undefined)
 }));
 
 // Импортируем app и сервисы
-import app from '../index.js';
+import app from '../src/index.js';
 import { generateTestToken, authHeader } from './helpers/authHelper.js';
-import applicationsService from '../services/applicationsService.js';
+import applicationsService from '../src/services/applicationsService.js';
 
 describe('Applications routes', () => {
   const userToken = generateTestToken({ role: 'user', userId: 1 });

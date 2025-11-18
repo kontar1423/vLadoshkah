@@ -1,8 +1,8 @@
 import { jest } from '@jest/globals';
-import animalsController from '../controllers/animalsController.js';
-import animalsService from '../services/animalsService.js';
-import sheltersDao from '../dao/sheltersDao.js';
-import animalsDao from '../dao/animalsDao.js';
+import animalsController from '../src/controllers/animalsController.js';
+import animalsService from '../src/services/animalsService.js';
+import sheltersDao from '../src/dao/sheltersDao.js';
+import animalsDao from '../src/dao/animalsDao.js';
 
 describe('animalsController', () => {
   let req, res;

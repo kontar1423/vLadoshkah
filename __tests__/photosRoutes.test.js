@@ -2,14 +2,14 @@ import request from 'supertest';
 import { jest } from '@jest/globals';
 
 // Мокаем initMinio ПЕРЕД импортом app
-jest.mock('../initMinio.js', () => ({
+jest.mock('../src/initMinio.js', () => ({
   default: jest.fn().mockResolvedValue(undefined)
 }));
 
 // Импортируем app и сервисы
-import app from '../index.js';
+import app from '../src/index.js';
 import { generateTestToken, authHeader } from './helpers/authHelper.js';
-import photosService from '../services/photosService.js';
+import photosService from '../src/services/photosService.js';
 import { Readable } from 'stream';
 
 describe('Photos routes', () => {

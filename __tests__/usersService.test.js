@@ -1,9 +1,9 @@
 import { jest } from '@jest/globals';
-import usersService from '../services/usersService.js';
-import usersDao from '../dao/usersDao.js';
-import photosDao from '../dao/photosDao.js';
-import photosService from '../services/photosService.js';
-import redisClient from '../cache/redis-client.js';
+import usersService from '../src/services/usersService.js';
+import usersDao from '../src/dao/usersDao.js';
+import photosDao from '../src/dao/photosDao.js';
+import photosService from '../src/services/photosService.js';
+import redisClient from '../src/cache/redis-client.js';
 
 describe('usersService', () => {
   beforeEach(() => {

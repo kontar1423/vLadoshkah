@@ -2,14 +2,14 @@ import request from 'supertest';
 import { jest } from '@jest/globals';
 
 // Мокаем initMinio ПЕРЕД импортом app
-jest.mock('../initMinio.js', () => ({
+jest.mock('../src/initMinio.js', () => ({
   default: jest.fn().mockResolvedValue(undefined)
 }));
 
 // Импортируем app и сервисы
-import app from '../index.js';
+import app from '../src/index.js';
 import { generateTestToken, authHeader } from './helpers/authHelper.js';
-import sheltersService from '../services/sheltersService.js';
+import sheltersService from '../src/services/sheltersService.js';
 
 describe('Shelters routes', () => {
   const adminToken = generateTestToken({ role: 'admin' });
@@ -53,7 +53,7 @@ describe('Shelters routes', () => {
     });
 
     test('returns 404 for non-existent id', async () => {
-      const { default: sheltersService } = await import('../services/sheltersService.js');
+      const { default: sheltersService } = await import('../src/services/sheltersService.js');
       sheltersService.getShelterById.mockResolvedValueOnce(null);
       const res = await request(app).get('/api/shelters/999');
       expect(res.status).toBe(404);
@@ -104,7 +104,7 @@ describe('Shelters routes', () => {
     });
 
     test('returns 404 for non-existent id', async () => {
-      const { default: sheltersService } = await import('../services/sheltersService.js');
+      const { default: sheltersService } = await import('../src/services/sheltersService.js');
       sheltersService.updateShelter.mockResolvedValueOnce(null);
       const res = await request(app)
         .put('/api/shelters/999')

@@ -2,13 +2,13 @@ import request from 'supertest';
 import { jest } from '@jest/globals';
 
 // Мокаем initMinio ПЕРЕД импортом app
-jest.mock('../initMinio.js', () => ({
+jest.mock('../src/initMinio.js', () => ({
   default: jest.fn().mockResolvedValue(undefined)
 }));
 
 // Импортируем app и сервисы
-import app from '../index.js';
-import authService from '../services/authService.js';
+import app from '../src/index.js';
+import authService from '../src/services/authService.js';
 
 describe('Auth routes', () => {
   beforeEach(() => {
