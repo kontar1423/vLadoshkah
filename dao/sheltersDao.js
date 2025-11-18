@@ -34,14 +34,14 @@ async function getByAdminId(adminId) {
   }
 }
 
-async function create({ name, address, phone, email, website, description, capacity, working_hours, admin_id }) {
+async function create({ name, address, phone, email, website, description, capacity, working_hours, can_adopt, admin_id, region }) {
   try {
     const result = await query(
       `INSERT INTO shelters (
-        name, address, phone, email, website, description, capacity, working_hours, admin_id
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+        name, address, phone, email, website, description, capacity, working_hours, can_adopt, admin_id, region
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
       RETURNING *`,
-      [name, address, phone, email, website, description, capacity, working_hours, admin_id || null]
+      [name, address, phone, email, website, description, capacity, working_hours, can_adopt !== undefined ? can_adopt : null, admin_id || null, region || null]
     );
     info({ shelter: result.rows[0] }, 'DAO: created shelter');
     return result.rows[0];
@@ -51,7 +51,7 @@ async function create({ name, address, phone, email, website, description, capac
   }
 }
 
-async function update(id, { name, address, phone, email, website, description, capacity, working_hours, status }) {
+async function update(id, { name, address, phone, email, website, description, capacity, working_hours, can_adopt, admin_id, status, region}) {
   try {
     const currentShelter = await getById(id);
     if (!currentShelter) {
@@ -66,11 +66,14 @@ async function update(id, { name, address, phone, email, website, description, c
       description: description !== undefined ? description : currentShelter.description,
       capacity: capacity !== undefined ? capacity : currentShelter.capacity,
       working_hours: working_hours !== undefined ? working_hours : currentShelter.working_hours,
+      can_adopt: can_adopt !== undefined ? can_adopt : currentShelter.can_adopt,
+      admin_id: admin_id !== undefined ? admin_id : currentShelter.admin_id,
       status: status !== undefined ? status : currentShelter.status,
+      region: region !== undefined ? region : currentShelter.region,
     };
     const result = await query(
-      `UPDATE shelters SET name = $1, address = $2, phone = $3, email = $4, website = $5, description = $6, capacity = $7, working_hours = $8, status = $9, updated_at = CURRENT_TIMESTAMP WHERE id = $10 RETURNING *`,
-      [updatedData.name, updatedData.address, updatedData.phone, updatedData.email, updatedData.website, updatedData.description, updatedData.capacity, updatedData.working_hours, updatedData.status, id]
+      `UPDATE shelters SET name = $1, address = $2, phone = $3, email = $4, website = $5, description = $6, capacity = $7, working_hours = $8, can_adopt = $9, admin_id = $10, status = $11, region = $12, updated_at = CURRENT_TIMESTAMP WHERE id = $13 RETURNING *`,
+      [updatedData.name, updatedData.address, updatedData.phone, updatedData.email, updatedData.website, updatedData.description, updatedData.capacity, updatedData.working_hours, updatedData.can_adopt, updatedData.admin_id, updatedData.status, updatedData.region, id]
     );
     info({ shelter: result.rows[0] }, 'DAO: updated shelter');
     return result.rows[0] || null;

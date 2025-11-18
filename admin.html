@@ -389,9 +389,11 @@
             </div>
 
             <div class="tabs">
-                <button class="tab active" onclick="switchTab('users')">👥 Пользователи</button>
-                <button class="tab" onclick="switchTab('animals')">🐾 Животные</button>
-                <button class="tab" onclick="switchTab('shelters')">🏠 Приюты</button>
+                <button type="button" class="tab active" onclick="switchTab('users', event)">👥 Пользователи</button>
+                <button type="button" class="tab" onclick="switchTab('animals', event)">🐾 Животные</button>
+                <button type="button" class="tab" onclick="switchTab('shelters', event)">🏠 Приюты</button>
+                <button type="button" class="tab" onclick="switchTab('applications', event)">📋 Заявки</button>
+                <button type="button" class="tab" onclick="switchTab('manage', event)">⚙️ Управление</button>
             </div>
 
             <!-- Вкладка пользователей -->
@@ -418,10 +420,16 @@
                             </div>
                             <div class="form-group">
                                 <label for="userRole">Роль</label>
-                                <select id="userRole">
+                                <select id="userRole" onchange="toggleShelterSelect()">
                                     <option value="user">Пользователь</option>
                                     <option value="admin">Администратор</option>
                                     <option value="shelter_admin">Администратор приюта</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="shelterSelectGroup" style="display: none;">
+                                <label for="userShelter">Приют</label>
+                                <select id="userShelter">
+                                    <option value="">Загрузка приютов...</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -549,6 +557,24 @@
                                 <input type="text" id="shelterAddress">
                             </div>
                             <div class="form-group">
+                                <label for="shelterRegion">Округ</label>
+                                <select id="shelterRegion">
+                                    <option value="">Не выбран</option>
+                                    <option value="cao">Центральный</option>
+                                    <option value="sao">Северный</option>
+                                    <option value="svao">Северо-Восточный</option>
+                                    <option value="vao">Восточный</option>
+                                    <option value="yuvao">Юго-Восточный</option>
+                                    <option value="yao">Южный</option>
+                                    <option value="yuzao">Юго-Западный</option>
+                                    <option value="zao">Западный</option>
+                                    <option value="szao">Северо-Западный</option>
+                                    <option value="zelao">Зеленоградский</option>
+                                    <option value="tinao">Троицкий</option>
+                                    <option value="nao">Новомосковский</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
                                 <label for="shelterPhone">Телефон</label>
                                 <input type="tel" id="shelterPhone">
                             </div>
@@ -567,6 +593,14 @@
                             <div class="form-group">
                                 <label for="shelterWorkingHours">Часы работы</label>
                                 <input type="text" id="shelterWorkingHours" placeholder="Пн-Пт 9:00-18:00">
+                            </div>
+                            <div class="form-group">
+                                <label for="shelterCanAdopt">Может принимать на усыновление</label>
+                                <select id="shelterCanAdopt">
+                                    <option value="">Не указано</option>
+                                    <option value="true">Да</option>
+                                    <option value="false">Нет</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label for="shelterStatus">Статус</label>
@@ -593,6 +627,68 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Вкладка заявок -->
+            <div id="applicationsTab" class="tab-content">
+                <div class="form-section">
+                    <h2>Создать новую заявку</h2>
+                    <form id="applicationForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="applicationUser" class="required">Пользователь</label>
+                                <select id="applicationUser" required>
+                                    <option value="">Загрузка пользователей...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="applicationShelter" class="required">Приют</label>
+                                <select id="applicationShelter" required>
+                                    <option value="">Загрузка приютов...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="applicationAnimal" class="required">Животное</label>
+                                <select id="applicationAnimal" required>
+                                    <option value="">Загрузка животных...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="applicationStatus">Статус</label>
+                                <select id="applicationStatus">
+                                    <option value="pending">Ожидает</option>
+                                    <option value="approved">Одобрена</option>
+                                    <option value="rejected">Отклонена</option>
+                                    <option value="cancelled">Отменена</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="applicationDescription" class="required">Описание</label>
+                                <textarea id="applicationDescription" minlength="10" maxlength="5000" required placeholder="Минимум 10 символов"></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Создать заявку</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Вкладка управления -->
+            <div id="manageTab" class="tab-content">
+                <div class="form-section">
+                    <h2>Управление записями</h2>
+                    <div style="margin-bottom: 20px;">
+                        <label for="manageType" style="font-weight: 600; margin-bottom: 10px; display: block;">Выберите тип записи:</label>
+                        <select id="manageType" onchange="loadManageList(event)" style="padding: 10px; font-size: 16px; width: 300px;">
+                            <option value="">-- Выберите тип --</option>
+                            <option value="animals">Животные</option>
+                            <option value="shelters">Приюты</option>
+                            <option value="users">Пользователи</option>
+                            <option value="applications">Заявки</option>
+                        </select>
+                    </div>
+                    <div id="manageListContainer" style="margin-top: 20px;"></div>
+                    <div id="manageEditContainer" style="margin-top: 30px; display: none;"></div>
+                </div>
+            </div>
         </div>
 
         <div id="messageContainer"></div>
@@ -614,6 +710,8 @@
             }
             setupFileUploads();
             loadShelters();
+            loadUsers();
+            loadAnimals();
         });
 
         function setupFileUploads() {
@@ -776,13 +874,77 @@
         }
 
         // Переключение вкладок
-        function switchTab(tabName) {
+        function switchTab(tabName, evt) {
+            // Предотвращаем стандартное поведение, если событие передано
+            if (evt) {
+                evt.preventDefault();
+                evt.stopPropagation();
+            }
+            
+            // Убираем активный класс со всех вкладок
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            event.target.classList.add('active');
-            document.getElementById(tabName + 'Tab').classList.add('active');
+            // Находим и активируем нужную кнопку
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                const tabText = tab.textContent.trim();
+                const isTargetTab = (tabName === 'users' && tabText.includes('Пользователи')) ||
+                                   (tabName === 'animals' && tabText.includes('Животные')) ||
+                                   (tabName === 'shelters' && tabText.includes('Приюты')) ||
+                                   (tabName === 'applications' && tabText.includes('Заявки')) ||
+                                   (tabName === 'manage' && tabText.includes('Управление'));
+                if (isTargetTab) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // Активируем нужный контент
+            const targetTab = document.getElementById(tabName + 'Tab');
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+            
+            // Загружаем данные для формы заявки при открытии вкладки
+            if (tabName === 'applications') {
+                loadApplicationFormData();
+            }
         }
+
+        // Создание заявки
+        document.getElementById('applicationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const applicationData = {
+                user_id: parseInt(document.getElementById('applicationUser').value),
+                shelter_id: parseInt(document.getElementById('applicationShelter').value),
+                animal_id: parseInt(document.getElementById('applicationAnimal').value),
+                description: document.getElementById('applicationDescription').value,
+                status: document.getElementById('applicationStatus').value || 'pending'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/applications`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify(applicationData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('Заявка успешно создана!', 'success');
+                    document.getElementById('applicationForm').reset();
+                } else {
+                    showMessage(result.error || 'Ошибка создания заявки', 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка сети: ' + error.message, 'error');
+            }
+        });
 
         // Загрузка приютов
         async function loadShelters() {
@@ -790,17 +952,116 @@
                 const response = await fetch(`${API_BASE}/shelters`);
                 if (response.ok) {
                     const shelters = await response.json();
-                    const select = document.getElementById('animalShelter');
-                    select.innerHTML = '<option value="">Выберите приют</option>';
-                    shelters.forEach(shelter => {
-                        const option = document.createElement('option');
-                        option.value = shelter.id;
-                        option.textContent = shelter.name;
-                        select.appendChild(option);
-                    });
+                    // Заполняем select для животных
+                    const animalSelect = document.getElementById('animalShelter');
+                    if (animalSelect) {
+                        animalSelect.innerHTML = '<option value="">Выберите приют</option>';
+                        shelters.forEach(shelter => {
+                            const option = document.createElement('option');
+                            option.value = shelter.id;
+                            option.textContent = shelter.name;
+                            animalSelect.appendChild(option);
+                        });
+                    }
+                    // Заполняем select для админов приютов
+                    const userShelterSelect = document.getElementById('userShelter');
+                    if (userShelterSelect) {
+                        userShelterSelect.innerHTML = '<option value="">Выберите приют</option>';
+                        shelters.forEach(shelter => {
+                            const option = document.createElement('option');
+                            option.value = shelter.id;
+                            option.textContent = shelter.name;
+                            userShelterSelect.appendChild(option);
+                        });
+                    }
+                    // Заполняем select для заявок
+                    const applicationShelterSelect = document.getElementById('applicationShelter');
+                    if (applicationShelterSelect) {
+                        applicationShelterSelect.innerHTML = '<option value="">Выберите приют</option>';
+                        shelters.forEach(shelter => {
+                            const option = document.createElement('option');
+                            option.value = shelter.id;
+                            option.textContent = shelter.name;
+                            applicationShelterSelect.appendChild(option);
+                        });
+                    }
                 }
             } catch (error) {
                 console.error('Ошибка загрузки приютов:', error);
+            }
+        }
+
+        // Загрузка данных для формы заявки
+        async function loadApplicationFormData() {
+            // Загружаем пользователей
+            if (!window.allUsers || window.allUsers.length === 0) {
+                await loadUsers();
+            }
+            const userSelect = document.getElementById('applicationUser');
+            if (userSelect && window.allUsers) {
+                userSelect.innerHTML = '<option value="">Выберите пользователя</option>';
+                window.allUsers.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    const userName = (user.firstname || '') + ' ' + (user.lastname || '');
+                    option.textContent = userName.trim() ? `${userName.trim()} (${user.email})` : user.email;
+                    userSelect.appendChild(option);
+                });
+            }
+
+            // Загружаем приюты
+            if (document.getElementById('applicationShelter').options.length <= 1) {
+                await loadShelters();
+            }
+
+            // Загружаем животных
+            if (!window.allAnimals || window.allAnimals.length === 0) {
+                await loadAnimals();
+            }
+            const animalSelect = document.getElementById('applicationAnimal');
+            if (animalSelect && window.allAnimals) {
+                animalSelect.innerHTML = '<option value="">Выберите животное</option>';
+                window.allAnimals.forEach(animal => {
+                    const option = document.createElement('option');
+                    option.value = animal.id;
+                    option.textContent = `${animal.name} (${animal.type})`;
+                    animalSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Загрузка пользователей
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/users`);
+                if (response.ok) {
+                    window.allUsers = await response.json();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки пользователей:', error);
+            }
+        }
+
+        // Загрузка животных
+        async function loadAnimals() {
+            try {
+                const response = await fetch(`${API_BASE}/animals`);
+                if (response.ok) {
+                    window.allAnimals = await response.json();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки животных:', error);
+            }
+        }
+
+        // Показать/скрыть выбор приюта для админа приюта
+        function toggleShelterSelect() {
+            const roleSelect = document.getElementById('userRole');
+            const shelterSelectGroup = document.getElementById('shelterSelectGroup');
+            if (roleSelect.value === 'shelter_admin') {
+                shelterSelectGroup.style.display = 'flex';
+            } else {
+                shelterSelectGroup.style.display = 'none';
             }
         }
 
@@ -834,9 +1095,38 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    showMessage('Пользователь успешно создан!', 'success');
+                    const userId = result.user?.id || result.id;
+                    const role = document.getElementById('userRole').value;
+                    const shelterId = document.getElementById('userShelter').value;
+
+                    // Если создан админ приюта и выбран приют, обновляем приют
+                    if (role === 'shelter_admin' && shelterId && userId) {
+                        try {
+                            const updateResponse = await fetch(`${API_BASE}/shelters/${shelterId}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${accessToken}`
+                                },
+                                body: JSON.stringify({ admin_id: userId })
+                            });
+
+                            if (updateResponse.ok) {
+                                showMessage('Пользователь успешно создан и назначен администратором приюта!', 'success');
+                            } else {
+                                showMessage('Пользователь создан, но не удалось назначить его администратором приюта', 'error');
+                            }
+                        } catch (updateError) {
+                            showMessage('Пользователь создан, но ошибка при назначении администратором приюта: ' + updateError.message, 'error');
+                        }
+                    } else {
+                        showMessage('Пользователь успешно создан!', 'success');
+                    }
+
                     document.getElementById('userForm').reset();
                     document.getElementById('userPhotoPreview').innerHTML = '';
+                    document.getElementById('shelterSelectGroup').style.display = 'none';
+                    loadUsers();
                 } else {
                     showMessage(result.error || 'Ошибка создания пользователя', 'error');
                 }
@@ -905,7 +1195,9 @@
                 description: document.getElementById('shelterDescription').value || null,
                 capacity: document.getElementById('shelterCapacity').value ? parseInt(document.getElementById('shelterCapacity').value) : null,
                 working_hours: document.getElementById('shelterWorkingHours').value || null,
-                status: document.getElementById('shelterStatus').value
+                can_adopt: document.getElementById('shelterCanAdopt').value === '' ? null : document.getElementById('shelterCanAdopt').value === 'true',
+                status: document.getElementById('shelterStatus').value,
+                region: document.getElementById('shelterRegion').value || null
             };
 
             try {
@@ -976,6 +1268,673 @@
             setTimeout(() => {
                 messageDiv.remove();
             }, 5000);
+        }
+
+        // Загрузка списка для управления
+        async function loadManageList(event) {
+            // Предотвращаем стандартное поведение, если событие передано
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            const type = document.getElementById('manageType').value;
+            const container = document.getElementById('manageListContainer');
+            const editContainer = document.getElementById('manageEditContainer');
+            
+            editContainer.innerHTML = '';
+            editContainer.style.display = 'none';
+            
+            if (!type) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = '<p>Загрузка...</p>';
+            
+            try {
+                let items = [];
+                let endpoint = '';
+                
+                switch(type) {
+                    case 'animals':
+                        endpoint = `${API_BASE}/animals`;
+                        break;
+                    case 'shelters':
+                        endpoint = `${API_BASE}/shelters`;
+                        break;
+                    case 'users':
+                        endpoint = `${API_BASE}/users`;
+                        break;
+                    case 'applications':
+                        endpoint = `${API_BASE}/applications`;
+                        break;
+                }
+                
+                // Проверяем наличие токена для заявок
+                if (type === 'applications' && !accessToken) {
+                    container.innerHTML = '<p style="color: #dc3545;">Ошибка: требуется авторизация. Пожалуйста, войдите снова.</p>';
+                    return;
+                }
+                
+                console.log('Загрузка списка:', type, endpoint);
+                
+                const response = await fetch(endpoint, {
+                    headers: type === 'applications' ? {
+                        'Authorization': `Bearer ${accessToken}`
+                    } : {},
+                    redirect: 'manual' // Предотвращаем автоматические редиректы
+                });
+                
+                console.log('Ответ получен:', response.status, response.type);
+                
+                // Обрабатываем редиректы явно
+                if (response.type === 'opaqueredirect' || response.status === 0) {
+                    container.innerHTML = '<p style="color: #dc3545;">Ошибка: произошел редирект. Проверьте авторизацию.</p>';
+                    return;
+                }
+                
+                if (response.status === 401 || response.status === 403) {
+                    container.innerHTML = '<p style="color: #dc3545;">Ошибка авторизации. Пожалуйста, войдите снова.</p>';
+                    showMessage('Сессия истекла. Пожалуйста, войдите снова.', 'error');
+                    return;
+                }
+                
+                if (response.ok) {
+                    const responseText = await response.text();
+                    console.log('Текст ответа:', responseText.substring(0, 200));
+                    
+                    try {
+                        items = JSON.parse(responseText);
+                    } catch (parseError) {
+                        console.error('Ошибка парсинга JSON:', parseError, responseText);
+                        container.innerHTML = '<p style="color: #dc3545;">Ошибка: неверный формат ответа от сервера</p>';
+                        return;
+                    }
+                    
+                    // Проверяем, что items - это массив
+                    if (!Array.isArray(items)) {
+                        console.error('Ответ не является массивом:', items);
+                        container.innerHTML = '<p style="color: #dc3545;">Ошибка: неверный формат данных (ожидался массив)</p>';
+                        return;
+                    }
+                    
+                    console.log('Загружено записей:', items.length);
+                    
+                    if (items.length === 0) {
+                        container.innerHTML = '<p style="color: #666; padding: 20px; text-align: center; background: #f8f9fa; border-radius: 5px;">Записей не найдено. Создайте новую запись через соответствующие вкладки.</p>';
+                        return;
+                    }
+                    
+                    try {
+                        let html = '<div style="display: grid; gap: 10px; max-height: 400px; overflow-y: auto;">';
+                        items.forEach(item => {
+                            if (!item || !item.id) {
+                                console.warn('Пропущен элемент без id:', item);
+                                return;
+                            }
+                            
+                            let displayText = '';
+                            try {
+                                if (type === 'animals') {
+                                    displayText = `${item.name || 'Без имени'} (${item.type || 'неизвестно'}, возраст: ${item.age || '?'})`;
+                                } else if (type === 'shelters') {
+                                    displayText = `${item.name || 'Без названия'} - ${item.address || 'без адреса'} - ${item.region || 'без региона'}`;
+                                } else if (type === 'users') {
+                                    const name = (item.firstname || '') + ' ' + (item.lastname || '');
+                                    displayText = name.trim() ? `${name.trim()} (${item.email || 'без email'})` : (item.email || 'без email');
+                                } else if (type === 'applications') {
+                                    displayText = `Заявка #${item.id} - ${item.status || 'неизвестно'}`;
+                                }
+                            } catch (err) {
+                                console.error('Ошибка форматирования элемента:', err, item);
+                                displayText = `Запись #${item.id || '?'}`;
+                            }
+                            
+                            html += `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f8f9fa;">
+                                    <span>${displayText}</span>
+                                    <div style="display: flex; gap: 10px;">
+                                        <button type="button" class="btn btn-primary" onclick="(function(e){e.preventDefault();e.stopPropagation();editItem('${type}', ${item.id}, e);return false;})(event)" style="padding: 5px 15px; font-size: 14px;">Редактировать</button>
+                                        <button type="button" class="btn btn-secondary" onclick="(function(e){e.preventDefault();e.stopPropagation();deleteItem('${type}', ${item.id}, e);return false;})(event)" style="padding: 5px 15px; font-size: 14px; background: #dc3545;">Удалить</button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                        container.innerHTML = html;
+                    } catch (error) {
+                        console.error('Ошибка при отображении списка:', error);
+                        container.innerHTML = '<p style="color: #dc3545;">Ошибка при отображении списка: ' + error.message + '</p>';
+                    }
+                } else {
+                    const errorText = await response.text();
+                    let errorMessage = 'Ошибка загрузки данных';
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.error || errorMessage;
+                    } catch (e) {
+                        errorMessage = `Ошибка ${response.status}: ${errorText}`;
+                    }
+                    container.innerHTML = `<p style="color: #dc3545;">${errorMessage}</p>`;
+                }
+            } catch (error) {
+                container.innerHTML = '<p style="color: #dc3545;">Ошибка: ' + error.message + '</p>';
+            }
+        }
+
+        // Редактирование записи
+        async function editItem(type, id, evt) {
+            // Предотвращаем любые возможные редиректы
+            if (evt) {
+                evt.preventDefault();
+                evt.stopPropagation();
+            }
+            
+            const editContainer = document.getElementById('manageEditContainer');
+            editContainer.style.display = 'block';
+            editContainer.innerHTML = '<p>Загрузка данных...</p>';
+            
+            try {
+                let endpoint = '';
+                switch(type) {
+                    case 'animals':
+                        endpoint = `${API_BASE}/animals/${id}`;
+                        break;
+                    case 'shelters':
+                        endpoint = `${API_BASE}/shelters/${id}`;
+                        break;
+                    case 'users':
+                        endpoint = `${API_BASE}/users/${id}`;
+                        break;
+                    case 'applications':
+                        endpoint = `${API_BASE}/applications/${id}`;
+                        break;
+                }
+                
+                // Проверяем наличие токена для заявок
+                if (type === 'applications' && !accessToken) {
+                    editContainer.innerHTML = '<p style="color: #dc3545;">Ошибка: требуется авторизация. Пожалуйста, войдите снова.</p>';
+                    return;
+                }
+                
+                const response = await fetch(endpoint, {
+                    headers: type === 'applications' ? {
+                        'Authorization': `Bearer ${accessToken}`
+                    } : {},
+                    redirect: 'manual' // Предотвращаем автоматические редиректы
+                });
+                
+                // Обрабатываем редиректы явно
+                if (response.type === 'opaqueredirect' || response.status === 0) {
+                    editContainer.innerHTML = '<p style="color: #dc3545;">Ошибка: произошел редирект. Проверьте авторизацию.</p>';
+                    return;
+                }
+                
+                if (response.status === 401 || response.status === 403) {
+                    editContainer.innerHTML = '<p style="color: #dc3545;">Ошибка авторизации. Пожалуйста, войдите снова.</p>';
+                    showMessage('Сессия истекла. Пожалуйста, войдите снова.', 'error');
+                    return;
+                }
+                
+                if (response.ok) {
+                    const item = await response.json();
+                    let formHtml = '';
+                    
+                    if (type === 'animals') {
+                        formHtml = `
+                            <h3>Редактирование животного</h3>
+                            <form id="editAnimalForm" onsubmit="saveItem('animals', ${id}, event)">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="editAnimalName" class="required">Имя</label>
+                                        <input type="text" id="editAnimalName" value="${item.name || ''}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editAnimalAge" class="required">Возраст</label>
+                                        <input type="number" id="editAnimalAge" value="${item.age || ''}" min="0" max="30" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editAnimalType" class="required">Тип</label>
+                                        <select id="editAnimalType" required>
+                                            <option value="cat" ${item.type === 'cat' ? 'selected' : ''}>Кошка</option>
+                                            <option value="dog" ${item.type === 'dog' ? 'selected' : ''}>Собака</option>
+                                            <option value="rabbit" ${item.type === 'rabbit' ? 'selected' : ''}>Кролик</option>
+                                            <option value="parrot" ${item.type === 'parrot' ? 'selected' : ''}>Попугай</option>
+                                            <option value="hamster" ${item.type === 'hamster' ? 'selected' : ''}>Хомяк</option>
+                                            <option value="other" ${item.type === 'other' ? 'selected' : ''}>Другое</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editAnimalGender">Пол</label>
+                                        <select id="editAnimalGender">
+                                            <option value="">Не указан</option>
+                                            <option value="male" ${item.gender === 'male' ? 'selected' : ''}>Мужской</option>
+                                            <option value="female" ${item.gender === 'female' ? 'selected' : ''}>Женский</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editAnimalShelter" class="required">Приют</label>
+                                        <select id="editAnimalShelter" required></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editAnimalWeight">Вес (кг)</label>
+                                        <input type="number" id="editAnimalWeight" value="${item.weight || ''}" min="0" step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editAnimalColor">Окрас</label>
+                                        <input type="text" id="editAnimalColor" value="${item.color || ''}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editAnimalSize">Размер</label>
+                                        <select id="editAnimalSize">
+                                            <option value="">Не указан</option>
+                                            <option value="small" ${item.animal_size === 'small' ? 'selected' : ''}>Маленький</option>
+                                            <option value="medium" ${item.animal_size === 'medium' ? 'selected' : ''}>Средний</option>
+                                            <option value="large" ${item.animal_size === 'large' ? 'selected' : ''}>Крупный</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editAnimalHealth">Состояние здоровья</label>
+                                        <input type="text" id="editAnimalHealth" value="${item.health || ''}">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label for="editAnimalPersonality">Характер</label>
+                                        <textarea id="editAnimalPersonality">${item.personality || ''}</textarea>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label for="editAnimalHistory">История</label>
+                                        <textarea id="editAnimalHistory">${item.history || ''}</textarea>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Сохранить</button>
+                            </form>
+                        `;
+                    } else if (type === 'shelters') {
+                        formHtml = `
+                            <h3>Редактирование приюта</h3>
+                            <form id="editShelterForm" onsubmit="saveItem('shelters', ${id}, event)">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="editShelterName" class="required">Название</label>
+                                        <input type="text" id="editShelterName" value="${item.name || ''}" required>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label for="editShelterAddress">Адрес</label>
+                                        <input type="text" id="editShelterAddress" value="${item.address || ''}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editShelterRegion">Округ</label>
+                                        <select id="editShelterRegion">
+                                            <option value="">Не выбран</option>
+                                            <option value="cao" ${item.region === 'cao' ? 'selected' : ''}>Центральный</option>
+                                        <option value="sao" ${item.region === 'sao' ? 'selected' : ''}>Северный</option>
+                                        <option value="svao" ${item.region === 'svao' ? 'selected' : ''}>Северо-Восточный</option>
+                                        <option value="vao" ${item.region === 'vao' ? 'selected' : ''}>Восточный</option>
+                                        <option value="yuvao" ${item.region === 'yuvao' ? 'selected' : ''}>Юго-Восточный</option>
+                                        <option value="yao" ${item.region === 'yao' ? 'selected' : ''}>Южный</option>
+                                        <option value="yuzao" ${item.region === 'yuzao' ? 'selected' : ''}>Юго-Западный</option>
+                                        <option value="zao" ${item.region === 'zao' ? 'selected' : ''}>Западный</option>
+                                        <option value="szao" ${item.region === 'szao' ? 'selected' : ''}>Северо-Западный</option>
+                                        <option value="zelao" ${item.region === 'zelao' ? 'selected' : ''}>Зеленоградский</option>
+                                        <option value="tinao" ${item.region === 'tinao' ? 'selected' : ''}>Троицкий</option>
+                                        <option value="nao" ${item.region === 'nao' ? 'selected' : ''}>Новомосковский</option>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editShelterPhone">Телефон</label>
+                                        <input type="tel" id="editShelterPhone" value="${item.phone || ''}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editShelterEmail">Email</label>
+                                        <input type="email" id="editShelterEmail" value="${item.email || ''}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editShelterWebsite">Веб-сайт</label>
+                                        <input type="url" id="editShelterWebsite" value="${item.website || ''}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editShelterCapacity">Вместимость</label>
+                                        <input type="number" id="editShelterCapacity" value="${item.capacity || ''}" min="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editShelterWorkingHours">Часы работы</label>
+                                        <input type="text" id="editShelterWorkingHours" value="${item.working_hours || ''}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editShelterCanAdopt">Может принимать на усыновление</label>
+                                        <select id="editShelterCanAdopt">
+                                            <option value="" ${item.can_adopt === null ? 'selected' : ''}>Не указано</option>
+                                            <option value="true" ${item.can_adopt === true ? 'selected' : ''}>Да</option>
+                                            <option value="false" ${item.can_adopt === false ? 'selected' : ''}>Нет</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editShelterStatus">Статус</label>
+                                        <select id="editShelterStatus">
+                                            <option value="active" ${item.status === 'active' ? 'selected' : ''}>Активен</option>
+                                            <option value="inactive" ${item.status === 'inactive' ? 'selected' : ''}>Неактивен</option>
+                                            <option value="suspended" ${item.status === 'suspended' ? 'selected' : ''}>Приостановлен</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label for="editShelterDescription">Описание</label>
+                                        <textarea id="editShelterDescription">${item.description || ''}</textarea>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Сохранить</button>
+                            </form>
+                        `;
+                    } else if (type === 'users') {
+                        formHtml = `
+                            <h3>Редактирование пользователя</h3>
+                            <form id="editUserForm" onsubmit="saveItem('users', ${id}, event)">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="editUserEmail">Email</label>
+                                        <input type="email" id="editUserEmail" value="${item.email || ''}" readonly style="background: #e9ecef;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editUserFirstname">Имя</label>
+                                        <input type="text" id="editUserFirstname" value="${item.firstname || ''}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editUserLastname">Фамилия</label>
+                                        <input type="text" id="editUserLastname" value="${item.lastname || ''}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editUserRole">Роль</label>
+                                        <select id="editUserRole">
+                                            <option value="user" ${item.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                                            <option value="admin" ${item.role === 'admin' ? 'selected' : ''}>Администратор</option>
+                                            <option value="shelter_admin" ${item.role === 'shelter_admin' ? 'selected' : ''}>Администратор приюта</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editUserGender">Пол</label>
+                                        <select id="editUserGender">
+                                            <option value="">Не указан</option>
+                                            <option value="male" ${item.gender === 'male' ? 'selected' : ''}>Мужской</option>
+                                            <option value="female" ${item.gender === 'female' ? 'selected' : ''}>Женский</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editUserPhone">Телефон</label>
+                                        <input type="tel" id="editUserPhone" value="${item.phone || ''}">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Сохранить</button>
+                            </form>
+                        `;
+                    } else if (type === 'applications') {
+                        formHtml = `
+                            <h3>Редактирование заявки</h3>
+                            <form id="editApplicationForm" onsubmit="saveItem('applications', ${id}, event)">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="editApplicationUser">Пользователь</label>
+                                        <select id="editApplicationUser" required></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editApplicationShelter">Приют</label>
+                                        <select id="editApplicationShelter" required></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editApplicationAnimal">Животное</label>
+                                        <select id="editApplicationAnimal" required></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editApplicationStatus">Статус</label>
+                                        <select id="editApplicationStatus">
+                                            <option value="pending" ${item.status === 'pending' ? 'selected' : ''}>Ожидает</option>
+                                            <option value="approved" ${item.status === 'approved' ? 'selected' : ''}>Одобрена</option>
+                                            <option value="rejected" ${item.status === 'rejected' ? 'selected' : ''}>Отклонена</option>
+                                            <option value="cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Отменена</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label for="editApplicationDescription" class="required">Описание</label>
+                                        <textarea id="editApplicationDescription" minlength="10" maxlength="5000" required>${item.description || ''}</textarea>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Сохранить</button>
+                            </form>
+                        `;
+                    }
+                    
+                    editContainer.innerHTML = formHtml;
+                    
+                    // Заполняем select'ы для животных и заявок
+                    if (type === 'animals') {
+                        await loadSheltersForSelect('editAnimalShelter', item.shelter_id);
+                    } else if (type === 'applications') {
+                        await loadApplicationFormData();
+                        document.getElementById('editApplicationUser').value = item.user_id;
+                        document.getElementById('editApplicationShelter').value = item.shelter_id;
+                        document.getElementById('editApplicationAnimal').value = item.animal_id;
+                    }
+                } else {
+                    const errorText = await response.text();
+                    let errorMessage = 'Ошибка загрузки данных';
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.error || errorMessage;
+                    } catch (e) {
+                        errorMessage = `Ошибка ${response.status}: ${errorText}`;
+                    }
+                    editContainer.innerHTML = `<p style="color: #dc3545;">${errorMessage}</p>`;
+                }
+            } catch (error) {
+                editContainer.innerHTML = '<p style="color: #dc3545;">Ошибка: ' + error.message + '</p>';
+            }
+        }
+
+        // Сохранение изменений
+        async function saveItem(type, id, event) {
+            event.preventDefault();
+            
+            // Проверяем наличие токена
+            if (!accessToken) {
+                showMessage('Ошибка: требуется авторизация. Пожалуйста, войдите снова.', 'error');
+                return;
+            }
+            
+            try {
+                let data = {};
+                let endpoint = '';
+                
+                switch(type) {
+                    case 'animals':
+                        endpoint = `${API_BASE}/animals/${id}`;
+                        data = {
+                            name: document.getElementById('editAnimalName').value,
+                            age: parseInt(document.getElementById('editAnimalAge').value),
+                            type: document.getElementById('editAnimalType').value,
+                            gender: document.getElementById('editAnimalGender').value || null,
+                            shelter_id: parseInt(document.getElementById('editAnimalShelter').value),
+                            weight: document.getElementById('editAnimalWeight').value ? parseFloat(document.getElementById('editAnimalWeight').value) : null,
+                            color: document.getElementById('editAnimalColor').value || null,
+                            animal_size: document.getElementById('editAnimalSize').value || null,
+                            health: document.getElementById('editAnimalHealth').value || null,
+                            personality: document.getElementById('editAnimalPersonality').value || null,
+                            history: document.getElementById('editAnimalHistory').value || null
+                        };
+                        break;
+                    case 'shelters':
+                        endpoint = `${API_BASE}/shelters/${id}`;
+                        data = {
+                            name: document.getElementById('editShelterName').value,
+                            address: document.getElementById('editShelterAddress').value || null,
+                            phone: document.getElementById('editShelterPhone').value || null,
+                            email: document.getElementById('editShelterEmail').value || null,
+                            website: document.getElementById('editShelterWebsite').value || null,
+                            description: document.getElementById('editShelterDescription').value || null,
+                            capacity: document.getElementById('editShelterCapacity').value ? parseInt(document.getElementById('editShelterCapacity').value) : null,
+                            working_hours: document.getElementById('editShelterWorkingHours').value || null,
+                            can_adopt: document.getElementById('editShelterCanAdopt').value === '' ? null : document.getElementById('editShelterCanAdopt').value === 'true',
+                            status: document.getElementById('editShelterStatus').value,
+                            region: document.getElementById('editShelterRegion').value || null
+                        };
+                        break;
+                    case 'users':
+                        endpoint = `${API_BASE}/users/${id}`;
+                        data = {
+                            firstname: document.getElementById('editUserFirstname').value || null,
+                            lastname: document.getElementById('editUserLastname').value || null,
+                            role: document.getElementById('editUserRole').value,
+                            gender: document.getElementById('editUserGender').value || null,
+                            phone: document.getElementById('editUserPhone').value || null
+                        };
+                        break;
+                    case 'applications':
+                        endpoint = `${API_BASE}/applications/${id}`;
+                        data = {
+                            user_id: parseInt(document.getElementById('editApplicationUser').value),
+                            shelter_id: parseInt(document.getElementById('editApplicationShelter').value),
+                            animal_id: parseInt(document.getElementById('editApplicationAnimal').value),
+                            status: document.getElementById('editApplicationStatus').value,
+                            description: document.getElementById('editApplicationDescription').value
+                        };
+                        break;
+                }
+                
+                const response = await fetch(endpoint, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify(data),
+                    redirect: 'manual' // Предотвращаем автоматические редиректы
+                });
+                
+                // Обрабатываем редиректы явно
+                if (response.type === 'opaqueredirect' || response.status === 0) {
+                    showMessage('Ошибка: произошел редирект. Проверьте авторизацию.', 'error');
+                    return;
+                }
+                
+                if (response.status === 401 || response.status === 403) {
+                    showMessage('Ошибка авторизации. Пожалуйста, войдите снова.', 'error');
+                    return;
+                }
+                
+                if (response.ok) {
+                    showMessage('Изменения успешно сохранены!', 'success');
+                    loadManageList();
+                    document.getElementById('manageEditContainer').style.display = 'none';
+                } else {
+                    const errorText = await response.text();
+                    let errorMessage = 'Ошибка сохранения';
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.error || errorMessage;
+                    } catch (e) {
+                        errorMessage = `Ошибка ${response.status}: ${errorText}`;
+                    }
+                    showMessage(errorMessage, 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка сети: ' + error.message, 'error');
+            }
+        }
+
+        // Удаление записи
+        async function deleteItem(type, id, evt) {
+            // Предотвращаем любые возможные редиректы
+            if (evt) {
+                evt.preventDefault();
+                evt.stopPropagation();
+            }
+            
+            if (!confirm('Вы уверены, что хотите удалить эту запись?')) {
+                return;
+            }
+            
+            // Проверяем наличие токена
+            if (!accessToken) {
+                showMessage('Ошибка: требуется авторизация. Пожалуйста, войдите снова.', 'error');
+                return;
+            }
+            
+            try {
+                let endpoint = '';
+                switch(type) {
+                    case 'animals':
+                        endpoint = `${API_BASE}/animals/${id}`;
+                        break;
+                    case 'shelters':
+                        endpoint = `${API_BASE}/shelters/${id}`;
+                        break;
+                    case 'users':
+                        endpoint = `${API_BASE}/users/${id}`;
+                        break;
+                    case 'applications':
+                        endpoint = `${API_BASE}/applications/${id}`;
+                        break;
+                }
+                
+                const response = await fetch(endpoint, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    redirect: 'manual' // Предотвращаем автоматические редиректы
+                });
+                
+                // Обрабатываем редиректы явно
+                if (response.type === 'opaqueredirect' || response.status === 0) {
+                    showMessage('Ошибка: произошел редирект. Проверьте авторизацию.', 'error');
+                    return;
+                }
+                
+                if (response.status === 401 || response.status === 403) {
+                    showMessage('Ошибка авторизации. Пожалуйста, войдите снова.', 'error');
+                    return;
+                }
+                
+                if (response.ok || response.status === 204) {
+                    showMessage('Запись успешно удалена!', 'success');
+                    loadManageList();
+                    document.getElementById('manageEditContainer').style.display = 'none';
+                } else {
+                    const errorText = await response.text();
+                    let errorMessage = 'Ошибка удаления';
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.error || errorMessage;
+                    } catch (e) {
+                        errorMessage = `Ошибка ${response.status}: ${errorText}`;
+                    }
+                    showMessage(errorMessage, 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка сети: ' + error.message, 'error');
+            }
+        }
+
+        // Загрузка приютов для select
+        async function loadSheltersForSelect(selectId, selectedId = null) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/shelters`);
+                if (response.ok) {
+                    const shelters = await response.json();
+                    select.innerHTML = '<option value="">Выберите приют</option>';
+                    shelters.forEach(shelter => {
+                        const option = document.createElement('option');
+                        option.value = shelter.id;
+                        option.textContent = shelter.name;
+                        if (selectedId && shelter.id === selectedId) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки приютов:', error);
+            }
         }
     </script>
 </body>
