@@ -5,7 +5,6 @@
     const ShelterCard = ({ shelterData, onShowMap }) => {
     const { id, name, rating, description } = shelterData;
 
-    // Функция для отображения звезд рейтинга
     const renderStars = (rating) => {
         const stars = [];
         const fullStars = Math.floor(rating);
@@ -43,18 +42,15 @@
 
     return (
         <article className="relative w-full max-w-[1260px] min-h-[400px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row">
-        {/* Фотография */}
         <div className="relative w-full md:w-[350px] h-[180px] md:h-full flex-shrink-0">
             <img 
             src={PriutPhoto} 
             alt={`Приют ${name}`}
             className="w-full h-full object-cover"
             />
-            {/* Градиентный переход */}
             <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-green-90 to-transparent hidden md:block"></div>
         </div>
 
-        {/* Контент */}
         <div className="flex-1 flex flex-col items-start justify-between p-4 md:p-6 md:pl-6 md:pr-6">
             <div className="w-full">
             <header className="inline-flex flex-col items-start relative mb-3 md:mb-4 w-full">
@@ -62,7 +58,6 @@
                 {name}
                 </h1>
 
-                {/* Рейтинг со звездами */}
                 <div className="flex items-center gap-2">
                 <div className="flex">
                     {renderStars(rating)}
@@ -73,13 +68,11 @@
                 </div>
             </header>
 
-            {/* Описание приюта */}
             <p className="font-inter font-medium text-green-30 text-sm md:text-base leading-relaxed">
                 {description}
             </p>
             </div>
 
-            {/* Ссылка на профиль приюта */}
             <Link
             to={`/приют/${id}`}
             className="all-[unset] box-border flex h-11 items-center justify-center gap-2 px-6 py-3 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer w-full mt-4"

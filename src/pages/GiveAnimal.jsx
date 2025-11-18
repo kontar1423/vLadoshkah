@@ -1,50 +1,101 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ShelterCard from '../components/ShelterCard';
 import miniPes from '../assets/images/mini_pes.png';
 import LapaIcon from '../assets/images/lapa.png';
-import ArrowIcon from '../assets/images/keyboard_arrow_down.png';
+import { shelterService } from '../services/shelterService';
 
 const GiveAnimal = () => {
   const navigate = useNavigate();
+  const [acceptingShelters, setAcceptingShelters] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Приюты, которые принимают животных от хозяев (из базы данных)
-  const acceptingShelters = [
-  {
-    id: 1,
-    name: "Приют 'Добрые руки'",
-    rating: 4.5,
-    description: "Принимаем животных на передержку в трудных ситуациях. Специализируемся на временном содержании с возможностью возврата.",
-    animalsCount: 150,
-    district: "Центральный",
-    acceptsFromOwners: true
-  },
-  {
-    id: 2,
-    name: "Центр 'Лапа помощи'",
-    rating: 4.3,
-    description: "Временное содержание с возможностью возврата. Работаем с 2018 года, помогаем в сложных жизненных обстоятельствах.",
-    animalsCount: 120,
-    district: "Северный",
-    acceptsFromOwners: true
-  },
-  {
-    id: 3,
-    name: "Приют 'Верный друг'",
-    rating: 4.7,
-    description: "Помогаем в сложных жизненных обстоятельствах. Предоставляем временный приют с профессиональным уходом.",
-    animalsCount: 200,
-    district: "Восточный",
-    acceptsFromOwners: true
-  },
-  // ... остальные приюты
-];
+  // Загрузка приютов с бекенда
+  useEffect(() => {
+    loadAcceptingShelters();
+  }, []);
+
+  const loadAcceptingShelters = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Загружаем все приюты
+      const allShelters = await shelterService.getAllShelters();
+      
+      // Фильтруем только те приюты, которые принимают животных (can_adopt: true)
+      const acceptingSheltersData = allShelters.filter(shelter => 
+        shelter.can_adopt === true
+      );
+
+      // Форматируем данные для ShelterCard
+      const formattedShelters = acceptingSheltersData.map(shelter => ({
+        id: shelter.id,
+        name: shelter.name,
+        rating: 4.5, // Можно добавить реальный рейтинг если будет в бекенде
+        description: shelter.description,
+        animalsCount: 0, // Можно получить количество животных через отдельный запрос
+        address: shelter.address,
+        phone: shelter.phone,
+        email: shelter.email,
+        website: shelter.website,
+        working_hours: shelter.working_hours,
+        capacity: shelter.capacity,
+        status: shelter.status,
+        photos: shelter.photos || [],
+        district: getDistrictFromRegion(shelter.region),
+        acceptsFromOwners: shelter.can_adopt // Используем поле из бекенда
+      }));
+
+      setAcceptingShelters(formattedShelters);
+      
+    } catch (err) {
+      console.error('Ошибка загрузки приютов:', err);
+      setError('Не удалось загрузить список приютов');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Функция для получения названия округа по коду региона
+  const getDistrictFromRegion = (region) => {
+    const districtMap = {
+      'cao': 'Центральный',
+      'sao': 'Северный',
+      'svao': 'Северо-Восточный',
+      'vao': 'Восточный',
+      'yuvao': 'Юго-Восточный',
+      'yao': 'Южный',
+      'yuzao': 'Юго-Западный',
+      'zao': 'Западный',
+      'szao': 'Северо-Западный',
+      'zelao': 'Зеленоградский',
+      'tinao': 'Троицкий',
+      'nao': 'Новомосковский'
+    };
+    return districtMap[region] || 'Москва';
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-green-95 flex items-center justify-center">
+        <div className="text-lg text-green-30">Загрузка приютов...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-green-95 flex items-center justify-center">
+        <div className="text-red-500 text-lg">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-green-95">
       <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-10">
-      
-
         {/* Красивый блок с текстом */}
         <div className="relative w-full max-w-[1260px] mx-auto mb-20">
           <div className="bg-green-90 rounded-custom p-8 md:p-12 relative overflow-hidden">
@@ -87,7 +138,9 @@ const GiveAnimal = () => {
                   {/* Статистика */}
                   <div className="flex flex-wrap justify-center lg:justify-end gap-6 mt-8">
                     <div className="text-center">
-                      <div className="font-sf-rounded font-bold text-green-30 text-2xl md:text-3xl">50+</div>
+                      <div className="font-sf-rounded font-bold text-green-30 text-2xl md:text-3xl">
+                        {acceptingShelters.length}+
+                      </div>
                       <div className="font-inter text-green-40 text-sm md:text-base">приютов помогают</div>
                     </div>
                     
@@ -103,12 +156,11 @@ const GiveAnimal = () => {
         </div>
 
         {/* Блок с маленькой кнопкой-стрелкой и собакой */}
-        {/* Блок с маленькой кнопкой-стрелкой и собакой */}
         <div className="relative w-full max-w-[1260px] mx-auto mb-10">
           <div className="flex flex-col items-center">
             
             {/* Собака и кнопка-стрелка */}
-            <div className="relative mb-2 z-10"> {/* Уменьшил отступ снизу */}
+            <div className="relative mb-2 z-10">
               <div className="flex flex-col items-center gap-1">
                 {/* Собака */}
                 <div className="animate-bounce">
@@ -121,37 +173,62 @@ const GiveAnimal = () => {
               </div>
             </div>
 
-            
             <div className="text-center mb-1">
-              <h3 className="font-sf-rounded font-bold text-green-30 text-xl md:text-2xl mb-2"> {/* Уменьшил отступ снизу */}
+              <h3 className="font-sf-rounded font-bold text-green-30 text-xl md:text-2xl mb-2">
                 Приюты, готовые помочь
               </h3>
+              {acceptingShelters.length === 0 && (
+                <p className="font-inter text-green-40 text-sm mt-2">
+                  В данный момент нет приютов, принимающих животных
+                </p>
+              )}
             </div>
           </div>
         </div>
-        </div>
 
         {/* Сетка карточек приютов */}
-<section id="shelters-section" className="w-full max-w-[1260px] mx-auto">
-  <div className="space-y-8 mb-16">
-    {acceptingShelters.map((shelter, index) => (
-      <div 
-        key={shelter.id}
-        className="animate-fade-up"
-        style={{ animationDelay: `${index * 0.1}s` }}
-      >
-        <ShelterCard 
-          shelterData={{
-            ...shelter,
-            rating: 4.5, // Добавляем рейтинг по умолчанию
-            description: shelter.description
-          }}
-        />
-      
-      </div>
-    ))}
-  </div>
-</section>
+        <section id="shelters-section" className="w-full max-w-[1260px] mx-auto">
+          {acceptingShelters.length > 0 ? (
+            <div className="space-y-8 mb-16">
+              {acceptingShelters.map((shelter, index) => (
+                <div 
+                  key={shelter.id}
+                  className="animate-fade-up"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <ShelterCard 
+                    shelterData={shelter}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <div className="bg-green-90 rounded-custom p-12 max-w-2xl mx-auto">
+                <svg 
+                  className="w-24 h-24 text-green-60 mx-auto mb-6"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <h3 className="font-sf-rounded font-bold text-green-30 text-2xl mb-4">
+                  Приюты пока не принимают животных
+                </h3>
+                <p className="font-inter text-green-20 text-lg mb-6">
+                  В данный момент нет приютов, которые принимают животных от владельцев. 
+                  Попробуйте зайти позже или свяжитесь с приютами напрямую.
+                </p>
+                <div className="bg-green-95 rounded-custom-small p-4 inline-block">
+                  <p className="font-inter text-green-40 text-sm">
+                    Если вы представляете приют и хотите принимать животных, обратитесь к администратору.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
 
         {/* Информационный блок о процессе */}
         <div className="max-w-[1260px] mx-auto mb-16">
@@ -187,7 +264,7 @@ const GiveAnimal = () => {
                 </div>
                 <h3 className="font-sf-rounded font-bold text-green-30 text-lg mb-3">Дождитесь обратной связи</h3>
                 <p className="font-inter text-green-30 text-sm leading-relaxed">
-                  Немного потерпите, соввсем скоро вам ответят
+                  Немного потерпите, совсем скоро вам ответят
                 </p>
               </div>
 
@@ -203,11 +280,9 @@ const GiveAnimal = () => {
             </div>
           </div>
         </div>
-
-        
       </div>
-  
-  )
+    </div>
+  );
 }
 
-export default GiveAnimal
+export default GiveAnimal;

@@ -1,15 +1,27 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { userService } from '../services/userService'
 
 const PersonalInfo = () => {
+  const { user, updateUser } = useAuth()
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    gender: '',
+    firstname: user?.firstname || '',
+    lastname: user?.lastname || '',
+    phone: user?.phone || '',
+    gender: user?.gender || '',
     personalInfo: ''
   })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const navigate = useNavigate()
+
+  useEffect(() => {
+    // Если пользователь не авторизован - перенаправляем на вход
+    if (!user) {
+      navigate('/войти')
+    }
+  }, [user, navigate])
 
   const handleChange = (e) => {
     setFormData({
@@ -18,9 +30,30 @@ const PersonalInfo = () => {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    navigate('/профиль')
+    setError('')
+    setLoading(true)
+
+    try {
+      // Отправляем данные на сервер
+      const result = await userService.updateUser(user.id, {
+        firstname: formData.firstname,
+        lastname: formData.lastname,
+        phone: formData.phone,
+        gender: formData.gender
+      })
+
+      // Обновляем пользователя в контексте
+      updateUser({ ...user, ...result })
+      
+      navigate('/профиль')
+    } catch (error) {
+      setError('Ошибка при сохранении данных')
+      console.error('Error updating user:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -35,37 +68,45 @@ const PersonalInfo = () => {
           </p>
         </div>
 
+        {error && (
+          <div className="animate-fade-up mb-6 p-4 bg-red-90 border border-red-40 rounded-custom-small">
+            <p className="text-red-20 font-inter font-medium text-center">{error}</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="animate-fade-up" style={{ animationDelay: '0.1s' }}>
-              <label htmlFor="firstName" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
+              <label htmlFor="firstname" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
                 Имя
               </label>
               <input
                 type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
+                id="firstname"
+                name="firstname"
+                value={formData.firstname}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 font-sf-rounded placeholder-green-40 focus:border-green-40 focus:outline-none transition-colors"
                 placeholder="Введите ваше имя"
+                disabled={loading}
               />
             </div>
 
             <div className="animate-fade-up" style={{ animationDelay: '0.2s' }}>
-              <label htmlFor="lastName" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
+              <label htmlFor="lastname" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
                 Фамилия
               </label>
               <input
                 type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
+                id="lastname"
+                name="lastname"
+                value={formData.lastname}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 font-sf-rounded placeholder-green-40 focus:border-green-40 focus:outline-none transition-colors"
                 placeholder="Введите вашу фамилию"
+                disabled={loading}
               />
             </div>
 
@@ -81,6 +122,7 @@ const PersonalInfo = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 font-sf-rounded placeholder-green-40 focus:border-green-40 focus:outline-none transition-colors"
                 placeholder="+7 (999) 999-99-99"
+                disabled={loading}
               />
             </div>
 
@@ -96,6 +138,7 @@ const PersonalInfo = () => {
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-40 font-sf-rounded focus:border-green-40 focus:outline-none transition-colors appearance-none cursor-pointer pr-10"
+                  disabled={loading}
                 >
                   <option value="" disabled className="text-green-40 bg-green-98">Выберите пол</option>
                   <option value="male" className="text-green-40 bg-green-98 py-2">Мужской</option>
@@ -123,6 +166,7 @@ const PersonalInfo = () => {
               rows={8}
               className="w-full px-4 py-4 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 font-sf-rounded placeholder-green-40 focus:border-green-50 focus:outline-none transition-colors resize-none text-sm md:text-base"
               placeholder="Расскажите о себе..."
+              disabled={loading}
             />
           </div>
 
@@ -130,9 +174,10 @@ const PersonalInfo = () => {
             <div className="animate-fade-up" style={{ animationDelay: '0.6s' }}>
               <button
                 type="submit"
-                className="w-full px-6 py-4 bg-green-50 text-green-100 font-sf-rounded font-semibold text-base md:text-lg rounded-custom-small hover:bg-green-60 active:bg-green-40 transition-all duration-200 shadow-lg hover:shadow-xl"
+                disabled={loading}
+                className="w-full px-6 py-4 bg-green-50 text-green-100 font-sf-rounded font-semibold text-base md:text-lg rounded-custom-small hover:bg-green-60 active:bg-green-40 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50"
               >
-                Подтвердить
+                {loading ? 'Сохранение...' : 'Подтвердить'}
               </button>
             </div>
 

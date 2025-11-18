@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ShelterCard from '../components/ShelterCard';
 import DistrictFilter from '../components/DistrictFilter';
+import { shelterService } from '../services/shelterService';
 
 const Shelters = () => {
   const [shelters, setShelters] = useState([]);
@@ -10,170 +11,106 @@ const Shelters = () => {
   const [sheltersPerPage] = useState(12);
   const [showDistrictFilter, setShowDistrictFilter] = useState(false);
   const [activeFilters, setActiveFilters] = useState({
-    district: null,
-    districtId: null
+    districts: [], // теперь массив выбранных округов
+    districtIds: [] // ID выбранных округов
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Mock данные для приютов с бекенда
-  const mockShelters = [
-    {
-      id: 1,
-      name: "Приют Некрасовка",
-      rating: 4.5,
-      description: "Муниципальный приют Некрасовка — один из крупнейших приютов Москвы для бездомных животных. Приют работает уже более десяти лет и временно содержит около 2 000–2 700 собак и 150–350 кошек.",
-      animalsCount: 2850,
-      district: "Юго-Восточный",
-      districtId: "yuvao"
-    },
-    {
-      id: 2,
-      name: "Приют Зоорассвет",
-      rating: 4.2,
-      description: "Приют в восточном округе Москвы, специализирующийся на помощи бездомным собакам и кошкам.",
-      animalsCount: 1200,
-      district: "Восточный",
-      districtId: "vao"
-    },
-    {
-      id: 3,
-      name: "Приют Добрые руки",
-      rating: 4.8,
-      description: "Волонтерский приют, основанный энтузиастами. Занимается спасением и лечением животных.",
-      animalsCount: 890,
-      district: "Северный",
-      districtId: "sao"
-    },
-    {
-      id: 4,
-      name: "Приют Лапки добра",
-      rating: 4.3,
-      description: "Частный приют, принимающий животных со сложными судьбами и требующих особого ухода.",
-      animalsCount: 650,
-      district: "Центральный",
-      districtId: "cao"
-    },
-    {
-      id: 5,
-      name: "Приют Хвостик удачи",
-      rating: 4.6,
-      description: "Современный приют с передовыми технологиями содержания и ухода за животными.",
-      animalsCount: 430,
-      district: "Западный",
-      districtId: "zao"
-    },
-    {
-      id: 6,
-      name: "Приют Руднево",
-      rating: 4.1,
-      description: "Крупный приют на юге Москвы, сотрудничающий с ветеринарными клиниками города.",
-      animalsCount: 780,
-      district: "Южный",
-      districtId: "yao"
-    },
-    {
-      id: 7,
-      name: "Приют Зеленоград",
-      rating: 4.4,
-      description: "Приют в Зеленограде, занимающийся помощью животным северного округа Москвы.",
-      animalsCount: 320,
-      district: "Зеленоградский",
-      districtId: "zelao"
-    },
-    {
-      id: 8,
-      name: "Приют Бирюлево",
-      rating: 4.0,
-      description: "Муниципальный приют в южном округе, работающий более 8 лет.",
-      animalsCount: 540,
-      district: "Южный",
-      districtId: "yao"
-    },
-    {
-      id: 9,
-      name: "Приют Химки",
-      rating: 4.7,
-      description: "Приют в подмосковных Химках, принимающий животных из Московской области.",
-      animalsCount: 210,
-      district: "Северо-Западный",
-      districtId: "szao"
-    },
-    {
-      id: 10,
-      name: "Приют Мытищи",
-      rating: 4.2,
-      description: "Волонтерская организация в Мытищах, помогающая бездомным животным.",
-      animalsCount: 180,
-      district: "Северо-Восточный",
-      districtId: "svao"
-    },
-    {
-      id: 11,
-      name: "Приют Королев",
-      rating: 4.5,
-      description: "Научный городок Королев, приют сотрудничает с местными предприятиями.",
-      animalsCount: 290,
-      district: "Северо-Восточный",
-      districtId: "svao"
-    },
-    {
-      id: 12,
-      name: "Приют Люберцы",
-      rating: 4.3,
-      description: "Крупный приют в Люберцах, имеющий собственную ветеринарную клинику.",
-      animalsCount: 670,
-      district: "Юго-Восточный",
-      districtId: "yuvao"
-    },
-    {
-      id: 13,
-      name: "Приют Одинцово",
-      rating: 4.6,
-      description: "Элитный приют в Одинцово с современными условиями содержания.",
-      animalsCount: 380,
-      district: "Западный",
-      districtId: "zao"
-    },
-    {
-      id: 14,
-      name: "Приют Красногорск",
-      rating: 4.4,
-      description: "Приют в Красногорске, специализирующийся на породистых животных.",
-      animalsCount: 220,
-      district: "Северо-Западный",
-      districtId: "szao"
-    },
-    {
-      id: 15,
-      name: "Приют Домодедово",
-      rating: 4.1,
-      description: "Приют рядом с аэропортом Домодедово, работает с 2015 года.",
-      animalsCount: 410,
-      district: "Южный",
-      districtId: "yao"
-    }
-  ];
-
-  // Заглушка для данных с бекенда
+  // Загрузка приютов с бекенда
   useEffect(() => {
-    setShelters(mockShelters);
-    setFilteredShelters(mockShelters);
+    loadShelters();
   }, []);
+
+  const loadShelters = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const sheltersData = await shelterService.getAllShelters();
+      
+      if (!sheltersData || !Array.isArray(sheltersData)) {
+        console.warn('Нет данных о приютах или данные в неверном формате');
+        setShelters([]);
+        setFilteredShelters([]);
+        return;
+      }
+
+      // Преобразуем данные с бекенда в нужный формат
+      const formattedShelters = sheltersData.map(shelter => ({
+        id: shelter.id,
+        name: shelter.name,
+        rating: 4.5,
+        description: shelter.description,
+        animalsCount: 0,
+        address: shelter.address,
+        phone: shelter.phone,
+        email: shelter.email,
+        website: shelter.website,
+        working_hours: shelter.working_hours,
+        capacity: shelter.capacity,
+        status: shelter.status,
+        photos: shelter.photos || [],
+        // Используем поле region из бекенда для округа
+        district: getDistrictName(shelter.region),
+        districtId: shelter.region // используем напрямую код округа из бекенда
+      }));
+
+      setShelters(formattedShelters);
+      setFilteredShelters(formattedShelters);
+    } catch (err) {
+      console.error('Ошибка загрузки приютов:', err);
+      setShelters([]);
+      setFilteredShelters([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Функция для получения названия округа по коду
+  const getDistrictName = (regionCode) => {
+    const districtMap = {
+      'cao': 'Центральный',
+      'sao': 'Северный',
+      'svao': 'Северо-Восточный',
+      'vao': 'Восточный',
+      'yuvao': 'Юго-Восточный',
+      'yao': 'Южный',
+      'yuzao': 'Юго-Западный',
+      'zao': 'Западный',
+      'szao': 'Северо-Западный',
+      'zelao': 'Зеленоградский',
+      'tinao': 'Троицкий',
+      'nao': 'Новомосковский'
+    };
+    return districtMap[regionCode] || 'Москва';
+  };
 
   // Обработчик применения фильтров по округу
   const handleApplyDistrictFilter = (filters) => {
-    setActiveFilters(filters);
+    console.log('Applied district filters:', filters);
+    setActiveFilters({
+      districts: filters.districts || [],
+      districtIds: filters.districtIds || []
+    });
     
+    applyFilters(filters.districtIds, searchTerm);
+  };
+
+  // Функция применения фильтров
+  const applyFilters = (districtIds, search) => {
     let filtered = shelters;
     
-    // Фильтрация по округу
-    if (filters.districtId) {
-      filtered = filtered.filter(shelter => shelter.districtId === filters.districtId);
+    // Фильтрация по округам (может быть несколько выбранных)
+    if (districtIds && districtIds.length > 0) {
+      filtered = filtered.filter(shelter => 
+        districtIds.includes(shelter.districtId)
+      );
     }
     
     // Фильтрация по поиску
-    if (searchTerm.trim() !== "") {
+    if (search.trim() !== "") {
       filtered = filtered.filter(shelter =>
-        shelter.name.toLowerCase().includes(searchTerm.toLowerCase())
+        shelter.name.toLowerCase().includes(search.toLowerCase())
       );
     }
     
@@ -183,23 +120,16 @@ const Shelters = () => {
 
   // Поиск по названию приюта
   useEffect(() => {
-    let filtered = shelters;
-    
-    // Фильтрация по округу
-    if (activeFilters.districtId) {
-      filtered = filtered.filter(shelter => shelter.districtId === activeFilters.districtId);
-    }
-    
-    // Фильтрация по поиску
-    if (searchTerm.trim() !== "") {
-      filtered = filtered.filter(shelter =>
-        shelter.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    setFilteredShelters(filtered);
+    applyFilters(activeFilters.districtIds, searchTerm);
+  }, [searchTerm, shelters, activeFilters.districtIds]);
+
+  // Функция для сброса всех фильтров
+  const handleResetFilters = () => {
+    setActiveFilters({ districts: [], districtIds: [] });
+    setSearchTerm("");
+    setFilteredShelters(shelters);
     setCurrentPage(1);
-  }, [searchTerm, shelters, activeFilters]);
+  };
 
   // Пагинация
   const indexOfLastShelter = currentPage * sheltersPerPage;
@@ -223,24 +153,23 @@ const Shelters = () => {
     setCurrentPage(pageNumber);
   };
 
-  // Функция для сброса всех фильтров
-  const handleResetFilters = () => {
-    setActiveFilters({ district: null, districtId: null });
-    setSearchTerm("");
-    setFilteredShelters(shelters);
-    setCurrentPage(1);
+  // Форматирование выбранных округов для отображения
+  const getSelectedDistrictsText = () => {
+    if (activeFilters.districts.length === 0) return null;
+    if (activeFilters.districts.length === 1) return activeFilters.districts[0];
+    return `${activeFilters.districts.length} округа`;
   };
 
-
-
-
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-green-95 flex items-center justify-center">
+        <div className="text-lg text-green-30">Загрузка приютов...</div>
+      </div>
+    );
+  }
 
   return (
-
-
-
     <div className="min-h-screen bg-green-95">
-      {/* Компонент фильтров по округам */}
       <DistrictFilter 
         isOpen={showDistrictFilter}
         onClose={() => setShowDistrictFilter(false)}
@@ -248,14 +177,12 @@ const Shelters = () => {
       />
 
       <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-10">
-         {/* Заголовок карты */}
         <div className="text-center mb-8">
           <h2 className="font-sf-rounded font-bold text-green-30 text-2xl md:text-3xl lg:text-5xl">
             Приюты на карте
           </h2>
         </div>
 
-        {/* Блок карты на весь экран */}
         <div className="w-full h-screen bg-green-90 rounded-custom overflow-hidden border-2 border-green-40 mb-16">
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center p-8">
@@ -278,21 +205,17 @@ const Shelters = () => {
           </div>
         </div>
 
-    
-
-        {/* Блок статистики и поиска */}
         <section className="bg-green-95 rounded-custom p-6 w-full max-w-[1260px] mx-auto mb-8">
           <div className="flex flex-col lg:flex-row justify-between items-center gap-6 w-full">
-            {/* Количество приютов и активный фильтр */}
             <div className="w-full lg:w-auto text-center lg:text-left">
               <span className="font-sf-rounded font-bold text-green-30 text-2xl md:text-4xl">
                 <strong className="text-green-30">{filteredShelters.length}</strong> приютов
               </span>
-              {activeFilters.district && (
+              {activeFilters.districts.length > 0 && (
                 <div className="mt-2 flex items-center gap-2">
                   <div className="bg-green-90 rounded-custom-small px-3 py-1 inline-block">
                     <span className="font-inter text-green-30 text-sm">
-                      Округ: {activeFilters.district}
+                      Округ: {getSelectedDistrictsText()}
                     </span>
                   </div>
                   <button
@@ -308,9 +231,7 @@ const Shelters = () => {
               )}
             </div>
 
-            {/* Поиск и фильтры */}
             <div className="w-full lg:w-auto flex flex-col sm:flex-row gap-4">
-              {/* Поиск */}
               <div className="relative">
                 <input
                   type="text"
@@ -329,7 +250,6 @@ const Shelters = () => {
                 </svg>
               </div>
 
-              {/* Кнопка фильтров по округу */}
               <button
                 onClick={() => setShowDistrictFilter(true)}
                 className="inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer"
@@ -345,121 +265,153 @@ const Shelters = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 </svg>
                 <span className="relative w-fit font-inter font-medium text-green-20 text-base">
-                  {activeFilters.district ? 'Изменить округ' : 'Выбрать округ'}
+                  {activeFilters.districts.length > 0 ? 'Изменить округ' : 'Выбрать округ'}
                 </span>
               </button>
             </div>
           </div>
         </section>
 
-        {/* Блок карточек приютов */}
         <section className="w-full max-w-[1260px] mx-auto">
-          <div className="grid grid-cols-1 gap-8">
-            {currentShelters.map((shelter) => (
-              <ShelterCard 
-                key={shelter.id}
-                shelterData={shelter}
-              />
-            ))}
-          </div>
-
-          {/* Пагинация */}
-          {filteredShelters.length > 0 && (
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8">
-              <div className="bg-green-90 rounded-custom-small px-6 py-3">
-                <span className="font-inter font-medium text-green-30">
-                  Страница {currentPage} из {totalPages} • Показано {currentShelters.length} из {filteredShelters.length} приютов
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={prevPage}
-                  disabled={currentPage === 1}
-                  className={`flex items-center justify-center w-10 h-10 rounded-custom-small ${
-                    currentPage === 1 
-                      ? 'bg-green-80 text-green-60 cursor-not-allowed' 
-                      : 'bg-green-70 text-green-20 hover:bg-green-60 cursor-pointer'
-                  } transition-colors`}
-                  aria-label="Предыдущая страница"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => goToPage(page)}
-                      className={`w-10 h-10 rounded-custom-small font-inter font-medium transition-colors ${
-                        page === currentPage
-                          ? 'bg-green-70 text-green-20'
-                          : 'bg-green-90 text-green-30 hover:bg-green-80'
-                      }`}
-                      aria-label={`Перейти на страницу ${page}`}
-                      aria-current={page === currentPage ? 'page' : undefined}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={nextPage}
-                  disabled={currentPage === totalPages}
-                  className={`flex items-center justify-center w-10 h-10 rounded-custom-small ${
-                    currentPage === totalPages 
-                      ? 'bg-green-80 text-green-60 cursor-not-allowed' 
-                      : 'bg-green-70 text-green-20 hover:bg-green-60 cursor-pointer'
-                  } transition-colors`}
-                  aria-label="Следующая страница"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* No Results Message */}
-          {filteredShelters.length === 0 && (
-            <div className="text-center py-12">
-              <div className="bg-green-90 rounded-custom p-8 max-w-md mx-auto">
+          {/* Сообщение когда приютов нет */}
+          {shelters.length === 0 && (
+            <div className="text-center py-16">
+              <div className="bg-green-90 rounded-custom p-12 max-w-2xl mx-auto">
                 <svg 
-                  className="w-16 h-16 text-green-60 mx-auto mb-4"
+                  className="w-24 h-24 text-green-60 mx-auto mb-6"
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
-                <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-2">
-                  Приюты не найдены
+                <h3 className="font-sf-rounded font-bold text-green-30 text-2xl mb-4">
+                  Приюты пока не добавлены
                 </h3>
-                <p className="font-inter text-green-20">
-                  {activeFilters.district 
-                    ? `В округе "${activeFilters.district}" приюты не найдены. Попробуйте изменить параметры поиска или выбрать другой округ.`
-                    : 'Попробуйте изменить параметры поиска или выбрать округ'
-                  }
+                <p className="font-inter text-green-20 text-lg mb-6">
+                  В системе пока нет зарегистрированных приютов. 
+                  Приюты будут отображаться здесь после их добавления администратором.
                 </p>
-                {(activeFilters.district || searchTerm) && (
-                  <button
-                    onClick={handleResetFilters}
-                    className="mt-4 px-4 py-2 bg-green-70 text-green-20 rounded-custom-small hover:bg-green-60 transition-colors"
-                  >
-                    Сбросить фильтры
-                  </button>
-                )}
+                <div className="bg-green-95 rounded-custom-small p-4 inline-block">
+                  <p className="font-inter text-green-40 text-sm">
+                    Если вы представляете приют, обратитесь к администратору для регистрации.
+                  </p>
+                </div>
               </div>
             </div>
+          )}
+
+          {/* Отображение приютов когда они есть */}
+          {shelters.length > 0 && (
+            <>
+              <div className="grid grid-cols-1 gap-8">
+                {currentShelters.map((shelter) => (
+                  <ShelterCard 
+                    key={shelter.id}
+                    shelterData={shelter}
+                  />
+                ))}
+              </div>
+
+              {/* Пагинация */}
+              {filteredShelters.length > 0 && (
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8">
+                  <div className="bg-green-90 rounded-custom-small px-6 py-3">
+                    <span className="font-inter font-medium text-green-30">
+                      Страница {currentPage} из {totalPages} • Показано {currentShelters.length} из {filteredShelters.length} приютов
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={prevPage}
+                      disabled={currentPage === 1}
+                      className={`flex items-center justify-center w-10 h-10 rounded-custom-small ${
+                        currentPage === 1 
+                          ? 'bg-green-80 text-green-60 cursor-not-allowed' 
+                          : 'bg-green-70 text-green-20 hover:bg-green-60 cursor-pointer'
+                      } transition-colors`}
+                      aria-label="Предыдущая страница"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => goToPage(page)}
+                          className={`w-10 h-10 rounded-custom-small font-inter font-medium transition-colors ${
+                            page === currentPage
+                              ? 'bg-green-70 text-green-20'
+                              : 'bg-green-90 text-green-30 hover:bg-green-80'
+                          }`}
+                          aria-label={`Перейти на страницу ${page}`}
+                          aria-current={page === currentPage ? 'page' : undefined}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={nextPage}
+                      disabled={currentPage === totalPages}
+                      className={`flex items-center justify-center w-10 h-10 rounded-custom-small ${
+                        currentPage === totalPages 
+                          ? 'bg-green-80 text-green-60 cursor-not-allowed' 
+                          : 'bg-green-70 text-green-20 hover:bg-green-60 cursor-pointer'
+                      } transition-colors`}
+                      aria-label="Следующая страница"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Сообщение когда приюты есть, но не найдены по фильтрам */}
+              {filteredShelters.length === 0 && shelters.length > 0 && (
+                <div className="text-center py-12">
+                  <div className="bg-green-90 rounded-custom p-8 max-w-md mx-auto">
+                    <svg 
+                      className="w-16 h-16 text-green-60 mx-auto mb-4"
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-2">
+                      Приюты не найдены
+                    </h3>
+                    <p className="font-inter text-green-20">
+                      {activeFilters.districts.length > 0 
+                        ? `В выбранных округах приюты не найдены. Попробуйте изменить параметры поиска или выбрать другие округа.`
+                        : 'Попробуйте изменить параметры поиска или выбрать округ'
+                      }
+                    </p>
+                    {(activeFilters.districts.length > 0 || searchTerm) && (
+                      <button
+                        onClick={handleResetFilters}
+                        className="mt-4 px-4 py-2 bg-green-70 text-green-20 rounded-custom-small hover:bg-green-60 transition-colors"
+                      >
+                        Сбросить фильтры
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </section>
       </div>
     </div>
-  )
+  );
 }
 
-export default Shelters
+export default Shelters;

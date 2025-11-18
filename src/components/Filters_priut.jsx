@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-export const Filters = ({ isOpen, onClose, onApply }) => {
+export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) => {
     const [filters, setFilters] = useState({
         type: "Все",
         gender: "Любой",
@@ -8,8 +8,62 @@ export const Filters = ({ isOpen, onClose, onApply }) => {
         health: "Любое",
         age_min: 0,
         age_max: 20,
-        shelter_id: "Любой",
     });
+
+    // Синхронизируем фильтры с внешним состоянием
+    useEffect(() => {
+        if (isOpen) {
+            // При открытии модального окна устанавливаем текущие активные фильтры
+            if (initialFilters && Object.keys(initialFilters).length > 0) {
+                const updatedFilters = {
+                    type: "Все",
+                    gender: "Любой",
+                    animal_size: "Любой",
+                    health: "Любое",
+                    age_min: 0,
+                    age_max: 20,
+                };
+
+                // Преобразуем API фильтры обратно в формат UI
+                if (initialFilters.type) {
+                    updatedFilters.type = initialFilters.type === 'dog' ? 'Собаки' : 
+                                        initialFilters.type === 'cat' ? 'Кошки' : 'Все';
+                }
+                if (initialFilters.gender) {
+                    updatedFilters.gender = initialFilters.gender === 'male' ? 'Мальчик' : 
+                                          initialFilters.gender === 'female' ? 'Девочка' : 'Любой';
+                }
+                if (initialFilters.animal_size) {
+                    updatedFilters.animal_size = initialFilters.animal_size === 'small' ? 'Маленький' : 
+                                               initialFilters.animal_size === 'medium' ? 'Средний' : 
+                                               initialFilters.animal_size === 'large' ? 'Большой' : 'Любой';
+                }
+                if (initialFilters.health) {
+                    updatedFilters.health = initialFilters.health === 'healthy' ? 'Здоровый' : 
+                                          initialFilters.health === 'needs_treatment' ? 'Требует лечения' : 
+                                          initialFilters.health === 'special_needs' ? 'Особые потребности' : 'Любое';
+                }
+                if (initialFilters.age_min !== undefined) {
+                    updatedFilters.age_min = initialFilters.age_min;
+                }
+                if (initialFilters.age_max !== undefined) {
+                    updatedFilters.age_max = initialFilters.age_max;
+                }
+
+                setFilters(updatedFilters);
+            } else {
+                // Сбрасываем к значениям по умолчанию
+                setFilters({
+                    type: "Все",
+                    gender: "Любой",
+                    animal_size: "Любой",
+                    health: "Любое",
+                    age_min: 0,
+                    age_max: 20,
+                });
+            }
+        }
+    }, [isOpen, initialFilters]);
 
     const filterFields = [
         {
@@ -40,13 +94,6 @@ export const Filters = ({ isOpen, onClose, onApply }) => {
             options: ["Любое", "Здоровый", "Требует лечения", "Особые потребности"],
             fullWidth: false,
         },
-        {
-            id: "shelter_id",
-            label: "Приют",
-            value: filters.shelter_id,
-            options: ["Любой", "Приют №1", "Приют №2", "Приют №3"],
-            fullWidth: false,
-        },
     ];
 
     const handleFilterChange = (id, value) => {
@@ -61,7 +108,6 @@ export const Filters = ({ isOpen, onClose, onApply }) => {
             const newAgeMin = type === 'min' ? parseInt(value) : prev.age_min;
             const newAgeMax = type === 'max' ? parseInt(value) : prev.age_max;
             
-            // Гарантируем что min <= max
             if (type === 'min' && newAgeMin > prev.age_max) {
                 return { ...prev, age_min: prev.age_max, age_max: newAgeMin };
             }
@@ -81,14 +127,17 @@ export const Filters = ({ isOpen, onClose, onApply }) => {
             health: "Любое",
             age_min: 0,
             age_max: 20,
-            shelter_id: "Любой",
         });
+        // Вызываем внешний обработчик сброса
+        if (onReset) {
+            onReset();
+        }
     };
 
     const handleSubmit = () => {
         console.log("Filters applied:", filters);
         
-        // Конвертация фильтров в формат API
+        // Конвертация фильтров в формат API (БЕЗ shelter_id)
         const apiFilters = {
             type: filters.type === "Собаки" ? "dog" : filters.type === "Кошки" ? "cat" : "",
             gender: filters.gender === "Мальчик" ? "male" : filters.gender === "Девочка" ? "female" : "",
@@ -100,10 +149,16 @@ export const Filters = ({ isOpen, onClose, onApply }) => {
                     filters.health === "Особые потребности" ? "special_needs" : "",
             age_min: filters.age_min,
             age_max: filters.age_max,
-            shelter_id: filters.shelter_id !== "Любой" ? filters.shelter_id : "",
         };
         
-        onApply(apiFilters);
+        // Очищаем пустые фильтры
+        const cleanedFilters = Object.fromEntries(
+            Object.entries(apiFilters).filter(([_, value]) => 
+                value !== "" && value !== null && value !== undefined
+            )
+        );
+        
+        onApply(cleanedFilters);
         onClose();
     };
 
@@ -111,18 +166,17 @@ export const Filters = ({ isOpen, onClose, onApply }) => {
         onClose();
     };
 
-    // Если модальное окно закрыто, не рендерим ничего
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-green-95 rounded-[40px] w-full max-w-2xl flex flex-col items-start gap-6 p-8 relative">
+            <div className="bg-green-95 rounded-[40px] w-full max-w-2xl flex flex-col items-start gap-6 p-8 relative max-h-[90vh] overflow-y-auto">
                 {/* Заголовок */}
                 <header className="flex items-center justify-between self-stretch w-full">
                     <h1 className="text-4xl font-sf-rounded font-bold text-green-30">Фильтры</h1>
                     <button 
                         onClick={handleClose}
-                        className="relative w-6 h-6 cursor-pointer text-green-40 hover:text-green-40 transition-colors"
+                        className="relative w-6 h-6 cursor-pointer text-green-40 hover:text-green-20 transition-colors"
                         aria-label="Закрыть фильтры"
                     >
                         <svg 
@@ -139,8 +193,6 @@ export const Filters = ({ isOpen, onClose, onApply }) => {
                 {/* Форма с фильтрами */}
                 <form className="flex flex-col items-start gap-4 self-stretch w-full">
                     {filterFields.map((field, index) => {
-                        
-
                         if (index % 2 === 1) {
                             const prevField = filterFields[index - 1];
                             return (
@@ -155,7 +207,7 @@ export const Filters = ({ isOpen, onClose, onApply }) => {
                                                 id={prevField.id}
                                                 value={prevField.value}
                                                 onChange={(e) => handleFilterChange(prevField.id, e.target.value)}
-                                                className="w-full text-lg appearance-none bg-transparent outline-none pr-8 text-green-40"
+                                                className="w-full text-lg appearance-none bg-transparent outline-none pr-8 text-green-40 cursor-pointer"
                                             >
                                                 {prevField.options.map(option => (
                                                     <option key={option} value={option}>{option}</option>
@@ -182,7 +234,7 @@ export const Filters = ({ isOpen, onClose, onApply }) => {
                                                 id={field.id}
                                                 value={field.value}
                                                 onChange={(e) => handleFilterChange(field.id, e.target.value)}
-                                                className="w-full text-lg appearance-none bg-transparent outline-none pr-8 text-green-40"
+                                                className="w-full text-lg appearance-none bg-transparent outline-none pr-8 text-green-40 cursor-pointer"
                                             >
                                                 {field.options.map(option => (
                                                     <option key={option} value={option}>{option}</option>
@@ -202,7 +254,36 @@ export const Filters = ({ isOpen, onClose, onApply }) => {
                             );
                         }
 
-                
+                        // Для нечетного количества полей - последнее поле занимает всю ширину
+                        if (index === filterFields.length - 1 && index % 2 === 0) {
+                            return (
+                                <div key={field.id} className="flex-1 flex flex-col gap-2 self-stretch w-full">
+                                    <label htmlFor={field.id} className="text-base font-medium text-green-40">
+                                        {field.label}
+                                    </label>
+                                    <div className="h-12 flex items-center justify-between px-4 border-2 border-green-40 rounded-[20px] bg-green-95 relative">
+                                        <select
+                                            id={field.id}
+                                            value={field.value}
+                                            onChange={(e) => handleFilterChange(field.id, e.target.value)}
+                                            className="w-full text-lg appearance-none bg-transparent outline-none pr-8 text-green-40 cursor-pointer"
+                                        >
+                                            {field.options.map(option => (
+                                                <option key={option} value={option}>{option}</option>
+                                            ))}
+                                        </select>
+                                        <svg 
+                                            className="absolute right-3 w-5 h-5 text-green-40 pointer-events-none"
+                                            fill="none" 
+                                            stroke="currentColor" 
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            );
+                        }
 
                         return null;
                     })}
@@ -275,7 +356,7 @@ export const Filters = ({ isOpen, onClose, onApply }) => {
                     <button
                         type="button"
                         onClick={handleSubmit}
-                        className="px-6 py-3 bg-green-70 text-green-20 rounded-[20px] font-medium hover:bg-green-40 transition-colors"
+                        className="px-6 py-3 bg-green-70 text-green-20 rounded-[20px] font-medium hover:bg-green-60 transition-colors"
                     >
                         Применить
                     </button>
@@ -285,4 +366,4 @@ export const Filters = ({ isOpen, onClose, onApply }) => {
     );
 };
 
-export default Filters;
+export default FiltersP;

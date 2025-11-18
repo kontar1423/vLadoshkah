@@ -1,60 +1,102 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import profpic from '../assets/images/profpic.jpg'
 import PetCard from '../components/PetCard'
-import pesik from '../assets/images/pesik.jpg'
-import artem from '../assets/images/artem.jpg'
+import { useAuth } from '../context/AuthContext'
+import { animalService } from '../services/animalService'
 
 const Profile = () => {
+  const { user } = useAuth();
   const [volunteerInfo] = useState({
-    name: "Константин",
+    name: user?.firstname || "Пользователь",
     status: "Подтвержденный волонтер",
-    phone: "+79745671234",
-    email: "examplebigemail@mail.com",
-    gender: "Мужской",
+    phone: user?.phone || "+79745671234",
+    email: user?.email || "examplebigemail@mail.com",
+    gender: user?.gender === 'male' ? 'Мужской' : user?.gender === 'female' ? 'Женский' : 'Не указан',
     bio: "Люблю собак. Заберу домой каждую.",
     image: profpic
   })
 
-  const [pets] = useState([
-    {
-      id: 1,
-      name: "Честер",
-      age: "11 мес",
-      gender: "male",
-      genderIcon: null,
-      image: pesik  // Фото pesik.jpg для первого питомца
-    },
-    {
-      id: 2,
-      name: "Артемка", 
-      age: "2 дня",
-      gender: "female",
-      genderIcon: null,
-      image: artem  // Фото artem.jpg для второго питомца
+  const [favoritePets, setFavoritePets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Загрузка избранных питомцев
+  useEffect(() => {
+    loadFavoritePets();
+  }, []);
+
+  const loadFavoritePets = async () => {
+    try {
+      setLoading(true);
+      
+      // Временная реализация - получаем ID избранных из localStorage
+      const favoriteIds = JSON.parse(localStorage.getItem('favoritePets') || '[]');
+      
+      // Загружаем данные по каждому избранному питомцу
+      const petsData = [];
+      for (const petId of favoriteIds) {
+        try {
+          const pet = await animalService.getAnimalById(petId);
+          petsData.push(pet);
+        } catch (error) {
+          console.error(`Ошибка загрузки питомца ${petId}:`, error);
+        }
+      }
+      
+      setFavoritePets(petsData);
+    } catch (error) {
+      console.error('Ошибка загрузки избранных питомцев:', error);
+    } finally {
+      setLoading(false);
     }
-  ])
+  };
 
   return (
     <div className="min-h-screen bg-green-95">
       <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-10">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Основной контент - питомцы */}
+          {/* Основной контент - избранные питомцы */}
           <main className="flex-1">
             <section className="flex flex-col items-center gap-6 relative">
               <header className="flex items-center gap-6 relative self-stretch">
                 <h1 className="w-fit mt-[-1.00px] font-sf-rounded font-bold text-green-20 text-2xl md:text-3xl">
-                  Мои питомцы
+                  Мои питомцы ({favoritePets.length})
                 </h1>
               </header>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                {pets.map((pet) => (
-                  <PetCard 
-                    key={pet.id}
-                    petData={pet}
-                  />
-                ))}
-              </div>
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-40 mx-auto"></div>
+                  <p className="text-green-30 mt-4">Загрузка избранных питомцев...</p>
+                </div>
+              ) : favoritePets.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                  {favoritePets.map((pet) => (
+                    <PetCard 
+                      key={pet.id}
+                      petData={pet}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 w-full">
+                  <div className="bg-green-90 rounded-custom p-8 max-w-md mx-auto">
+                    <svg 
+                      className="w-16 h-16 text-green-60 mx-auto mb-4"
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-2">
+                      Нет избранных питомцев
+                    </h3>
+                    <p className="font-inter text-green-20 mb-4">
+                      Добавляйте питомцев в избранное, нажимая на сердечко на карточках животных
+                    </p>
+                  </div>
+                </div>
+              )}
             </section>
           </main>
 
@@ -68,7 +110,7 @@ const Profile = () => {
               <div className="relative h-124">
                 <img
                   className="w-full h-full object-cover"
-                  alt="Фон профиля Константина"
+                  alt="Фон профиля"
                   src={volunteerInfo.image}
                 />
                 {/* Затемнение для лучшей читаемости текста */}

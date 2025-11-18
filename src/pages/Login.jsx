@@ -5,13 +5,28 @@ import { useAuth } from '../context/AuthContext'
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    login()
-    navigate('/профиль')
+    setError('')
+    setLoading(true)
+
+    try {
+      const result = await login(email, password)
+      if (result.success) {
+        navigate('/профиль')
+      } else {
+        setError(result.error)
+      }
+    } catch (error) {
+      setError('Произошла ошибка при входе')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -25,6 +40,12 @@ const Login = () => {
             Войдите в свой аккаунт
           </p>
         </div>
+
+        {error && (
+          <div className="animate-fade-up mb-6 p-4 bg-red-90 border border-red-40 rounded-custom-small">
+            <p className="text-red-20 font-inter font-medium text-center">{error}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
@@ -41,6 +62,7 @@ const Login = () => {
                 required
                 className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 font-sf-rounded placeholder-green-40 focus:border-green-50 focus:outline-none transition-colors"
                 placeholder="example@mail.com"
+                disabled={loading}
               />
             </div>
 
@@ -57,6 +79,7 @@ const Login = () => {
                 required
                 className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 font-sf-rounded placeholder-green-40 focus:border-green-50 focus:outline-none transition-colors"
                 placeholder="Введите пароль"
+                disabled={loading}
               />
             </div>
           </div>
@@ -64,9 +87,10 @@ const Login = () => {
           <div className="animate-fade-up" style={{ animationDelay: '0.3s' }}>
             <button
               type="submit"
-              className="w-full px-6 py-4 bg-green-50 text-green-100 font-sf-rounded font-semibold text-base md:text-lg rounded-custom-small hover:bg-green-60 active:bg-green-40 transition-all duration-200 shadow-lg hover:shadow-xl"
+              disabled={loading}
+              className="w-full px-6 py-4 bg-green-50 text-green-100 font-sf-rounded font-semibold text-base md:text-lg rounded-custom-small hover:bg-green-60 active:bg-green-40 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Войти
+              {loading ? 'Вход...' : 'Войти'}
             </button>
           </div>
 
