@@ -1,6 +1,7 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useForceScroll } from '../hooks/useForceScroll'
 import HelpSection from './HelpSection'
 
 export const Header = () => {
@@ -10,6 +11,8 @@ export const Header = () => {
   const userMenuRef = useRef(null)
   const { isAuthenticated, user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const forceScrollToTop = useForceScroll()
   
   const navigationItems = [
     { id: 1, label: "Найти питомца", path: "/найти-питомца" },
@@ -17,6 +20,47 @@ export const Header = () => {
     { id: 3, label: "Приюты", path: "/приюты" },
     { id: 4, label: "Отдать животное", path: "/отдать-животное" },
   ];
+
+  // САМАЯ ПРОСТАЯ ФУНКЦИЯ - ПРОКРУТКА ВВЕРХ
+  const handleScrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  // Функция для навигации
+  const handleNavigate = (path) => {
+    navigate(path);
+  };
+
+  // Функция для кнопок навигации
+  const handleNavButtonClick = (item) => {
+    if (item.action) {
+      item.action();
+    } else if (item.path) {
+      // ВСЕГДА прокручиваем вверх при клике на любую ссылку
+      handleScrollToTop();
+      // И переходим если это другая страница
+      if (location.pathname !== item.path) {
+        handleNavigate(item.path);
+      }
+    }
+    setIsMenuOpen(false);
+    setIsUserMenuOpen(false);
+  };
+
+  // Функция для ссылок
+  const handleLinkClick = (path) => {
+    // ВСЕГДА прокручиваем вверх
+    handleScrollToTop();
+    // Если это текущая страница - предотвращаем переход
+    if (location.pathname === path) {
+      return false; // предотвратим переход
+    }
+    // Для других страниц переход произойдет автоматически
+  };
 
   // Получаем имя пользователя для отображения
   const getUserDisplayName = () => {
@@ -69,18 +113,6 @@ export const Header = () => {
     }
   }
 
-  const handleNavigationClick = (item) => {
-    if (item.action) {
-      item.action()
-      setIsMenuOpen(false)
-      setIsUserMenuOpen(false)
-    } else if (item.path) {
-      navigate(item.path)
-      setIsMenuOpen(false)
-      setIsUserMenuOpen(false)
-    }
-  }
-
   const closeHelpModal = () => {
     setIsHelpModalOpen(false)
   }
@@ -92,13 +124,17 @@ export const Header = () => {
         role="banner"
       >
         <div className="gap-[15px] md:gap-[30px] lg:gap-[50px] xl:gap-[60px] 2xl:gap-[70px] flex items-center relative flex-1 flex-wrap md:flex-nowrap">
-          <Link to="/" className="flex-shrink-0">
+          {/* ЛОГОТИП - ВСЕГДА ПРОКРУЧИВАЕТ ВВЕРХ */}
+          <div 
+            className="flex-shrink-0 cursor-pointer"
+            onClick={handleScrollToTop}
+          >
             <img
               className="relative w-[100px] md:w-[120px] lg:w-[139px] h-4 md:h-4 lg:h-5"
               alt="В Ладошках Logo"
               src="https://c.animaapp.com/qqBlbLv1/img/----------.svg"
             />
-          </Link>
+          </div>
 
           {/* Desktop/Tablet Navigation */}
           <nav
@@ -107,17 +143,29 @@ export const Header = () => {
             aria-label="Main navigation"
           >
             {navigationItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavigationClick(item)}
-                className={`inline-flex items-center justify-center gap-2.5 relative flex-[0_0_auto] hover:opacity-80 transition-opacity ${
-                  item.path ? '' : 'cursor-pointer'
-                }`}
-              >
-                <span className="relative w-fit mt-[-1.00px] font-inter font-medium text-green-20 text-lg md:text-xl tracking-[0] leading-[normal] whitespace-nowrap">
-                  {item.label}
-                </span>
-              </button>
+              <div key={item.id}>
+                {item.path ? (
+                  <button
+                    onClick={() => handleNavButtonClick(item)}
+                    className={`inline-flex items-center justify-center gap-2.5 relative flex-[0_0_auto] hover:opacity-80 transition-opacity ${
+                      location.pathname === item.path ? 'text-green-30 font-semibold' : 'text-green-20'
+                    }`}
+                  >
+                    <span className="relative w-fit mt-[-1.00px] font-inter font-medium text-lg md:text-xl tracking-[0] leading-[normal] whitespace-nowrap">
+                      {item.label}
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleNavButtonClick(item)}
+                    className="inline-flex items-center justify-center gap-2.5 relative flex-[0_0_auto] hover:opacity-80 transition-opacity text-green-20"
+                  >
+                    <span className="relative w-fit mt-[-1.00px] font-inter font-medium text-lg md:text-xl tracking-[0] leading-[normal] whitespace-nowrap">
+                      {item.label}
+                    </span>
+                  </button>
+                )}
+              </div>
             ))}
           </nav>
 
@@ -130,36 +178,64 @@ export const Header = () => {
             aria-label="Mobile navigation"
           >
             {navigationItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavigationClick(item)}
-                className="inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80"
-              >
-                <span className="relative w-fit font-inter font-medium text-green-20 text-base tracking-[0] leading-[normal]">
-                  {item.label}
-                </span>
-              </button>
+              <div key={item.id}>
+                {item.path ? (
+                  <button
+                    onClick={() => handleNavButtonClick(item)}
+                    className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 ${
+                      location.pathname === item.path ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                    }`}
+                  >
+                    <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                      {item.label}
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleNavButtonClick(item)}
+                    className="inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 text-green-20"
+                  >
+                    <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                      {item.label}
+                    </span>
+                  </button>
+                )}
+              </div>
             ))}
             {!isAuthenticated ? (
               <>
-                <Link
-                  to="/войти"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80"
+                <div
+                  onClick={() => {
+                    handleScrollToTop();
+                    if (location.pathname !== '/войти') {
+                      navigate('/войти');
+                    }
+                    setIsMenuOpen(false);
+                  }}
+                  className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
+                    location.pathname === '/войти' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                  }`}
                 >
-                  <span className="relative w-fit font-inter font-medium text-green-20 text-base tracking-[0] leading-[normal]">
+                  <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
                     Войти
                   </span>
-                </Link>
-                <Link
-                  to="/регистрация"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80"
+                </div>
+                <div
+                  onClick={() => {
+                    handleScrollToTop();
+                    if (location.pathname !== '/регистрация') {
+                      navigate('/регистрация');
+                    }
+                    setIsMenuOpen(false);
+                  }}
+                  className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
+                    location.pathname === '/регистрация' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                  }`}
                 >
-                  <span className="relative w-fit font-inter font-medium text-green-20 text-base tracking-[0] leading-[normal]">
+                  <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
                     Зарегистрироваться
                   </span>
-                </Link>
+                </div>
               </>
             ) : (
               <>
@@ -167,25 +243,39 @@ export const Header = () => {
                   <p className="text-green-30 font-semibold text-sm">{getUserDisplayName()}</p>
                   <p className="text-green-40 text-xs">{getUserRoleDisplay()}</p>
                 </div>
-                <Link
-                  to="/профиль"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80"
+                <div
+                  onClick={() => {
+                    handleScrollToTop();
+                    if (location.pathname !== '/профиль') {
+                      navigate('/профиль');
+                    }
+                    setIsMenuOpen(false);
+                  }}
+                  className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
+                    location.pathname === '/профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                  }`}
                 >
-                  <span className="relative w-fit font-inter font-medium text-green-20 text-base tracking-[0] leading-[normal]">
+                  <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
                     Профиль
                   </span>
-                </Link>
+                </div>
                 {user?.role === 'admin' && (
-                  <Link
-                    to="/админ-профиль"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80"
+                  <div
+                    onClick={() => {
+                      handleScrollToTop();
+                      if (location.pathname !== '/админ-профиль') {
+                        navigate('/админ-профиль');
+                      }
+                      setIsMenuOpen(false);
+                    }}
+                    className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
+                      location.pathname === '/админ-профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                    }`}
                   >
-                    <span className="relative w-fit font-inter font-medium text-green-20 text-base tracking-[0] leading-[normal]">
+                    <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
                       Админ панель
                     </span>
-                  </Link>
+                  </div>
                 )}
                 <button
                   onClick={handleLogout}
@@ -231,20 +321,30 @@ export const Header = () => {
               <div className="absolute right-0 top-full mt-2 w-64 bg-green-98 border border-green-80 rounded-custom-small shadow-lg z-50 overflow-hidden">
                 {!isAuthenticated ? (
                   <>
-                    <Link
-                      to="/войти"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="block w-full text-left px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors"
+                    <div
+                      onClick={() => {
+                        handleScrollToTop();
+                        if (location.pathname !== '/войти') {
+                          navigate('/войти');
+                        }
+                        setIsUserMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer"
                     >
                       Войти
-                    </Link>
-                    <Link
-                      to="/регистрация"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="block w-full text-left px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80"
+                    </div>
+                    <div
+                      onClick={() => {
+                        handleScrollToTop();
+                        if (location.pathname !== '/регистрация') {
+                          navigate('/регистрация');
+                        }
+                        setIsUserMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer"
                     >
                       Зарегистрироваться
-                    </Link>
+                    </div>
                   </>
                 ) : (
                   <>
@@ -255,10 +355,15 @@ export const Header = () => {
                       <p className="text-green-40 text-xs truncate">{user?.email}</p>
                     </div>
                     
-                    <Link
-                      to="/профиль"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors"
+                    <div
+                      onClick={() => {
+                        handleScrollToTop();
+                        if (location.pathname !== '/профиль') {
+                          navigate('/профиль');
+                        }
+                        setIsUserMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer"
                     >
                       <img
                         className="w-5 h-5"
@@ -266,20 +371,25 @@ export const Header = () => {
                         src="https://c.animaapp.com/qqBlbLv1/img/person@2x.png"
                       />
                       Профиль
-                    </Link>
+                    </div>
                     
                     {user?.role === 'admin' && (
-                      <Link
-                        to="/админ-профиль"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80"
+                      <div
+                        onClick={() => {
+                          handleScrollToTop();
+                          if (location.pathname !== '/админ-профиль') {
+                            navigate('/админ-профиль');
+                          }
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         Админ панель
-                      </Link>
+                      </div>
                     )}
                     
                     <button
@@ -328,8 +438,10 @@ export const Header = () => {
                   {navigationItems.map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => handleNavigationClick(item)}
-                      className="block w-full text-left px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors"
+                      onClick={() => handleNavButtonClick(item)}
+                      className={`block w-full text-left px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors ${
+                        location.pathname === item.path ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                      }`}
                     >
                       {item.label}
                     </button>
@@ -339,38 +451,66 @@ export const Header = () => {
                 {/* Пользовательские пункты */}
                 {!isAuthenticated ? (
                   <>
-                    <Link
-                      to="/войти"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="block w-full text-left px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80"
+                    <div
+                      onClick={() => {
+                        handleScrollToTop();
+                        if (location.pathname !== '/войти') {
+                          navigate('/войти');
+                        }
+                        setIsUserMenuOpen(false);
+                      }}
+                      className={`block w-full text-left px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer ${
+                        location.pathname === '/войти' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                      }`}
                     >
                       Войти
-                    </Link>
-                    <Link
-                      to="/регистрация"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="block w-full text-left px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors"
+                    </div>
+                    <div
+                      onClick={() => {
+                        handleScrollToTop();
+                        if (location.pathname !== '/регистрация') {
+                          navigate('/регистрация');
+                        }
+                        setIsUserMenuOpen(false);
+                      }}
+                      className={`block w-full text-left px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer ${
+                        location.pathname === '/регистрация' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                      }`}
                     >
                       Зарегистрироваться
-                    </Link>
+                    </div>
                   </>
                 ) : (
                   <>
-                    <Link
-                      to="/профиль"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="block px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80"
+                    <div
+                      onClick={() => {
+                        handleScrollToTop();
+                        if (location.pathname !== '/профиль') {
+                          navigate('/профиль');
+                        }
+                        setIsUserMenuOpen(false);
+                      }}
+                      className={`block px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer ${
+                        location.pathname === '/профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                      }`}
                     >
                       Профиль
-                    </Link>
+                    </div>
                     {user?.role === 'admin' && (
-                      <Link
-                        to="/админ-профиль"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="block px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors"
+                      <div
+                        onClick={() => {
+                          handleScrollToTop();
+                          if (location.pathname !== '/админ-профиль') {
+                            navigate('/админ-профиль');
+                          }
+                          setIsUserMenuOpen(false);
+                        }}
+                        className={`block px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer ${
+                          location.pathname === '/админ-профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                        }`}
                       >
                         Админ панель
-                      </Link>
+                      </div>
                     )}
                     <button
                       onClick={handleLogout}

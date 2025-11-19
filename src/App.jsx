@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import ScrollToTop from './components/ScrollToTop' // Добавьте эту строку
 import Home from './pages/Home'
 import FindPet from './pages/FindPet'
 import Help from './pages/Help'
@@ -19,11 +20,11 @@ import AnketaInfo from './pages/AnketaInfo'
 import ShelterRegister from './pages/ShelterRegister'
 import './assets/fonts/fonts.css';
 
-
 function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop /> {/* Добавьте эту строку */}
         <div className="min-h-screen bg-green-95 flex flex-col">
           <Header />
           <main className="flex-1">
