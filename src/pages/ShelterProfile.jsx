@@ -21,6 +21,22 @@ const ShelterProfile = () => {
   const [error, setError] = useState('');
   const [activeFilters, setActiveFilters] = useState({});
 
+  const [shelterData, setShelterData] = useState({
+    id: null,
+    name: "",
+    rating: 4.5,
+    description: "",
+    contacts: {
+      phone: "",
+      telegram: "",
+      whatsapp: "",
+      email: ""
+    },
+    acceptsAnimalsFromOwners: false,
+    photoUrl: null,
+    photos: []
+  });
+
   // Функция для получения читаемого названия фильтра
   const getFilterDisplayName = (filterKey, filterValue) => {
     const filterLabels = {
@@ -97,19 +113,6 @@ const ShelterProfile = () => {
     return displayFilters;
   };
 
-  const [shelterData, setShelterData] = useState({
-    name: "",
-    rating: 4.5,
-    description: "",
-    contacts: {
-      phone: "",
-      telegram: "",
-      whatsapp: "",
-      email: ""
-    },
-    acceptsAnimalsFromOwners: false
-  });
-
   useEffect(() => {
     loadShelterData();
   }, [id]);
@@ -136,7 +139,8 @@ const ShelterProfile = () => {
       }
 
       // Обновляем данные приюта
-      setShelterData(prev => ({
+      setShelterData({
+        id: shelter.id,
         name: shelter.name || "Приют",
         rating: 4.5,
         description: shelter.description || "Описание приюта",
@@ -146,8 +150,10 @@ const ShelterProfile = () => {
           whatsapp: shelter.whatsapp || "",
           email: shelter.email || ""
         },
-        acceptsAnimalsFromOwners: shelter.can_adopt || false
-      }));
+        acceptsAnimalsFromOwners: shelter.can_adopt || false,
+        photoUrl: shelter.photoUrl || null,
+        photos: shelter.photos || []
+      });
 
       // Форматируем животных для PetCard
       const formattedPets = Array.isArray(animals) ? animals.map(animal => {
@@ -346,12 +352,12 @@ const ShelterProfile = () => {
         stars.push(
           <svg key={i} className="w-5 h-5 md:w-6 md:h-6 text-green-30 fill-current" viewBox="0 0 24 24">
             <defs>
-              <linearGradient id="half-star">
+              <linearGradient id={`half-star-${i}`}>
                 <stop offset="50%" stopColor="currentColor"/>
                 <stop offset="50%" stopColor="#D1D5DB"/>
               </linearGradient>
             </defs>
-            <path fill="url(#half-star)" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            <path fill={`url(#half-star-${i})`} d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
           </svg>
         );
       } else {
@@ -405,12 +411,26 @@ const ShelterProfile = () => {
             </div>
           )}
 
+          {/* Блок с фотографией приюта */}
           <div className="relative w-full md:w-[350px] h-[180px] md:h-full flex-shrink-0">
             <img 
-              src={PriutPhoto} 
+              src={shelterData.photoUrl || PriutPhoto} 
               alt={shelterData.name}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                const fallback = document.getElementById(`shelter-profile-fallback-${shelterData.id}`);
+                if (fallback) fallback.style.display = 'flex';
+              }}
             />
+            {/* Fallback для фото приюта в профиле */}
+            <div 
+              id={`shelter-profile-fallback-${shelterData.id}`}
+              className={`w-full h-full bg-gradient-to-br from-green-70 to-green-60 items-center justify-center flex-col p-4 text-center ${shelterData.photoUrl ? 'hidden' : 'flex'}`}
+            >
+              <span className="text-green-98 font-sf-rounded font-bold text-xl mb-2">{shelterData.name}</span>
+              <span className="text-green-95 font-inter">Приют для животных</span>
+            </div>
             <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-green-90 to-transparent hidden md:block"></div>
           </div>
 

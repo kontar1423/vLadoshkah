@@ -35,8 +35,7 @@ const Shelters = () => {
         return;
       }
 
-      // Преобразуем данные с бекенда в нужный формат
-      const formattedShelters = sheltersData.map(shelter => ({
+    const formattedShelters = sheltersData.map(shelter => ({
         id: shelter.id,
         name: shelter.name,
         rating: 4.5,
@@ -50,10 +49,12 @@ const Shelters = () => {
         capacity: shelter.capacity,
         status: shelter.status,
         photos: shelter.photos || [],
+        // Добавьте photoUrl
+        photoUrl: shelter.photoUrl || null,
         // Используем поле region из бекенда для округа
         district: getDistrictName(shelter.region),
         districtId: shelter.region // используем напрямую код округа из бекенда
-      }));
+    }));
 
       setShelters(formattedShelters);
       setFilteredShelters(formattedShelters);
