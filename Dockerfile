@@ -38,6 +38,9 @@ COPY --from=dependencies /usr/src/app/node_modules ./node_modules
 # Копируем исходный код
 COPY . .
 
+# Удаляем dev-зависимости для production-слоя
+RUN npm prune --omit=dev
+
 # Копируем и делаем исполняемым скрипт ожидания
 COPY wait-for-services.sh /usr/src/app/wait-for-services.sh
 RUN chmod +x /usr/src/app/wait-for-services.sh

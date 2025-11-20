@@ -32,9 +32,6 @@ router.get('/', animalsController.getAll);
 // GET /api/animals/filters - получить животных с фильтрами (публичный)
 router.get('/filters', validate(animalFiltersSchema, 'query'), animalsController.getAnimalsWithFilters);
 
-// GET /api/animals/:id - получить животное по ID (публичный)
-router.get('/:id', validate(animalIdSchema, 'params'), animalsController.getById);
-
 // GET /api/animals/shelter/:shelterId - получить животных по приюту (публичный)
 const shelterIdSchema = Joi.object({
   shelterId: Joi.number().integer().positive().required()
@@ -46,6 +43,12 @@ const shelterIdSchema = Joi.object({
     })
 });
 router.get('/shelter/:shelterId', validate(shelterIdSchema, 'params'), animalsController.getAllByShelterId);
+
+// GET /api/animals/search/:term - поиск животных (публичный)
+router.get('/search/:term', animalsController.getAnimalsWithFilters);
+
+// GET /api/animals/:id - получить животное по ID (публичный)
+router.get('/:id', validate(animalIdSchema, 'params'), animalsController.getById);
 
 // POST /api/animals - создать новое животное (только админ сайта или админ приюта)
 router.post('/', authenticateToken, authorize('admin', 'shelter_admin'), upload.single('photo'), validate(createAnimalSchema), animalsController.create);
@@ -59,8 +62,4 @@ router.patch('/:id', authenticateToken, authorize('admin', 'shelter_admin'), val
 // DELETE /api/animals/:id - удалить животное (только админ сайта или админ приюта)
 router.delete('/:id', authenticateToken, authorize('admin', 'shelter_admin'), validate(animalIdSchema, 'params'), animalsController.remove);
 
-// GET /api/animals/search/:term - поиск животных (публичный)
-router.get('/search/:term', animalsController.getAnimalsWithFilters);
-
 export default router;
-

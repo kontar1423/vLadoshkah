@@ -747,6 +747,7 @@
                 reader.onload = function(e) {
                     const previewItem = document.createElement('div');
                     previewItem.className = 'preview-item';
+                    previewItem.dataset.fileName = file.name;
                     previewItem.innerHTML = `
                         <img src="${e.target.result}" class="preview-image">
                         <button type="button" class="remove-btn" onclick="removePhoto('${type}', '${file.name}')">×</button>
@@ -769,13 +770,10 @@
             const previewContainer = document.getElementById(type === 'user' ? 'userPhotoPreview' : 
                                                               type === 'animal' ? 'animalPhotosPreview' : 
                                                               'shelterPhotosPreview');
-            const items = previewContainer.getElementsByClassName('preview-item');
-            
-            for (let item of items) {
-                if (item.querySelector('img').src.includes(fileName.split('.')[0])) {
-                    item.remove();
-                    break;
-                }
+            const items = Array.from(previewContainer.getElementsByClassName('preview-item'));
+            const target = items.find(item => item.dataset.fileName === fileName);
+            if (target) {
+                target.remove();
             }
 
             if (type === 'animal') {
@@ -1295,7 +1293,15 @@
             try {
                 let items = [];
                 let endpoint = '';
+                const headers = {};
                 
+                if (!accessToken) {
+                    container.innerHTML = '<p style="color: #dc3545;">Ошибка: требуется авторизация. Пожалуйста, войдите снова.</p>';
+                    return;
+                }
+
+                headers['Authorization'] = `Bearer ${accessToken}`;
+
                 switch(type) {
                     case 'animals':
                         endpoint = `${API_BASE}/animals`;
@@ -1311,18 +1317,10 @@
                         break;
                 }
                 
-                // Проверяем наличие токена для заявок
-                if (type === 'applications' && !accessToken) {
-                    container.innerHTML = '<p style="color: #dc3545;">Ошибка: требуется авторизация. Пожалуйста, войдите снова.</p>';
-                    return;
-                }
-                
                 console.log('Загрузка списка:', type, endpoint);
                 
                 const response = await fetch(endpoint, {
-                    headers: type === 'applications' ? {
-                        'Authorization': `Bearer ${accessToken}`
-                    } : {},
+                    headers,
                     redirect: 'manual' // Предотвращаем автоматические редиректы
                 });
                 
@@ -1579,6 +1577,7 @@
                                         <option value="zelao" ${item.region === 'zelao' ? 'selected' : ''}>Зеленоградский</option>
                                         <option value="tinao" ${item.region === 'tinao' ? 'selected' : ''}>Троицкий</option>
                                         <option value="nao" ${item.region === 'nao' ? 'selected' : ''}>Новомосковский</option>
+                                        </select>
                                     </div>
                                     <div class="form-group">
                                         <label for="editShelterPhone">Телефон</label>
@@ -1939,4 +1938,3 @@
     </script>
 </body>
 </html>
-
