@@ -1,10 +1,11 @@
-    import React from 'react';
+    import React, { useState, useEffect } from 'react';
     import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
     import 'leaflet/dist/leaflet.css';
     import L from 'leaflet';
     import LapaIcon from '../assets/images/lapa.png'; 
+    import { geocodingService } from '../services/geocodingService';
 
-    // Фикс для отображения маркеров в React-Leaflet
+    // Фикс для стандартных маркеров
     delete L.Icon.Default.prototype._getIconUrl;
     L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -12,15 +13,13 @@
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
     });
 
-    // Создаем кастомную иконку с изображением лапы
+    // Кастомная иконка
     const createCustomIcon = (isHighlighted = false) => {
     const size = isHighlighted ? 40 : 35;
-    const borderWidth = isHighlighted ? 4 : 3;
-    
     return L.divIcon({
         html: `
         <div style="
-            background-color: ${isHighlighted ? '#00522C' : '#00522C'};
+            background-color: #00522C;
             width: ${size}px;
             height: ${size}px;
             display: flex;
@@ -28,7 +27,6 @@
             justify-content: center;
             color: white;
             font-size: 10px;
-            transition: all 0.3s ease;
             overflow: hidden;
         ">
             <img 
@@ -51,56 +49,115 @@
 
     const SheltersMap = ({ 
     shelters, 
-    onShelterClick, 
     searchQuery = "",
     highlightedShelters = [] 
     }) => {
     const center = [55.7558, 37.6173];
+    const [sheltersWithCoords, setSheltersWithCoords] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Функция для получения координат по ID приюта
-    const getCoordinatesByShelterId = (shelterId) => {
-        const districtCoordinates = {
-        'cao': [55.7558, 37.6176],
-        'sao': [55.8353, 37.5245],
-        'svao': [55.8500, 37.6333],
-        'vao': [55.7870, 37.7830],
-        'yuvao': [55.6100, 37.7600],
-        'yao': [55.6100, 37.6800],
-        'yuzao': [55.6600, 37.5500],
-        'zao': [55.7340, 37.4100],
-        'szao': [55.8270, 37.4300],
-        'zelao': [55.9820, 37.1800],
-        'tinao': [55.4000, 37.2000],
-        'nao': [55.5500, 37.3500],
+    // Загрузка координат для приютов
+    useEffect(() => {
+        const loadCoordinates = async () => {
+        setLoading(true);
+        
+        const sheltersWithCoordinates = await Promise.all(
+            shelters.map(async (shelter) => {
+            let coordinates = null;
+            
+            // Если есть адрес - пытаемся получить реальные координаты
+            if (shelter.address) {
+                try {
+                coordinates = await geocodingService.getCoordinates(
+                    `${shelter.address}, Москва`
+                );
+                } catch (error) {
+                console.error(`Ошибка геокодирования для приюта ${shelter.name}:`, error);
+                }
+            }
+            
+            // Если не удалось получить координаты по адресу, используем fallback по districtId
+            if (!coordinates && shelter.districtId) {
+                coordinates = getCoordinatesByDistrict(shelter.districtId);
+            }
+            
+            // Если и это не сработало, используем случайные координаты в Москве
+            if (!coordinates) {
+                coordinates = getFallbackCoordinates(shelter.id);
+            }
+            
+            return {
+                ...shelter,
+                coordinates: coordinates
+            };
+            })
+        );
+        
+        setSheltersWithCoords(sheltersWithCoordinates);
+        setLoading(false);
         };
 
-        const seed = shelterId || Math.random();
-        const districts = Object.keys(districtCoordinates);
-        const districtKey = districts[seed % districts.length];
-        const baseCoords = districtCoordinates[districtKey];
+        loadCoordinates();
+    }, [shelters]);
+
+    // Функция для получения координат по districtId
+    const getCoordinatesByDistrict = (districtId) => {
+        const districtCoordinates = {
+        'cao': [55.7558, 37.6176],    // Центральный
+        'sao': [55.8353, 37.5245],    // Северный
+        'svao': [55.8500, 37.6333],   // Северо-Восточный
+        'vao': [55.7870, 37.7830],    // Восточный
+        'yuvao': [55.6100, 37.7600],  // Юго-Восточный
+        'yao': [55.6100, 37.6800],    // Южный
+        'yuzao': [55.6600, 37.5500],  // Юго-Западный
+        'zao': [55.7340, 37.4100],    // Западный
+        'szao': [55.8270, 37.4300],   // Северо-Западный
+        'zelao': [55.9820, 37.1800],  // Зеленоградский
+        'tinao': [55.4000, 37.2000],  // Троицкий
+        'nao': [55.5500, 37.3500],    // Новомосковский
+        };
         
-        const lat = baseCoords[0] + (Math.random() - 0.5) * 0.05;
-        const lng = baseCoords[1] + (Math.random() - 0.5) * 0.05;
+        return districtCoordinates[districtId] || null;
+    };
+
+    // Fallback координаты (случайные в пределах Москвы)
+    const getFallbackCoordinates = (shelterId) => {
+        const moscowBounds = {
+        lat: [55.5, 56.0],
+        lng: [37.3, 37.9]
+        };
+        
+        const seed = shelterId || Math.random();
+        const lat = moscowBounds.lat[0] + (seed * 37 % 100) / 200;
+        const lng = moscowBounds.lng[0] + (seed * 73 % 100) / 200;
         
         return [lat, lng];
     };
 
-    // Фильтрация приютов по поисковому запросу
-    const filteredShelters = shelters.filter(shelter =>
+    const filteredShelters = sheltersWithCoords.filter(shelter =>
         searchQuery.trim() === "" ||
         shelter.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (shelter.address && shelter.address.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
-    // Подсветка приютов, соответствующих поиску
     const isShelterHighlighted = (shelterId) => {
         return highlightedShelters.includes(shelterId) || 
             (searchQuery && filteredShelters.some(s => s.id === shelterId));
     };
 
+    if (loading) {
+        return (
+        <div className="w-full h-full flex items-center justify-center bg-green-90 rounded-custom">
+            <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-40 mx-auto mb-4"></div>
+            <p className="font-inter text-green-40">Загрузка карты...</p>
+            </div>
+        </div>
+        );
+    }
+
     return (
         <div className="w-full h-full relative" style={{ zIndex: 1 }}>
-        {/* Информация о результатах поиска */}
         {searchQuery && (
             <div className="absolute top-4 left-4 z-[1000] bg-green-90 border-2 border-green-40 rounded-custom-small px-4 py-2 shadow-lg">
             <span className="font-inter text-green-30 text-sm">
@@ -113,12 +170,7 @@
         <MapContainer 
             center={center} 
             zoom={10} 
-            style={{ 
-            height: '100%', 
-            width: '100%',
-            position: 'relative',
-            zIndex: 1
-            }}
+            style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}
             className="rounded-custom leaflet-container-custom"
             zoomControl={true}
         >
@@ -127,28 +179,20 @@
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
             
-            {shelters.map((shelter) => {
-            const coordinates = getCoordinatesByShelterId(shelter.id);
+            {sheltersWithCoords.map((shelter) => {
             const isHighlighted = isShelterHighlighted(shelter.id);
             const isVisible = filteredShelters.some(s => s.id === shelter.id) || searchQuery === "";
 
-            if (!isVisible) return null;
+            if (!isVisible || !shelter.coordinates) return null;
 
             return (
                 <Marker 
                 key={shelter.id} 
-                position={coordinates}
+                position={shelter.coordinates}
                 icon={createCustomIcon(isHighlighted)}
-                eventHandlers={{
-                    click: () => {
-                    if (onShelterClick) {
-                        onShelterClick(shelter);
-                    }
-                    }
-                }}
                 >
                 <Popup>
-                    <div className="p-3  min-w-[250px]">
+                    <div className="p-3 min-w-[250px]">
                     <h3 className={`font-sf-rounded font-bold text-lg mb-2 ${
                         isHighlighted ? 'text-green-40' : 'text-green-30'
                     }`}>
@@ -161,31 +205,33 @@
                     </h3>
                     
                     {shelter.address && (
-                        <p className="font-inter text-green-60 text-sm mb-2">
+                        <p className="font-inter text-green-40 text-sm mb-1">
                         <strong>Адрес:</strong> {shelter.address}
                         </p>
                     )}
                     
                     {shelter.phone && (
-                        <p className="font-inter text-green-60 text-sm mb-2">
+                        <p className="font-inter text-green-40 text-sm mb-1">
                         <strong>Телефон:</strong> {shelter.phone}
                         </p>
                     )}
                     
                     {shelter.district && (
-                        <p className="font-inter text-green-60 text-sm mb-3">
+                        <p className="font-inter text-green-40 text-sm mb-3">
                         <strong>Округ:</strong> {shelter.district}
                         </p>
                     )}
                     
-                    <div className="flex gap-2">
-                        <button
-                        onClick={() => window.location.href = `/приют/${shelter.id}`}
-                        className="flex-1 px-3 py-2 bg-green-30 text-green-90 rounded-custom-small text-sm hover:bg-green-40 transition-colors text-center"
-                        >
+                    <button
+                        onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = `/приют/${shelter.id}`;
+                        }}
+                        className="w-full px-3 py-2 bg-green-30 text-green-90 rounded-custom-small text-sm hover:bg-green-40 transition-colors"
+                    >
                         Подробнее
-                        </button>
-                    </div>
+                    </button>
                     </div>
                 </Popup>
                 </Marker>

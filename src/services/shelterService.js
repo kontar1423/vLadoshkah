@@ -59,12 +59,12 @@ const normalizeShelterData = (shelterData) => {
     console.log('Shelter photo URL:', photoUrl);
 
     return {
-        ...shelterData,
-        photoUrl: photoUrl,
-        // Обеспечиваем обратную совместимость
-        photos: shelterData.photos || [],
-        rating: shelterData.rating || 0,
-        district: shelterData.district || 'Москва',
-        description: shelterData.description || 'Описание приюта'
+    ...shelterData,
+    photoUrl: photoUrl,
+    districtId: shelterData.region, // Добавьте эту строку
+    photos: shelterData.photos || [],
+    rating: shelterData.rating || 0,
+    district: shelterData.district || 'Москва',
+    description: shelterData.description || 'Описание приюта'
     };
 };

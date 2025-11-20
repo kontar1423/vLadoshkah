@@ -29,13 +29,13 @@ const GiveAnimal = () => {
         shelter.can_adopt === true
       );
 
-      // Форматируем данные для ShelterCard
+      // В функции loadAcceptingShelters замените форматирование данных:
       const formattedShelters = acceptingSheltersData.map(shelter => ({
         id: shelter.id,
         name: shelter.name,
-        rating: 4.5, // Можно добавить реальный рейтинг если будет в бекенде
+        rating: 4.5,
         description: shelter.description,
-        animalsCount: 0, // Можно получить количество животных через отдельный запрос
+        animalsCount: 0,
         address: shelter.address,
         phone: shelter.phone,
         email: shelter.email,
@@ -44,8 +44,9 @@ const GiveAnimal = () => {
         capacity: shelter.capacity,
         status: shelter.status,
         photos: shelter.photos || [],
+        photoUrl: shelter.photoUrl, // ДОБАВЬТЕ ЭТУ СТРОКУ
         district: getDistrictFromRegion(shelter.region),
-        acceptsFromOwners: shelter.can_adopt // Используем поле из бекенда
+        acceptsFromOwners: shelter.can_adopt
       }));
 
       setAcceptingShelters(formattedShelters);

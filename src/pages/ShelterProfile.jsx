@@ -35,7 +35,10 @@ const ShelterProfile = () => {
     },
     acceptsAnimalsFromOwners: false,
     photoUrl: null,
-    photos: []
+    photos: [],
+    address: "",
+    district: "", 
+    districtId: ""
   });
 
   // Функция для получения читаемого названия фильтра
@@ -153,7 +156,10 @@ const ShelterProfile = () => {
         },
         acceptsAnimalsFromOwners: shelter.can_adopt || false,
         photoUrl: shelter.photoUrl || null,
-        photos: shelter.photos || []
+        photos: shelter.photos || [],
+        address: shelter.address,
+        district: shelter.district || 'Москва',
+        districtId: shelter.region
       });
 
       // Форматируем животных для PetCard
@@ -184,8 +190,6 @@ const ShelterProfile = () => {
     } catch (err) {
       console.error('Ошибка загрузки данных приюта:', err);
       setError('Не удалось загрузить данные приюта');
-      
-      // Устанавливаем пустые массивы при ошибке
       setAllPets([]);
       setFilteredPets([]);
       setAnimalCount(0);
@@ -726,28 +730,28 @@ const ShelterProfile = () => {
           )}
         </section>
 
-        {/* ОБНОВЛЕННАЯ СЕКЦИЯ КАРТЫ */}
         <section id="shelter-map" className="w-full mt-12">
           <div className="max-w-[1260px] mx-auto mb-6 text-center">
             <h2 className="font-sf-rounded font-bold text-2xl md:text-3xl text-green-30">
               Приют на карте
             </h2>
+            {shelterData.address && (
+              <p className="font-inter text-green-40 text-lg mt-2">
+                Адрес: {shelterData.address}
+              </p>
+            )}
           </div>
 
           <div className="w-full bg-green-90 border-2 border-green-40 rounded-custom overflow-hidden relative z-10">
             <div className="w-full h-[400px] md:h-[500px] relative z-10">
               <SheltersMap 
-                shelters={[shelterData]} // Передаем только текущий приют
-                onShelterClick={(shelter) => {
-                  // Обработчик клика по маркеру (можно оставить пустым или добавить логику)
-                }}
+                shelters={[shelterData]}
               />
             </div>
           </div>
-
         </section>
 
-        {/* ЗАЯВКА ТОЛЬКО ЕСЛИ can_adopt = true */}
+
         {shelterData.acceptsAnimalsFromOwners && (
           <section className="w-full max-w-[1260px] mx-auto mt-12">
             <div className="bg-green-90 bg-opacity-50 rounded-custom p-6 md:p-8 backdrop-blur-sm border-2 border-green-40">
