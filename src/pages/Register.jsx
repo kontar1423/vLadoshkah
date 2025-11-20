@@ -112,7 +112,6 @@ const Register = () => {
     return (
       <div className="min-h-screen bg-green-95 flex items-center justify-center px-[20px] md:px-[40px] lg:px-[60px] py-10">
         <div className="w-full max-w-2xl text-center">
-          <div className="animate-fade-in">
             <div className="bg-green-90 rounded-custom p-8">
               <svg 
                 className="w-16 h-16 text-green-50 mx-auto mb-4"
@@ -147,7 +146,6 @@ const Register = () => {
             </div>
           </div>
         </div>
-      </div>
     )
   }
 

@@ -32,14 +32,12 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-green-95 flex items-center justify-center px-[20px] md:px-[40px] lg:px-[60px] py-10">
       <div className="w-full max-w-4xl">
-        <div className="animate-fade-in">
           <h1 className="text-green-30 font-sf-rounded font-bold text-3xl md:text-4xl lg:text-5xl mb-2 text-center">
             Войти
           </h1>
           <p className="text-green-40 font-inter font-medium text-base md:text-lg mb-8 text-center">
             Войдите в свой аккаунт
           </p>
-        </div>
 
         {error && (
           <div className="animate-fade-up mb-6 p-4 bg-red-90 border border-red-40 rounded-custom-small">

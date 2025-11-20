@@ -11,28 +11,36 @@ import LineIcon from '../assets/images/line.png';
 import miniPes from '../assets/images/mini_pes.png';
 import { animalService } from '../services/animalService';
 import { shelterService } from '../services/shelterService';
+import SheltersMap from '../components/SheltersMap';
 
 const FindPet = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [shelterSearchQuery, setShelterSearchQuery] = useState("");
   const [allPets, setAllPets] = useState([]);
   const [filteredPets, setFilteredPets] = useState([]);
   const [shelters, setShelters] = useState([]);
+  const [filteredShelters, setFilteredShelters] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [petsPerPage] = useState(24);
   const [showFilters, setShowFilters] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sheltersLoading, setSheltersLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeFilters, setActiveFilters] = useState({});
+  const [highlightedShelter, setHighlightedShelter] = useState(null);
 
   // Функция для получения читаемого названия фильтра
   const getFilterDisplayName = (filterKey, filterValue) => {
     const filterLabels = {
       type: {
         dog: 'Собаки',
-        cat: 'Кошки'
+        cat: 'Кошки',
+        hamster: 'Хомяки',
+        lizard: 'Ящерицы',
+        rabbit: 'Кролики',
+        birds: 'Птицы'
       },
       gender: {
         male: 'Мальчики',
@@ -77,7 +85,6 @@ const FindPet = () => {
 
     if (filterEntries.length === 0) return null;
 
-    // Обрабатываем возраст отдельно
     const ageFilters = {};
     const otherFilters = {};
 
@@ -91,7 +98,6 @@ const FindPet = () => {
 
     const displayFilters = [];
 
-    // Объединяем возрастные фильтры
     if (ageFilters.age_min !== undefined && ageFilters.age_max !== undefined) {
       displayFilters.push(`Возраст: ${ageFilters.age_min}-${ageFilters.age_max} ${getAgeWord(ageFilters.age_max)}`);
     } else if (ageFilters.age_min !== undefined) {
@@ -100,7 +106,6 @@ const FindPet = () => {
       displayFilters.push(`Возраст: до ${ageFilters.age_max} ${getAgeWord(ageFilters.age_max)}`);
     }
 
-    // Добавляем остальные фильтры
     Object.entries(otherFilters).forEach(([key, value]) => {
       displayFilters.push(getFilterDisplayName(key, value));
     });
@@ -113,6 +118,19 @@ const FindPet = () => {
     loadAnimals();
     loadShelters();
   }, []);
+
+  // Фильтрация приютов при изменении поискового запроса
+  useEffect(() => {
+    if (shelterSearchQuery.trim() === "") {
+      setFilteredShelters(shelters);
+    } else {
+      const filtered = shelters.filter(shelter =>
+        shelter.name.toLowerCase().includes(shelterSearchQuery.toLowerCase()) ||
+        (shelter.address && shelter.address.toLowerCase().includes(shelterSearchQuery.toLowerCase()))
+      );
+      setFilteredShelters(filtered);
+    }
+  }, [shelterSearchQuery, shelters]);
 
   const loadAnimals = async (filters = {}) => {
     try {
@@ -144,22 +162,8 @@ const FindPet = () => {
     } catch (err) {
       console.error('Error loading animals:', err);
       setError('Не удалось загрузить список животных');
-      const mockPets = Array.from({ length: 12 }, (_, index) => ({
-        id: index + 1,
-        name: ["Барсик", "Шарик", "Мурка", "Рекс", "Пушистик", "Джек", "Снежок", "Люси", "Бобик", "Марси", "Рыжик", "Зевс"][index],
-        age: Math.floor(Math.random() * 10) + 1,
-        gender: index % 2 === 0 ? "male" : "female",
-        type: index % 2 === 0 ? "dog" : "cat",
-        animal_size: ["small", "medium", "large"][index % 3],
-        health: "healthy",
-        color: ["рыжий", "черный", "белый", "серый"][index % 4],
-        personality: "дружелюбный",
-        shelter_id: (index % 5) + 1,
-        photos: [],
-        shelter_name: `Приют ${(index % 5) + 1}`
-      }));
-      setAllPets(mockPets);
-      setFilteredPets(mockPets);
+      setAllPets([]);
+      setFilteredPets([]);
     } finally {
       setLoading(false);
     }
@@ -167,38 +171,22 @@ const FindPet = () => {
 
   const loadShelters = async () => {
     try {
-      const response = await shelterService.getAllShelters();
-      
-      let sheltersData = [];
-      
-      if (Array.isArray(response)) {
-        sheltersData = response;
-      } else if (response && Array.isArray(response.data)) {
-        sheltersData = response.data;
-      } else if (response && response.shelters) {
-        sheltersData = response.shelters;
-      } else {
-        console.warn('Unknown shelters API response format:', response);
-        sheltersData = [];
-      }
-      
+      setSheltersLoading(true);
+      const sheltersData = await shelterService.getAllShelters();
       setShelters(sheltersData);
+      setFilteredShelters(sheltersData);
     } catch (err) {
       console.error('Error loading shelters:', err);
-      const mockShelters = [
-        { id: 1, name: "Приют для безнадзорных и бесхозяйных животных «Некрасимейский»" },
-        { id: 2, name: "Приют «Зоорассвет»" },
-        { id: 3, name: "Приют «Добрые руки»" },
-        { id: 4, name: "Приют «Лапки добра»" },
-        { id: 5, name: "Приют «Хвостик удачи»" },
-      ];
-      setShelters(mockShelters);
+      setShelters([]);
+      setFilteredShelters([]);
+    } finally {
+      setSheltersLoading(false);
     }
   };
 
-  const handleSearchSubmit = (e) => {
+  const handleShelterSearchSubmit = (e) => {
     e.preventDefault();
-    // Логика поиска приютов
+    // Поиск работает через useEffect
   };
 
   const scrollToPets = () => {
@@ -215,7 +203,6 @@ const FindPet = () => {
     
     let filtered = [...allPets];
 
-    // Фильтрация по типу животного
     if (filters.type) {
       filtered = filtered.filter(pet => {
         if (filters.type === 'dog') return pet.type === 'dog';
@@ -224,17 +211,14 @@ const FindPet = () => {
       });
     }
 
-    // Фильтрация по полу
     if (filters.gender) {
       filtered = filtered.filter(pet => pet.gender === filters.gender);
     }
 
-    // Фильтрация по размеру
     if (filters.animal_size) {
       filtered = filtered.filter(pet => pet.animal_size === filters.animal_size);
     }
 
-    // Фильтрация по возрасту
     if (filters.age_min !== undefined) {
       filtered = filtered.filter(pet => pet.age >= filters.age_min);
     }
@@ -242,12 +226,10 @@ const FindPet = () => {
       filtered = filtered.filter(pet => pet.age <= filters.age_max);
     }
 
-    // Фильтрация по здоровью
     if (filters.health) {
       filtered = filtered.filter(pet => pet.health === filters.health);
     }
 
-    // Фильтрация по приюту
     if (filters.shelter_id) {
       filtered = filtered.filter(pet => pet.shelter_id === filters.shelter_id);
     }
@@ -328,6 +310,16 @@ const FindPet = () => {
     setCurrentPage(1);
   };
 
+  // Функция для подсветки приюта на карте
+  const highlightShelterOnMap = (shelterId) => {
+    setHighlightedShelter(shelterId);
+  };
+
+  // Обработчик клика по приюту в списке
+  const handleShelterClick = (shelter) => {
+    highlightShelterOnMap(shelter.id);
+  };
+
   // Пагинация
   const indexOfLastPet = currentPage * petsPerPage;
   const indexOfFirstPet = indexOfLastPet - petsPerPage;
@@ -354,7 +346,6 @@ const FindPet = () => {
 
   return (
     <div className="min-h-screen bg-green-95">
-      {/* Компонент Filters */}
       <Filters 
         isOpen={showFilters}
         onClose={() => setShowFilters(false)}
@@ -363,7 +354,6 @@ const FindPet = () => {
         onReset={handleResetFilters}
       />
 
-      {/* Модальное окно помощи */}
       {showHelp && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-green-95 rounded-custom w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -452,7 +442,6 @@ const FindPet = () => {
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-green-70 rounded-full translate-y-24 -translate-x-24 opacity-30"></div>
             
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-              {/* Левая часть с статистикой */}
               <div className="relative">
                 <div className="relative bg-green-40 rounded-[40px] p-6 md:p-8 transform -rotate-2 shadow-2xl">
                   <div className="transform rotate-2">
@@ -465,10 +454,8 @@ const FindPet = () => {
                 </div>
               </div>
 
-              {/* Правая часть с поиском, фильтрами и собакой */}
               <div className="flex-1 max-w-2xl">
                 <div className="flex flex-col sm:flex-row gap-4 items-start">
-                  {/* Поиск с прыгающей собакой */}
                   <div className="flex-1 relative">
                     <div className="relative">
                       <input
@@ -479,7 +466,6 @@ const FindPet = () => {
                         className="w-full px-4 py-3 bg-green-95 border-2 border-green-40 rounded-custom font-inter text-green-40 placeholder-green-40 focus:outline-none focus:border-green-40 pr-12"
                         disabled={loading}
                       />
-                      {/* Прыгающая собака вместо иконки поиска */}
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2 animate-bounce">
                         <img 
                           src={miniPes} 
@@ -511,7 +497,6 @@ const FindPet = () => {
                   </button>
                 </div>
 
-                {/* Отображение активных фильтров */}
                 {activeFilterLabels && activeFilterLabels.length > 0 && (
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <div className="bg-green-80 rounded-custom-small px-3 py-1 inline-block">
@@ -529,7 +514,6 @@ const FindPet = () => {
                         </span>
                         <button
                           onClick={() => {
-                            // Удаляем конкретный фильтр
                             const filterKey = Object.keys(activeFilters).find(key => {
                               const value = activeFilters[key];
                               if (key === 'age_min' || key === 'age_max') {
@@ -570,7 +554,6 @@ const FindPet = () => {
 
         {/* Pets Grid Section */}
         <section id="pets-section" className="w-full max-w-[1260px] mx-auto py-30 mb-25">
-          {/* Results Info */}
           <div className="mb-6">
             <div className="bg-green-90 rounded-custom-small px-6 py-3 inline-block">
               <span className="font-inter font-medium text-green-30">
@@ -579,7 +562,6 @@ const FindPet = () => {
             </div>
           </div>
 
-          {/* Loading State */}
           {loading && (
             <div className="text-center py-12">
               <div className="bg-green-90 rounded-custom p-8 max-w-md mx-auto">
@@ -591,7 +573,6 @@ const FindPet = () => {
             </div>
           )}
 
-          {/* Error State */}
           {error && (
             <div className="text-center py-12">
               <div className="bg-red-90 rounded-custom p-8 max-w-md mx-auto">
@@ -619,7 +600,6 @@ const FindPet = () => {
             </div>
           )}
 
-          {/* Pets Grid */}
           {!loading && !error && (
             <>
               {filteredPets.length > 0 ? (
@@ -633,7 +613,6 @@ const FindPet = () => {
                     ))}
                   </div>
 
-                  {/* Пагинация */}
                   <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8">
                     <div className="bg-green-90 rounded-custom-small px-6 py-3">
                       <span className="font-inter font-medium text-green-30">
@@ -706,7 +685,6 @@ const FindPet = () => {
                   </div>
                 </>
               ) : (
-                /* No Results Message */
                 <div className="text-center py-12">
                   <div className="bg-green-90 rounded-custom p-8 max-w-md mx-auto">
                     <svg 
@@ -755,18 +733,18 @@ const FindPet = () => {
                 <div className="bg-green-95 rounded-custom p-1 mb-2">
                   <form
                     className="items-center self-stretch w-full flex"
-                    onSubmit={handleSearchSubmit}
+                    onSubmit={handleShelterSearchSubmit}
                     role="search"
                   >
                     <label
-                      htmlFor="search-input"
+                      htmlFor="shelter-search-input"
                       className="flex flex-col h-[49px] items-start justify-center flex-1"
                     >
                       <input
-                        id="search-input"
+                        id="shelter-search-input"
                         type="search"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        value={shelterSearchQuery}
+                        onChange={(e) => setShelterSearchQuery(e.target.value)}
                         placeholder="Поиск приютов..."
                         className="w-full font-inter font-medium text-green-40 text-base bg-green-95 border-2 border-green-40 rounded-custom px-4 py-3 focus:outline-none focus:border-green-40 placeholder-green-40"
                         aria-label="Поиск приютов для животных"
@@ -788,31 +766,40 @@ const FindPet = () => {
                 </div>
 
                 {/* Filtered Shelters List */}
-                <div className="bg-green-90 rounded-custom p-4 flex-1">
+                <div className="bg-green-90 rounded-custom p-4 flex-1 max-h-[500px] overflow-y-auto">
                   <nav
                     className="flex flex-col items-start h-full"
                     aria-label="Список приютов для животных"
                   >
-                    {/* Shelters List with Lines */}
                     <div className="w-full space-y-0">
-                      {shelters
-                        .filter(shelter => 
-                          searchQuery.trim() === "" || 
-                          shelter.name.toLowerCase().includes(searchQuery.toLowerCase())
-                        )
-                        .map((shelter, index, filteredShelters) => (
+                      {sheltersLoading ? (
+                        <div className="text-center py-4">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-40 mx-auto mb-2"></div>
+                          <p className="font-inter text-green-60 text-sm">Загрузка приютов...</p>
+                        </div>
+                      ) : filteredShelters.length > 0 ? (
+                        filteredShelters.map((shelter, index, filteredArray) => (
                           <div
                             key={shelter.id}
                             className="flex flex-col items-center self-stretch w-full"
                           >
-                            <Link
-                              to={`/приют/${shelter.id}`}
-                              className="relative self-stretch font-inter font-medium text-green-30 text-base py-4 hover:text-green-20 transition-colors cursor-pointer text-left hover:underline"
+                            <button
+                              onClick={() => handleShelterClick(shelter)}
+                              className={`relative self-stretch font-inter font-medium text-base py-4 text-left hover:underline transition-colors cursor-pointer w-full text-left ${
+                                highlightedShelter === shelter.id 
+                                  ? 'text-green-40 font-bold' 
+                                  : 'text-green-30'
+                              }`}
                             >
                               {shelter.name}
-                            </Link>
+                              {shelterSearchQuery && shelter.address && (
+                                <span className="block text-xs text-green-60 mt-1">
+                                  {shelter.address}
+                                </span>
+                              )}
+                            </button>
                             
-                            {index < filteredShelters.length - 1 && (
+                            {index < filteredArray.length - 1 && (
                               <img
                                 className="relative w-6 h-px object-cover my-2"
                                 alt="" 
@@ -822,16 +809,13 @@ const FindPet = () => {
                             )}
                           </div>
                         ))
-                      }
-                      
-                      {/* No Results Message */}
-                      {searchQuery.trim() !== "" && 
-                      shelters.filter(shelter => 
-                      shelter.name.toLowerCase().includes(searchQuery.toLowerCase())
-                      ).length === 0 && (
+                      ) : (
                         <div className="text-center py-4">
                           <p className="font-inter text-green-60 text-sm">
-                            Приюты не найдены
+                            {shelterSearchQuery 
+                              ? `Приюты по запросу "${shelterSearchQuery}" не найдены` 
+                              : 'Приюты не найдены'
+                            }
                           </p>
                         </div>
                       )}
@@ -840,33 +824,21 @@ const FindPet = () => {
                 </div>
               </aside>
 
-              {/* Right Side - Map с border */}
-              <div className="relative w-full lg:w-[812px] h-[600px] bg-green-90 rounded-custom overflow-hidden border-2 border-green-40">
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center p-8">
-                    <svg 
-                      className="w-24 h-24 text-green-80 mx-auto mb-4"
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <h3 className="font-sf-rounded font-bold text-green-30 text-2xl mb-2">
-                      Карта приютов
-                    </h3>
-                    <p className="font-inter text-green-80 text-sm mt-2">
-                      Здесь будет отображаться интерактивная карта с приютами
-                    </p>
-                  </div>
-                </div>
+              {/* Right Side - Map */}
+              <div className="relative w-full lg:w-[812px] h-[600px] rounded-custom overflow-hidden border-2 border-green-40">
+                <SheltersMap 
+                  shelters={shelters}
+                  searchQuery={shelterSearchQuery}
+                  highlightedShelters={highlightedShelter ? [highlightedShelter] : []}
+                  onShelterClick={(shelter) => {
+                    window.location.href = `/приют/${shelter.id}`;
+                  }}
+                />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Empty Space before Footer */}
         <div className="h-20"></div>
       </div>
     </div>

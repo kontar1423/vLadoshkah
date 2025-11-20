@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import LapaIcon from '../assets/images/lapa.png';
 import KotPhoto from '../assets/images/kot.png';
 import CherbelPesPhoto from '../assets/images/cherbelpes.png';
-import HorkiPhoto from '../assets/images/horki.png';
-import PriutPhoto from '../assets/images/priut.jpg';
 import ShapeTrue from '../assets/images/shapetrue.png';
 import PigsPhoto from '../assets/images/pigs.png';
 import LudskoePhoto from '../assets/images/ludskoe.png';
@@ -15,6 +12,7 @@ import { shelterService } from '../services/shelterService';
 import PetCarousel from '../components/PetCarousel';
 import ShelterCarousel from '../components/ShelterCarousel';
 import LetterByLetter from '../components/ArcLetterByLetter';
+import SheltersMap from '../components/SheltersMap'; // Добавляем импорт карты
 
 const Home = () => {
 
@@ -221,24 +219,66 @@ const Home = () => {
         )}
       </section>
 
-      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12">
-        <h2 className="font-sf-rounded font-bold text-green-30 text-3xl md:text-4xl text-center mb-6">
-          Приюты на карте
-        </h2>
-        <div className="bg-green-90 border-2 border-green-30 rounded-custom overflow-hidden">
-          <div className="w-full h-[650px] flex items-center justify-center">
-            <div className="text-center">
-              <svg className="w-16 h-16 text-green-60 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <p className="font-inter text-green-40 text-lg">Интерактивная карта приютов будет здесь</p>
+      {/* ОБНОВЛЕННАЯ СЕКЦИЯ КАРТЫ */}
+      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12 relative z-10">
+        <div className="text-center mb-8">
+          <h2 className="font-sf-rounded font-bold text-green-30 text-3xl md:text-4xl mb-4">
+            Приюты на карте
+          </h2>
+        </div>
+        
+        <div className="bg-green-90 border-2 border-green-40 rounded-custom overflow-hidden relative z-10">
+          <div className="w-full h-[600px] relative z-10">
+            {loadingShelters ? (
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-40 mx-auto mb-4"></div>
+                  <p className="font-inter text-green-40 text-lg">Загрузка карты...</p>
+                </div>
+              </div>
+            ) : shelters.length > 0 ? (
+              <SheltersMap 
+                shelters={shelters}
+                onShelterClick={(shelter) => {
+                  window.location.href = `/приют/${shelter.id}`;
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="text-center">
+                  <svg 
+                    className="w-16 h-16 text-green-60 mx-auto mb-4" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-2">
+                    Приюты не найдены
+                  </h3>
+                  <p className="font-inter text-green-40 text-lg">
+                    В системе пока нет зарегистрированных приютов
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Статистика под картой */}
+        <div className="mt-6 flex justify-center">
+          <div className="bg-green-40 rounded-custom-small px-4 py-2 text-center">
+            <div className="font-sf-rounded font-bold text-green-95 text-lg">
+              {shelters.length} приютов на карте
             </div>
           </div>
         </div>
+        
       </section>
 
-              <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12">
+      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-8">
             <div className="bg-green-90 rounded-custom p-6 flex items-start gap-6 relative overflow-hidden">

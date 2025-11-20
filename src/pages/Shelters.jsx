@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ShelterCard from '../components/ShelterCard';
 import DistrictFilter from '../components/DistrictFilter';
 import { shelterService } from '../services/shelterService';
+import SheltersMap from '../components/SheltersMap';
 
 const Shelters = () => {
   const [shelters, setShelters] = useState([]);
@@ -184,29 +185,16 @@ const Shelters = () => {
           </h2>
         </div>
 
-        <div className="w-full h-screen bg-green-90 rounded-custom overflow-hidden border-2 border-green-40 mb-16">
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="text-center p-8">
-              <svg 
-                className="w-24 h-24 text-green-60 mx-auto mb-4"
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <h3 className="font-sf-rounded font-bold text-green-30 text-2xl mb-2">
-                Карта приютов
-              </h3>
-              <p className="font-inter text-green-60 text-sm mt-2">
-                Здесь будет отображаться интерактивная карта с приютами
-              </p>
-            </div>
-          </div>
+        <div className="w-full h-screen rounded-custom overflow-hidden border-2 border-green-40 mb-16">
+          <SheltersMap 
+            shelters={shelters} 
+            onShelterClick={(shelter) => {
+              console.log('Выбран приют:', shelter);
+            }}
+          />
         </div>
 
-        <section className="bg-green-95 rounded-custom p-6 w-full max-w-[1260px] mx-auto mb-8">
+        <section className="bg-green-95 rounded-custom p-6 w-full max-w-[960px] mx-auto mb-8">
           <div className="flex flex-col lg:flex-row justify-between items-center gap-6 w-full">
             <div className="w-full lg:w-auto text-center lg:text-left">
               <span className="font-sf-rounded font-bold text-green-30 text-2xl md:text-4xl">

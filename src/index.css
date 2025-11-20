@@ -121,3 +121,94 @@
     animation: fadeIn 2s ease-in-out forwards;
   }
 }
+
+/* Leaflet CSS fixes */
+/* Leaflet CSS fixes */
+.leaflet-container {
+  background: #f8faf9;
+  font-family: 'Inter', sans-serif;
+  border-radius: 12px;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.leaflet-map-pane {
+  z-index: 1 !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #f8faf9;
+  border-radius: 12px;
+  border: 2px solid #4a7c59;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000 !important;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  z-index: 1000 !important;
+}
+
+.leaflet-popup-tip {
+  background: #f8faf9;
+  border: 2px solid #4a7c59;
+  z-index: 1000 !important;
+}
+
+.leaflet-popup-close-button {
+  color: #4a7c59 !important;
+  font-size: 18px !important;
+  padding: 8px !important;
+  right: 8px !important;
+  top: 8px !important;
+  z-index: 1001 !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #3a6347 !important;
+  background: none !important;
+}
+
+/* Кастомные стили для контейнера карты */
+.leaflet-container-custom {
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+}
+
+.leaflet-control-zoom a {
+  background: #f8faf9 !important;
+  color: #4a7c59 !important;
+  border: 2px solid #4a7c59 !important;
+  z-index: 1000 !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: #4a7c59 !important;
+  color: #f8faf9 !important;
+}
+
+/* Обеспечиваем правильное позиционирование для всех страниц */
+.min-h-screen {
+  position: relative;
+  z-index: 1;
+}
+
+.max-w-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Для хедера и футера */
+header {
+  position: relative;
+  z-index: 1000 !important;
+}
+
+footer {
+  position: relative;
+  z-index: 1000 !important;
+}
