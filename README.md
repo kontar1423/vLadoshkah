@@ -65,10 +65,12 @@
 - `GET /api/shelters` — публичный список, включает новые поля:
   - `can_adopt` (boolean) — принимает ли приют заявки на усыновление
   - `region` (строка: `cao`, `sao`, `svao`, `vao`, `yuvao`, `yao`, `yuzao`, `zao`, `szao`, `zelao`, `tinao`, `nao`)
+  - `rating` (число 0–5, шаг 0.01) — средняя оценка по голосам
 - `GET /api/shelters/:id` — подробности приюта.
 - `POST /api/shelters` — создание (роль `admin`). Поля: `name`, `address?`, `phone?`, `email?`, `website?`, `description?`, `capacity?`, `working_hours?`, `can_adopt?`, `region?`, `admin_id?`, `status?`.
 - `PUT/PATCH /api/shelters/:id` — обновление тех же полей.
 - `DELETE /api/shelters/:id` — удаление приюта.
+- `POST /api/shelters/vote` — аутентифицированный голос за приют. Тело: `{ "shelter_id": 3, "vote": 1-5 }`. Один пользователь может проголосовать за конкретный приют только один раз; ответ содержит обновлённый `rating`.
 
 Создание с учётом новых атрибутов:
 
@@ -83,7 +85,8 @@
   "can_adopt": true,
   "region": "zao",
   "admin_id": 12,
-  "status": "active"
+  "status": "active",
+  "rating": 4.67
 }
 ```
 

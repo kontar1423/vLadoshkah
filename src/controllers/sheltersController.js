@@ -1,4 +1,5 @@
 import sheltersService from "../services/sheltersService.js";
+import serviceVotesService from "../services/VotesService.js";
 import logger from '../logger.js';
 
 // Получить все приюты
@@ -76,4 +77,41 @@ async function remove(req, res) {
   }
 }
 
-export default { getAll, getById, create, update, remove };
+async function vote(req, res) {
+  try {
+    const { shelter_id, vote } = req.body;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const result = await serviceVotesService.createVote({
+      userId,
+      shelterId: shelter_id,
+      vote
+    });
+
+    res.status(201).json({
+      message: 'Vote recorded',
+      rating: result.rating,
+      vote: result.vote
+    });
+  } catch (err) {
+    const log = req.log || logger;
+    log.error(err, 'Controller: error voting for shelter');
+
+    if (err.status) {
+      return res.status(err.status).json({ error: err.message });
+    }
+
+    // Обрабатываем уникальное ограничение на случай гонки
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'User has already voted for this shelter' });
+    }
+
+    res.status(500).json({ error: 'Database error' });
+  }
+}
+
+export default { getAll, getById, create, update, remove, vote };

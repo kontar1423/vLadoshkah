@@ -94,11 +94,29 @@ async function remove(id) {
   }
 }
 
+async function updateRating(id, rating) {
+  try {
+    const result = await query(
+      `UPDATE shelters 
+       SET rating = $1, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $2 
+       RETURNING *`,
+      [rating, id]
+    );
+    info({ id, rating }, 'DAO: updated shelter rating');
+    return result.rows[0] || null;
+  } catch (err) {
+    error(err, 'DAO: error updating shelter rating');
+    throw err;
+  }
+}
+
 export default { 
   getAll, 
   getById, 
   getByAdminId,
   create, 
   update, 
-  remove
+  remove,
+  updateRating
 };

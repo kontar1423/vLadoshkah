@@ -134,3 +134,20 @@ export const shelterIdSchema = Joi.object({
     })
 });
 
+export const shelterVoteSchema = Joi.object({
+  shelter_id: Joi.number().integer().positive().required()
+    .messages({
+      'number.base': 'ID приюта должен быть числом',
+      'number.integer': 'ID приюта должен быть целым числом',
+      'number.positive': 'ID приюта должен быть положительным числом',
+      'any.required': 'ID приюта обязателен'
+    }),
+  vote: Joi.number().integer().min(1).max(5).required()
+    .messages({
+      'number.base': 'Голос должен быть числом',
+      'number.integer': 'Голос должен быть целым числом',
+      'number.min': 'Минимальное значение голоса 1',
+      'number.max': 'Максимальное значение голоса 5',
+      'any.required': 'Необходимо указать значение голоса'
+    })
+});

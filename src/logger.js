@@ -3,10 +3,12 @@ import pino from 'pino';
 import { existsSync, mkdirSync, createWriteStream } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { createRequire } from 'module';
 
 // Получаем текущую директорию для ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const require = createRequire(import.meta.url);
 
 const fallbackSerializers = {
   err: (err) => err,
@@ -66,6 +68,21 @@ function createRotatingStream(level) {
 }
 
 let logger;
+
+function canUsePrettyTransport() {
+  if (!LOG_PRETTY || LOG_TO_FILE) {
+    return false;
+  }
+
+  try {
+    require.resolve('pino-pretty');
+    return true;
+  } catch (err) {
+    // В прод-образе dev-зависимости удалены, поэтому тихо откатываемся к обычному логированию
+    console.warn('pino-pretty not available, falling back to standard logging');
+    return false;
+  }
+}
 
 if (NODE_ENV === 'production') {
   // Production: структурированные логи в файлы и stdout
@@ -127,7 +144,9 @@ if (NODE_ENV === 'production') {
   );
 } else {
   // Development: pretty логи в консоль + опционально в файлы
-  if (LOG_PRETTY && !LOG_TO_FILE) {
+  const usePrettyTransport = canUsePrettyTransport();
+
+  if (usePrettyTransport) {
     // Только консоль с pretty (по умолчанию в development)
     logger = pino({
       level: LOG_LEVEL,
