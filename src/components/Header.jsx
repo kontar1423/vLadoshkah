@@ -1,4 +1,4 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useForceScroll } from '../hooks/useForceScroll'
@@ -21,7 +21,6 @@ export const Header = () => {
     { id: 4, label: "Отдать животное", path: "/отдать-животное" },
   ];
 
-  // САМАЯ ПРОСТАЯ ФУНКЦИЯ - ПРОКРУТКА ВВЕРХ
   const handleScrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -30,19 +29,23 @@ export const Header = () => {
     });
   };
 
-  // Функция для навигации
+  const handleLogoClick = () => {
+    if (location.pathname === '/') {
+      handleScrollToTop();
+    } else {
+      navigate('/');
+    }
+  };
+
   const handleNavigate = (path) => {
     navigate(path);
   };
 
-  // Функция для кнопок навигации
   const handleNavButtonClick = (item) => {
     if (item.action) {
       item.action();
     } else if (item.path) {
-      // ВСЕГДА прокручиваем вверх при клике на любую ссылку
       handleScrollToTop();
-      // И переходим если это другая страница
       if (location.pathname !== item.path) {
         handleNavigate(item.path);
       }
@@ -51,18 +54,6 @@ export const Header = () => {
     setIsUserMenuOpen(false);
   };
 
-  // Функция для ссылок
-  const handleLinkClick = (path) => {
-    // ВСЕГДА прокручиваем вверх
-    handleScrollToTop();
-    // Если это текущая страница - предотвращаем переход
-    if (location.pathname === path) {
-      return false; // предотвратим переход
-    }
-    // Для других страниц переход произойдет автоматически
-  };
-
-  // Получаем имя пользователя для отображения
   const getUserDisplayName = () => {
     if (user?.firstname && user?.lastname) {
       return `${user.firstname} ${user.lastname}`;
@@ -70,7 +61,6 @@ export const Header = () => {
     return user?.email || 'Пользователь';
   };
 
-  // Получаем роль пользователя для отображения
   const getUserRoleDisplay = () => {
     const roleMap = {
       'user': 'Пользователь',
@@ -124,10 +114,10 @@ export const Header = () => {
         role="banner"
       >
         <div className="gap-[15px] md:gap-[30px] lg:gap-[50px] xl:gap-[60px] 2xl:gap-[70px] flex items-center relative flex-1 flex-wrap md:flex-nowrap">
-          {/* ЛОГОТИП - ВСЕГДА ПРОКРУЧИВАЕТ ВВЕРХ */}
+          
           <div 
             className="flex-shrink-0 cursor-pointer"
-            onClick={handleScrollToTop}
+            onClick={handleLogoClick}
           >
             <img
               className="relative w-[100px] md:w-[120px] lg:w-[139px] h-4 md:h-4 lg:h-5"
@@ -136,7 +126,6 @@ export const Header = () => {
             />
           </div>
 
-          {/* Desktop/Tablet Navigation */}
           <nav
             className="gap-[20px] md:gap-[30px] hidden md:flex items-center relative flex-[0_0_auto]"
             role="navigation"
@@ -169,7 +158,6 @@ export const Header = () => {
             ))}
           </nav>
 
-          {/* Mobile Menu */}
           <nav
             className={`${
               isMenuOpen ? 'flex' : 'hidden'
@@ -291,7 +279,6 @@ export const Header = () => {
         </div>
 
         <div className="flex items-center gap-4 md:gap-2 relative" ref={userMenuRef}>
-          {/* User Account Button - Desktop/Tablet */}
           <div className="relative hidden md:block">
             <button
               className="relative flex items-center gap-2 cursor-pointer flex-shrink-0 hover:opacity-80 transition-opacity p-2 rounded-custom-small hover:bg-green-90"
@@ -316,7 +303,6 @@ export const Header = () => {
               )}
             </button>
 
-            {/* User Dropdown Menu */}
             {isUserMenuOpen && (
               <div className="absolute right-0 top-full mt-2 w-64 bg-green-98 border border-green-80 rounded-custom-small shadow-lg z-50 overflow-hidden">
                 {!isAuthenticated ? (
@@ -348,7 +334,6 @@ export const Header = () => {
                   </>
                 ) : (
                   <>
-                    {/* Информация о пользователе */}
                     <div className="px-4 py-3 bg-green-95 border-b border-green-80">
                       <p className="text-green-30 font-semibold text-sm">{getUserDisplayName()}</p>
                       <p className="text-green-40 text-xs">{getUserRoleDisplay()}</p>
@@ -407,7 +392,6 @@ export const Header = () => {
             )}
           </div>
 
-          {/* Combined Mobile Menu Toggle and User Button */}
           <div className="relative md:hidden">
             <button
               className="relative w-10 h-10 aspect-[1] cursor-pointer flex-shrink-0 hover:opacity-80 transition-opacity flex items-center justify-center"
@@ -422,10 +406,8 @@ export const Header = () => {
               />
             </button>
 
-            {/* Combined Mobile Dropdown Menu */}
             {isUserMenuOpen && (
               <div className="absolute right-0 top-full mt-2 w-64 bg-green-98 border border-green-80 rounded-custom-small shadow-lg z-50 overflow-hidden">
-                {/* Информация о пользователе */}
                 {isAuthenticated && (
                   <div className="px-4 py-3 bg-green-95 border-b border-green-80">
                     <p className="text-green-30 font-semibold text-sm">{getUserDisplayName()}</p>
@@ -433,7 +415,6 @@ export const Header = () => {
                   </div>
                 )}
                 
-                {/* Навигационные пункты */}
                 <div className="border-b border-green-80">
                   {navigationItems.map((item) => (
                     <button
@@ -448,7 +429,6 @@ export const Header = () => {
                   ))}
                 </div>
                 
-                {/* Пользовательские пункты */}
                 {!isAuthenticated ? (
                   <>
                     <div
@@ -526,7 +506,6 @@ export const Header = () => {
         </div>
       </header>
 
-      {/* Модальное окно HelpSection */}
       {isHelpModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-green-90 rounded-custom shadow-2xl">

@@ -7,38 +7,41 @@ import HorkiPhoto from '../assets/images/horki.png';
 import PriutPhoto from '../assets/images/priut.jpg';
 import ShapeTrue from '../assets/images/shapetrue.png';
 import PigsPhoto from '../assets/images/pigs.png';
+import LudskoePhoto from '../assets/images/ludskoe.png';
+import GodpesPhoto from '../assets/images/godpes.png'; 
 import MiniShelterCard from '../components/MiniShelterCard';
 import { animalService } from '../services/animalService';
 import { shelterService } from '../services/shelterService';
 import PetCarousel from '../components/PetCarousel';
 import ShelterCarousel from '../components/ShelterCarousel';
+import LetterByLetter from '../components/ArcLetterByLetter';
 
 const Home = () => {
-  // --- Состояния ---
+
   const [animals, setAnimals] = useState([]);
   const [shelters, setShelters] = useState([]);
   const [loadingAnimals, setLoadingAnimals] = useState(true);
   const [loadingShelters, setLoadingShelters] = useState(true);
   const [animalIndex, setAnimalIndex] = useState(0);
   const [shelterIndex, setShelterIndex] = useState(0);
+  const [showText, setShowText] = useState(false); 
 
-  // --- Загрузка данных ---
   useEffect(() => {
-  const loadAnimals = async () => {
-    try {
-      console.log('Начало загрузки животных...');
-      const data = await animalService.getAllAnimals(); 
-      console.log('Данные животных:', data);
-      setAnimals(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Ошибка загрузки животных:', err);
-      setAnimals([]);
-    } finally {
-      setLoadingAnimals(false);
-    }
-  };
-  loadAnimals();
-}, []);
+    const loadAnimals = async () => {
+      try {
+        console.log('Начало загрузки животных...');
+        const data = await animalService.getAllAnimals(); 
+        console.log('Данные животных:', data);
+        setAnimals(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Ошибка загрузки животных:', err);
+        setAnimals([]);
+      } finally {
+        setLoadingAnimals(false);
+      }
+    };
+    loadAnimals();
+  }, []);
 
   useEffect(() => {
     const loadShelters = async () => {
@@ -54,7 +57,14 @@ const Home = () => {
     loadShelters();
   }, []);
 
-  // --- Карусель питомцев ---
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowText(true);
+    }, 10);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   const nextAnimal = () => {
     setAnimalIndex((prev) => (prev + 1) % animals.length);
   };
@@ -63,7 +73,6 @@ const Home = () => {
     setAnimalIndex((prev) => (prev - 1 + animals.length) % animals.length);
   };
 
-  // --- Карусель приютов ---
   const nextShelter = () => {
     setShelterIndex((prev) => (prev + 1) % shelters.length);
   };
@@ -72,26 +81,7 @@ const Home = () => {
     setShelterIndex((prev) => (prev - 1 + shelters.length) % shelters.length);
   };
 
-  // --- Функция для получения округа ---
-  const getDistrictName = (regionCode) => {
-    const districtMap = {
-      'cao': 'Центральный',
-      'sao': 'Северный',
-      'svao': 'Северо-Восточный',
-      'vao': 'Восточный',
-      'yuvao': 'Юго-Восточный',
-      'yao': 'Южный',
-      'yuzao': 'Юго-Западный',
-      'zao': 'Западный',
-      'szao': 'Северо-Западный',
-      'zelao': 'Зеленоградский',
-      'tinao': 'Троицкий',
-      'nao': 'Новомосковский'
-    };
-    return districtMap[regionCode] || 'Москва';
-  };
 
-  // --- Рендер карточек ---
   const visibleAnimals = animals.length < 3 
     ? [...animals, ...animals.slice(0, 3 - animals.length)] 
     : animals;
@@ -102,12 +92,61 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-green-95">
-      {/* 1. Hero — пустой блок */}
       <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-16">
-        <div className="bg-green-90 rounded-custom h-[400px] md:h-[500px] w-full"></div>
+        <div className="bg-green-90 rounded-custom h-[400px] md:h-[500px] w-full relative overflow-hidden">
+          <div className="absolute -bottom-20 -left-20 -right-20 flex items-start justify-center opacity-70">
+            <div className="relative w-full max-w-4xl">
+              <img
+                src={ShapeTrue}
+                alt="Фоновая форма"
+                className="w-full object-cover scale-150"
+                style={{ transform: 'scale(1) translateY(50%)' }}
+              />
+              
+              
+              <div className="absolute top-1/2  bottom-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4/5">
+                <img
+                  src={ShapeTrue}
+                  alt="Вложенная форма"
+                  className="w-full object-cover filter brightness-0 opacity-50"
+                  style={{ 
+                    filter: 'brightness(0) invert(1) opacity(0.5)',
+                    transform: 'scale(0.7)'
+                  }}
+                /> 
+              </div>
+            </div>
+          </div>
+          
+          
+          <div className="absolute top-8 left-1/2 transform -translate-x-1/2 w-full max-w-4xl px-4 text-center">
+            <LetterByLetter
+              text="Настоящая дружба начинается здесь — найди своего пушистого компаньона!"
+              delay={15}
+              className="font-sf-rounded font-bold text-green-30 text-xl md:text-2xl lg:text-3xl leading-tight"
+            />
+          </div>
+          
+          
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-3/4 flex items-end">
+            <img
+              src={LudskoePhoto}
+              alt="Руки"
+              className="h-4.1/5 object-contain"
+            />
+          </div>
+          
+          
+          <div className="absolute -bottom-1/5 top-1/2 left-1/2 transform -translate-y-1/2 z-20">
+            <img
+              src={GodpesPhoto}
+              alt="Парящее изображение"
+              className="w-32 h-32 md:w-48 md:h-48 lg:w-64 lg:h-64 object-contain animate-float"
+            />
+          </div>
+        </div>
       </section>
 
-      {/* 2. Карусель питомцев */}
       <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12">
         <h2 className="font-sf-rounded font-bold text-green-30 text-3xl md:text-5xl text-center mb-10">
           Забери нас домой!
@@ -122,16 +161,15 @@ const Home = () => {
 
 <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12">
   <div className="bg-green-90 rounded-custom p-8 md:p-12 relative overflow-hidden">
-    {/* Фигура с фоткой справа - срезанная наполовину */}
+    
     <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-90 overflow-hidden">
       <div className="relative -right-1/4">
-        {/* Основная большая фигура (видна только половина) */}
+        
         <img
           src={ShapeTrue}
           alt="Фоновая фигура"
           className="w-80 h-80 md:w-96 md:h-96 lg:w-[500px] lg:h-[500px]"
         />
-        {/* Вложенная фигура другого цвета - увеличенная */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative">
             <img
@@ -140,7 +178,6 @@ const Home = () => {
               className="w-56 h-56 md:w-72 md:h-72 lg:w-96 lg:h-96 filter brightness-0 opacity-70"
               style={{ filter: 'brightness(0) invert(1) opacity(0.7)' }}
             />
-            {/* Фотка внутри вложенной фигуры */}
             <div className="absolute inset-0 flex items-center justify-center">
               <img
                 src={PigsPhoto}
@@ -153,7 +190,6 @@ const Home = () => {
       </div>
     </div>
 
-    {/* Текст слева */}
     <div className="relative z-10 max-w-2xl">
       <h2 className="font-sf-rounded font-bold text-green-30 text-3xl md:text-4xl mb-6">
         О нашей команде
@@ -173,7 +209,6 @@ const Home = () => {
   </div>
 </section>
 
-      {/* 4. Карусель приютов */}
       <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12">
         <h2 className="font-sf-rounded font-bold text-green-30 text-3xl md:text-5xl text-center mb-1">
           Обратите внимание на эти приюты
@@ -186,7 +221,6 @@ const Home = () => {
         )}
       </section>
 
-      {/* 5. Карта */}
       <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12">
         <h2 className="font-sf-rounded font-bold text-green-30 text-3xl md:text-4xl text-center mb-6">
           Приюты на карте
@@ -204,20 +238,21 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12">
+              <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Левый блок — вопросы */}
           <div className="space-y-8">
-            {/* Вопрос 1 */}
             <div className="bg-green-90 rounded-custom p-6 flex items-start gap-6 relative overflow-hidden">
-              {/* Фигура 1 - видна наполовину справа */}
+              <div className="absolute top-9 left-8 w-20 h-20 bg-green-70 rounded-full opacity-60"></div>
+              <div className="absolute top-12 right-16 w-16 h-16 bg-green-60 rounded-full opacity-40"></div>
+              <div className="absolute bottom-8 left-20 w-12 h-12 bg-green-80 rounded-full opacity-50"></div>
+              
+              <div className="absolute top-1/2 left-1/3 w-8 h-8 bg-green-95 rounded-full opacity-70"></div>
+              <div className="absolute top-1/3 right-1/4 w-10 h-10 bg-green-60 rounded-full opacity-25"></div>
+
               <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-20">
-                <img
-                  src={ShapeTrue}
-                  alt="Фоновая фигура"
-                  className="w-32 h-32"
-                />
+                <img src={ShapeTrue} alt="Фоновая фигура" className="w-32 h-32" />
               </div>
+
               <div className="flex-shrink-0 z-10">
                 <img
                   src={KotPhoto}
@@ -236,23 +271,20 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Вопрос 2 */}
-            <div className="bg-green-80 rounded-custom p-6 flex items-start gap-6 relative overflow-hidden">
-              {/* Фигура 2 - две фигуры в разных позициях */}
+            <div className="bg-green-80 rounded-custom p-6 flex flex-col lg:flex-row-reverse items-start gap-6 relative overflow-hidden">
+              <div className="absolute -left-8 -top-8 w-12 h-12 bg-green-40 rounded-full opacity-25"></div>
+              <div className="absolute -right-18 bottom-7 w-24 h-24 bg-green-50 rounded-full opacity-30"></div>
+              <div className="absolute top-6 right-10 w-10 h-10 bg-green-95 rounded-full opacity-40"></div>
+              <div className="absolute bottom-12 left-8 w-16 h-16 bg-green-40 rounded-full opacity-20"></div>
+              <div className="absolute top-1/3 left-1/4 w-8 h-8 bg-green-50 rounded-full opacity-40"></div>
+
               <div className="absolute -left-8 -top-8 opacity-15">
-                <img
-                  src={ShapeTrue}
-                  alt="Фоновая фигура"
-                  className="w-24 h-24"
-                />
+                <img src={ShapeTrue} alt="Фоновая фигура" className="w-24 h-24" />
               </div>
               <div className="absolute -right-12 bottom-4 opacity-10">
-                <img
-                  src={ShapeTrue}
-                  alt="Фоновая фигура"
-                  className="w-36 h-36"
-                />
+                <img src={ShapeTrue} alt="Фоновая фигура" className="w-36 h-36" />
               </div>
+
               <div className="flex-shrink-0 z-10">
                 <img
                   src={CherbelPesPhoto}
@@ -260,7 +292,7 @@ const Home = () => {
                   className="w-24 h-24 rounded-custom-small object-cover"
                 />
               </div>
-              <div className="z-10">
+              <div className="z-10 text-right lg:text-left">
                 <h3 className="font-sf-rounded font-bold text-green-20 text-xl md:text-2xl mb-3">
                   А точно ли моя помощь дойдёт куда нужно?
                 </h3>
@@ -272,25 +304,20 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Правый блок — связь с нами */}
-          <div className="bg-green-40 rounded-custom p-6 flex flex-col items-center justify-center relative overflow-hidden">
-            {/* Фигура 3 - большая фигура снизу слева */}
-            <div className="absolute -left-20 -bottom-20 opacity-15">
-              <img
-                src={ShapeTrue}
-                alt="Фоновая фигура"
-                className="w-64 h-64"
-              />
+          <div className="bg-green-20 rounded-custom p-6 flex flex-col items-center justify-center relative overflow-hidden">
+            <div className="absolute -left-10 -top-10 w-28 h-28 bg-green-40 rounded-full opacity-20"></div>
+            <div className="absolute -right-16 -bottom-12 w-32 h-32 bg-green-20 rounded-full opacity-35"></div>
+            <div className="absolute right-10 top-19 w-16 h-16 bg-green-90 rounded-full opacity-20"></div>
+            <div className="absolute left-10 bottom-18 w-12 h-12 bg-green-70 rounded-full opacity-40"></div>
+            <div className="absolute top-1/3 right-1/4 w-8 h-8 bg-green-50 rounded-full opacity-35"></div>
+
+            <div className="absolute -left-20 -bottom-20 opacity-25">
+              <img src={ShapeTrue} alt="Фоновая фигура" className="w-64 h-64" />
             </div>
-            {/* Фигура 4 - маленькая фигура сверху справа */}
-            <div className="absolute -right-10 -top-10 opacity-10">
-              <img
-                src={ShapeTrue}
-                alt="Фоновая фигура"
-                className="w-40 h-40"
-              />
+            <div className="absolute -right-10 -top-10 opacity-20">
+              <img src={ShapeTrue} alt="Фоновая фигура" className="w-40 h-40" />
             </div>
-            
+
             <h3 className="font-sf-rounded font-bold text-green-95 text-2xl md:text-3xl text-center mb-6 z-10">
               Свяжитесь с нами
             </h3>
@@ -303,28 +330,28 @@ const Home = () => {
                 href="https://t.me/your_bot"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-col items-center"
+                className="flex flex-col items-center group"
               >
-                <div className="w-16 h-16 bg-green-95 rounded-full flex items-center justify-center mb-2">
-                  <svg className="w-8 h-8 text-green-40" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.656-.537.814-1.084.506l-3-2.21-1.447 1.394c-.14.141-.264.26-.42.207L7.13 16.35c-.537-.203-.537-.61 0-.814l11.095-5.004c.536-.203 1.002.15.769.585z"/>
+                <div className="w-16 h-16 bg-green-95 rounded-full flex items-center justify-center mb-2 group-hover:bg-green-20 transition-colors">
+                  <svg className="w-8 h-8 text-green-40 group-hover:text-green-95" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.5 14.5L11 13l-2 1 1.5-5.5L11 12l4.5-4.5z"/>
                   </svg>
                 </div>
-                <span className="font-inter text-green-95">Telegram</span>
+                <span className="font-inter text-green-95 group-hover:text-green-20 transition-colors">Telegram</span>
               </a>
 
               <a
                 href="https://wa.me/ваш_номер"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-col items-center"
+                className="flex flex-col items-center group"
               >
-                <div className="w-16 h-16 bg-green-95 rounded-full flex items-center justify-center mb-2">
-                  <svg className="w-8 h-8 text-green-40" viewBox="0 0 24 24" fill="currentColor">
+                <div className="w-16 h-16 bg-green-95 rounded-full flex items-center justify-center mb-2 group-hover:bg-green-20 transition-colors">
+                  <svg className="w-8 h-8 text-green-40 group-hover:text-green-95" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                   </svg>
                 </div>
-                <span className="font-inter text-green-95">WhatsApp</span>
+                <span className="font-inter text-green-95 group-hover:text-green-20 transition-colors">WhatsApp</span>
               </a>
             </div>
           </div>

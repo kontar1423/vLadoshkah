@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -24,9 +23,9 @@ export default {
         }
       },
       fontFamily: {
-  'inter': ['Inter', 'sans-serif'],
-  'sf-rounded': ['SF Pro Rounded', 'system-ui', 'sans-serif'],
-},
+        'inter': ['Inter', 'sans-serif'],
+        'sf-rounded': ['SF Pro Rounded', 'system-ui', 'sans-serif'],
+      },
       maxWidth: {
         'container': '1280px',
       },
@@ -34,6 +33,48 @@ export default {
         'custom': '40px',
         'custom-small': '20px',
       },
+      animation: {
+        'fade-in-up': 'fadeInUp 1.5s ease-out forwards',
+        'float': 'float 3s ease-in-out infinite',
+        'gentle-float': 'gentle-float 4s ease-in-out infinite',
+        'float-slow': 'float 6s ease-in-out infinite',
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { 
+            transform: 'translateY(0) translateX(-50%)' 
+          },
+          '50%': { 
+            transform: 'translateY(-15px) translateX(-50%)' 
+          },
+        },
+        gentleFloat: {
+          '0%, 100%': { 
+            transform: 'translateY(0) translateX(-50%) scale(1)' 
+          },
+          '25%': { 
+            transform: 'translateY(-8px) translateX(-50%) scale(1.02)' 
+          },
+          '50%': { 
+            transform: 'translateY(-15px) translateX(-50%) scale(1)' 
+          },
+          '75%': { 
+            transform: 'translateY(-8px) translateX(-50%) scale(0.98)' 
+          },
+        },
+        fadeInUp: {
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(20px) translateX(-50%)',
+            filter: 'blur(10px)'
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0) translateX(-50%)',
+            filter: 'blur(0)'
+          },
+        }
+      }
     },
   },
   plugins: [],
