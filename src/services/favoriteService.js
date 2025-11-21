@@ -9,8 +9,8 @@
         return response.data;
         } catch (error) {
         console.error('❌ favoriteService: Error checking favorite:', error);
-        // Если 404 - значит не в избранном
-        if (error.response?.status === 404) {
+        // Если 4xx - считаем, что не в избранном и не падаем
+        if (error.response?.status === 404 || error.response?.status === 400 || error.response?.status === 429) {
             return { isFavorite: false };
         }
         throw error;

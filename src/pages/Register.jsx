@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { authService } from '../services/authService'
+import { useAuth } from '../context/AuthContext'
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +11,14 @@ const Register = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const { register: registerUser, isAuthenticated } = useAuth()
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const profileComplete = localStorage.getItem('profileComplete')
+      navigate(profileComplete === 'true' ? '/профиль' : '/личная-информация')
+    }
+  }, [isAuthenticated, navigate])
 
   const handleChange = (e) => {
     setFormData({
@@ -44,7 +52,7 @@ const Register = () => {
     try {
       console.log('🔄 Register: Starting registration...');
       
-      const result = await authService.register({
+      const result = await registerUser({
         email: formData.email,
         password: formData.password
       })
@@ -52,13 +60,8 @@ const Register = () => {
       console.log('🔍 Register: Registration result:', result);
 
       if (result.success) {
-        console.log('✅ Register: Successful! Checking auth state...');
-        
-        // 🔥 ВАЖНО: Даем время AuthContext обновиться
-        setTimeout(() => {
-          console.log('🔄 Register: Redirecting to personal info...');
-          navigate('/личная-информация');
-        }, 100);
+        console.log('✅ Register: Successful! Redirecting to personal info...');
+        navigate('/личная-информация');
       } else {
         console.error('❌ Register: Failed with error:', result.error);
         setError(result.error || 'Ошибка при регистрации');

@@ -8,6 +8,11 @@ const api = axios.create({
     // 🔥 ВАЖНО: Не устанавливаем Content-Type по умолчанию для FormData
 });
 
+// По умолчанию ожидаем JSON, чтобы axios не ставил application/x-www-form-urlencoded
+api.defaults.headers.post['Content-Type'] = 'application/json';
+api.defaults.headers.put['Content-Type'] = 'application/json';
+api.defaults.headers.patch['Content-Type'] = 'application/json';
+
 // Интерцептор для добавления токена
 api.interceptors.request.use(
     (config) => {
@@ -18,8 +23,8 @@ api.interceptors.request.use(
         
         // 🔥 ВАЖНО: Для FormData не устанавливаем Content-Type - браузер сделает это сам
         if (config.data instanceof FormData) {
-            // Удаляем Content-Type, чтобы браузер мог установить его с boundary
-            delete config.headers['Content-Type'];
+            // Явно ставим multipart/form-data, чтобы axios не проставлял x-www-form-urlencoded
+            config.headers['Content-Type'] = 'multipart/form-data';
         } else if (!config.headers['Content-Type']) {
             // Для JSON данных устанавливаем Content-Type по умолчанию
             config.headers['Content-Type'] = 'application/json';

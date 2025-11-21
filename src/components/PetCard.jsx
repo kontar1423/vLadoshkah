@@ -1,10 +1,10 @@
     // components/PetCard.jsx
-    import React, { useState, useEffect } from "react";
+    import React, { useEffect, useRef, useState } from "react";
     import { Link } from 'react-router-dom';
     import { useAuth } from '../context/AuthContext';
     import { favoriteService } from '../services/favoriteService';
 
-    const PetCard = ({ petData }) => {
+    const PetCard = ({ petData, initialFavorite = false }) => {
     const {
         id,
         name = "Питомец",
@@ -18,8 +18,9 @@
     } = petData || {};
 
     const { user } = useAuth();
-    const [isFavorite, setIsFavorite] = useState(false);
+    const [isFavorite, setIsFavorite] = useState(initialFavorite);
     const [favoriteLoading, setFavoriteLoading] = useState(false);
+    const lastCheckRef = useRef({ userId: null, animalId: null });
 
     // 🔥 ДОБАВЬТЕ ЭТОТ КОД ДЛЯ ДИАГНОСТИКИ
     console.log('🐛 PetCard Debug:', {
@@ -121,40 +122,64 @@
 
     // 🔥 ИСПРАВЛЕННЫЙ useEffect: Проверяем избранное через API
     useEffect(() => {
+        let cancelled = false;
+
+        // Если заранее знаем, что карточка в избранном (например, в профиле), не дергаем API
+        if (initialFavorite) {
+        setIsFavorite(true);
+        return () => {
+            cancelled = true;
+        };
+        }
+
         const checkFavoriteStatus = async () => {
         // 🔥 ИСПОЛЬЗУЕМ ПОЛЬЗОВАТЕЛЯ ИЗ КОНТЕКСТА ИЛИ LOCALSTORAGE
         const currentUser = user || JSON.parse(localStorage.getItem('user') || 'null');
         
-        if (currentUser && currentUser.id && id) {
-            try {
+        if (!currentUser?.id || !id) return;
+
+        // Защита от лишних запросов (StrictMode, повторные рендеры с теми же данными)
+        const alreadyChecked =
+            lastCheckRef.current.userId === currentUser.id &&
+            lastCheckRef.current.animalId === id;
+        if (alreadyChecked) return;
+
+        lastCheckRef.current = { userId: currentUser.id, animalId: id };
+
+        try {
             console.log('🔍 Checking favorite status for:', {
-                userId: currentUser.id,
-                petId: id
+            userId: currentUser.id,
+            petId: id
             });
             
             const result = await favoriteService.checkFavorite(currentUser.id, id);
+            if (cancelled) return;
             setIsFavorite(result.isFavorite);
             
             // Синхронизируем с localStorage
             const favorites = JSON.parse(localStorage.getItem('favoritePets') || '[]');
             if (result.isFavorite && !favorites.includes(id)) {
-                favorites.push(id);
-                localStorage.setItem('favoritePets', JSON.stringify(favorites));
+            favorites.push(id);
+            localStorage.setItem('favoritePets', JSON.stringify(favorites));
             } else if (!result.isFavorite && favorites.includes(id)) {
-                const updatedFavorites = favorites.filter(favId => favId !== id);
-                localStorage.setItem('favoritePets', JSON.stringify(updatedFavorites));
+            const updatedFavorites = favorites.filter(favId => favId !== id);
+            localStorage.setItem('favoritePets', JSON.stringify(updatedFavorites));
             }
-            } catch (error) {
+        } catch (error) {
+            if (cancelled) return;
             console.error('❌ PetCard: Error checking favorite status:', error);
             // Fallback на localStorage
             const favorites = JSON.parse(localStorage.getItem('favoritePets') || '[]');
             setIsFavorite(favorites.includes(id));
-            }
         }
         };
 
         checkFavoriteStatus();
-    }, [user, id]);
+
+        return () => {
+        cancelled = true;
+        };
+    }, [user?.id, id, initialFavorite]);
 
     const mainPhoto = photos.length > 0 ? photos[0] : null;
     const photoUrl = mainPhoto ? getPhotoUrl(mainPhoto) : null;

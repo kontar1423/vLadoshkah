@@ -13,8 +13,9 @@ const Login = () => {
   // Если пользователь уже аутентифицирован, перенаправляем
   useEffect(() => {
     if (isAuthenticated) {
-      console.log('✅ Login: User already authenticated, redirecting to profile');
-      navigate('/профиль');
+      const profileComplete = localStorage.getItem('profileComplete');
+      console.log('✅ Login: User already authenticated, redirecting...');
+      navigate(profileComplete === 'true' ? '/профиль' : '/личная-информация');
     }
   }, [isAuthenticated, navigate]);
 

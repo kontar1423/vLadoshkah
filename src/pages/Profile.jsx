@@ -1,5 +1,5 @@
 // pages/Profile.jsx
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PetCard from '../components/PetCard'
 import { animalService } from '../services/animalService'
@@ -12,15 +12,22 @@ const Profile = () => {
   const [favoritePets, setFavoritePets] = useState([])
   const [loading, setLoading] = useState(true)
   const [userData, setUserData] = useState(null)
-  const { user, updateUser, refreshUser } = useAuth()
+  const { user, refreshUser } = useAuth()
   const navigate = useNavigate()
+  const lastUserIdRef = useRef(null)
 
   useEffect(() => {
     console.log('🔍 Profile: Component mounted or user updated');
     console.log('📱 Profile: Current user from context:', user);
     
+    if (!user?.id) return;
+
+    // Не дергаем API бесконечно — только при смене пользователя
+    if (lastUserIdRef.current === user.id) return;
+    lastUserIdRef.current = user.id;
+
     checkAccessAndLoadData();
-  }, [user])
+  }, [user?.id])
 
   // 🔥 ДОБАВЛЯЕМ: Слушаем изменения в localStorage для синхронизации избранных
   useEffect(() => {
@@ -75,16 +82,12 @@ const Profile = () => {
     try {
       console.log('🔄 Profile: Loading fresh user data from server...');
       
-      const serverUserData = await userService.getCurrentUser();
+      const serverUserData = refreshUser
+        ? await refreshUser()
+        : await userService.getCurrentUser();
       console.log('✅ Profile: User data loaded from server:', serverUserData);
       
       setUserData(serverUserData);
-      
-      if (updateUser) {
-        updateUser(serverUserData);
-        console.log('✅ Profile: AuthContext updated with fresh data');
-      }
-      
       localStorage.setItem('user', JSON.stringify(serverUserData));
       
     } catch (error) {
@@ -103,15 +106,16 @@ const Profile = () => {
       
       // Получаем ID избранных питомцев из localStorage
       const favoriteIds = JSON.parse(localStorage.getItem('favoritePets') || '[]');
-      console.log('📋 Profile: Favorite pets IDs from localStorage:', favoriteIds);
+      const uniqueFavoriteIds = [...new Set(favoriteIds)];
+      console.log('📋 Profile: Favorite pets IDs from localStorage:', uniqueFavoriteIds);
       
-      if (favoriteIds.length === 0) {
+      if (uniqueFavoriteIds.length === 0) {
         setFavoritePets([]);
         return;
       }
       
       // 🔥 ПАРАЛЛЕЛЬНАЯ ЗАГРУЗКА: Загружаем все питомцы одновременно для скорости
-      const petPromises = favoriteIds.map(async (petId) => {
+      const petPromises = uniqueFavoriteIds.map(async (petId) => {
         try {
           console.log(`🔄 Profile: Loading pet ${petId}...`);
           const pet = await animalService.getAnimalById(petId);
@@ -279,6 +283,7 @@ const Profile = () => {
                         <PetCard 
                           key={pet.id}
                           petData={pet}
+                          initialFavorite={true}
                           onFavoriteChange={forceRefreshFavorites} 
                         />
                       ))}
