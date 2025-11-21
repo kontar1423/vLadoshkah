@@ -3,7 +3,7 @@ import multer from 'multer';
 import usersController from "../controllers/usersController.js";
 import { authenticateToken, authorize } from '../middleware/auth.js';
 import { validate } from '../middleware/validation.js';
-import { createUserSchema, updateUserSchema, userIdSchema } from '../validators/usersValidator.js';
+import { createUserSchema, updateUserSchema, userIdSchema, userFavoriteSchema, userFavoriteBulkSchema } from '../validators/usersValidator.js';
 
 const router = express.Router();
 
@@ -33,6 +33,12 @@ router.get('/', usersController.getAll);
 router.get('/me', authenticateToken, usersController.getMe);
 router.patch('/me', authenticateToken, validate(updateUserSchema), usersController.updateMe);
 router.put('/me', authenticateToken, validate(updateUserSchema), usersController.updateMe);
+
+// Favorite animals
+router.get('/favorite', authenticateToken, validate(userFavoriteSchema, 'query'), usersController.getFavorite);
+router.post('/favorite', authenticateToken, validate(userFavoriteSchema), usersController.addFavorite);
+router.delete('/favorite', authenticateToken, validate(userFavoriteSchema), usersController.removeFavorite);
+router.post('/favorite/animals', authenticateToken, validate(userFavoriteBulkSchema), usersController.bulkFavoriteStatus);
 
 // PUT /api/users/:id - обновить пользователя (требует авторизации)
 router.put('/:id', authenticateToken, authorize('admin'), validate(userIdSchema, 'params'), validate(updateUserSchema), usersController.update);

@@ -76,20 +76,21 @@ async function invalidateAnimalCaches(animalId = null) {
 }
 
 // Получить всех животных
-async function getAllAnimals() {
+async function getAllAnimals(limit = null) {
   try {
-    // Пытаемся получить из кэша
-    const cached = await redisClient.get(CACHE_KEYS.ALL_ANIMALS);
-    if (cached) {
-      logger.debug('Cache hit: all animals');
-      return normalizeAnimalsCollection(cached);
+    // Если передан limit — не используем кэш, возвращаем ограниченный список
+    if (!limit) {
+      const cached = await redisClient.get(CACHE_KEYS.ALL_ANIMALS);
+      if (cached) {
+        logger.debug('Cache hit: all animals');
+        return normalizeAnimalsCollection(cached);
+      }
+      logger.debug('Cache miss: all animals');
     }
-
-    logger.debug('Cache miss: all animals');
     
     // Два параллельных запроса вместо N+1
     const [animals, allPhotosRaw] = await Promise.all([
-      animalsDao.getAll(),
+      animalsDao.getAll(limit ? Number(limit) : null),
       photosDao.getByEntityType('animal')
     ]);
   
@@ -104,8 +105,10 @@ async function getAllAnimals() {
         }))
     }));
     
-    // Сохраняем в кэш
-    await redisClient.set(CACHE_KEYS.ALL_ANIMALS, animalsWithPhotos, CACHE_TTL);
+    // Сохраняем в кэш только когда нет лимита
+    if (!limit) {
+      await redisClient.set(CACHE_KEYS.ALL_ANIMALS, animalsWithPhotos, CACHE_TTL);
+    }
     
     return animalsWithPhotos;
   } catch (err) {

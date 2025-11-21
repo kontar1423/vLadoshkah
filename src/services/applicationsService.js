@@ -1,122 +1,113 @@
 import applicationsDao from '../dao/applicationsDao.js';
 import logger from '../logger.js';
 import redisClient from '../cache/redis-client.js';
+
 const CACHE_KEYS = {
-    ALL_APPLICATIONS: 'applications:all',
-    APPLICATION_BY_ID: (id) => `application:${id}`,
+  ALL_TAKE: 'applications:take:all',
+  TAKE_BY_ID: (id) => `application:take:${id}`,
 };
-async function create(applicationData) {
-    try {
-        const application = await applicationsDao.create(applicationData);
-        if (!application) {
-            throw new Error('Failed to create application');
-        }
-        
-        // Инвалидируем кэш
-        await Promise.all([
-            redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS),
-            redisClient.delete(CACHE_KEYS.APPLICATION_BY_ID(application.id))
-        ]);
-        
-        return application;
-    } catch (err) {
-        logger.error(err, 'Service: error creating application');
-        throw err;
-    }
-}
-async function getById(id) {
-    try {
-        // Clear the specific application cache since we're fetching a single application
-        await Promise.all([
-            redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS),
-            redisClient.delete(CACHE_KEYS.APPLICATION_BY_ID(id))
-        ]);
-        
-        const application = await applicationsDao.getById(id);
-        if (!application) {
-            throw new Error('Application not found');
-        }
-        
-        await redisClient.set(CACHE_KEYS.APPLICATION_BY_ID(id), application, 300); // кэш на 5 минут
-        return application;
-    } catch (err) {
-        logger.error(err, 'Service: error fetching application by id');
-        throw err;
-    }
+
+async function invalidateCache(id = null) {
+  const tasks = [redisClient.delete(CACHE_KEYS.ALL_TAKE)];
+  if (id) {
+    tasks.push(redisClient.delete(CACHE_KEYS.TAKE_BY_ID(id)));
+  }
+  await Promise.all(tasks);
 }
 
-async function getAll() {
-    try {
-        // Clear the all applications cache since we're fetching all applications
-        await redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS);
-        
-        const applications = await applicationsDao.getAll();
-        await redisClient.set(CACHE_KEYS.ALL_APPLICATIONS, applications, 300); // кэш на 5 минут
-        return applications;
-    } catch (err) {
-        logger.error(err, 'Service: error fetching all applications');
-        throw err;
+async function createTake(applicationData) {
+  try {
+    const payload = { ...applicationData, type: 'take' };
+    const application = await applicationsDao.create(payload);
+    if (!application) {
+      throw new Error('Failed to create application');
     }
+
+    await invalidateCache(application.id);
+    return application;
+  } catch (err) {
+    logger.error(err, 'Service: error creating take application');
+    throw err;
+  }
 }
 
-async function update(id, applicationData) {
-    try {
-        // Clear the specific application cache since we're updating a single application
-        await Promise.all([
-            redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS),
-            redisClient.delete(CACHE_KEYS.APPLICATION_BY_ID(id))
-        ]);
-        const application = await applicationsDao.update(id, applicationData);
-        if (!application) {
-            throw new Error('Application not found');
-        }
-        
-        // Инвалидируем кэш
-        await Promise.all([
-            redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS),
-            redisClient.delete(CACHE_KEYS.APPLICATION_BY_ID(id))
-        ]);
-        
-        return application;
-    } catch (err) {
-        logger.error(err, 'Service: error updating application');
-        throw err;
+async function getTakeById(id) {
+  try {
+    await invalidateCache(id);
+
+    const application = await applicationsDao.getById(id, 'take');
+    if (!application) {
+      throw new Error('Application not found');
     }
+
+    await redisClient.set(CACHE_KEYS.TAKE_BY_ID(id), application, 300); // кэш на 5 минут
+    return application;
+  } catch (err) {
+    logger.error(err, 'Service: error fetching take application by id');
+    throw err;
+  }
 }
 
-async function remove(id) {
-    try {
-        // Clear the specific application cache since we're removing a single application
-        await Promise.all([
-            redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS),
-            redisClient.delete(CACHE_KEYS.APPLICATION_BY_ID(id))
-        ]);
-        const application = await applicationsDao.remove(id);
-        if (!application) {
-            throw new Error('Application not found');
-        }
-        
-        // Инвалидируем кэш
-        await Promise.all([
-            redisClient.delete(CACHE_KEYS.ALL_APPLICATIONS),
-            redisClient.delete(CACHE_KEYS.APPLICATION_BY_ID(id))
-        ]);
-        
-        return application;
-    } catch (err) {
-        logger.error(err, 'Service: error removing application');
-        throw err;
-    }
+async function getAllTake() {
+  try {
+    await redisClient.delete(CACHE_KEYS.ALL_TAKE);
+
+    const applications = await applicationsDao.getAll({ type: 'take' });
+    await redisClient.set(CACHE_KEYS.ALL_TAKE, applications, 300); // кэш на 5 минут
+    return applications;
+  } catch (err) {
+    logger.error(err, 'Service: error fetching all take applications');
+    throw err;
+  }
 }
 
-async function countApproved() {
-    try {
-        const count = await applicationsDao.countByStatus('approved');
-        return { count };
-    } catch (err) {
-        logger.error(err, 'Service: error counting approved applications');
-        throw err;
+async function updateTake(id, applicationData) {
+  try {
+    await invalidateCache(id);
+    const application = await applicationsDao.update(id, { ...applicationData, type: 'take' }, 'take');
+    if (!application) {
+      throw new Error('Application not found');
     }
+
+    await invalidateCache(id);
+    return application;
+  } catch (err) {
+    logger.error(err, 'Service: error updating take application');
+    throw err;
+  }
 }
 
-export default { create, getById, getAll, update, remove, countApproved };
+async function removeTake(id) {
+  try {
+    await invalidateCache(id);
+    const application = await applicationsDao.remove(id, 'take');
+    if (!application) {
+      throw new Error('Application not found');
+    }
+
+    await invalidateCache(id);
+    return application;
+  } catch (err) {
+    logger.error(err, 'Service: error removing take application');
+    throw err;
+  }
+}
+
+async function countApprovedTake() {
+  try {
+    const count = await applicationsDao.countByStatus('approved', 'take');
+    return { count };
+  } catch (err) {
+    logger.error(err, 'Service: error counting approved take applications');
+    throw err;
+  }
+}
+
+export default { 
+  createTake, 
+  getTakeById, 
+  getAllTake, 
+  updateTake, 
+  removeTake, 
+  countApprovedTake 
+};

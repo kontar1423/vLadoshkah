@@ -87,3 +87,50 @@ export const userIdSchema = Joi.object({
       'any.required': 'ID обязателен'
     })
 });
+
+export const userFavoriteSchema = Joi.object({
+  user_id: Joi.number().integer().positive().optional()
+    .messages({
+      'number.base': 'user_id должен быть числом',
+      'number.integer': 'user_id должен быть целым числом',
+      'number.positive': 'user_id должен быть положительным числом'
+    }),
+  animal_id: Joi.number().integer().positive()
+    .messages({
+      'number.base': 'animal_id должен быть числом',
+      'number.integer': 'animal_id должен быть целым числом',
+      'number.positive': 'animal_id должен быть положительным числом'
+    }),
+  shelter_id: Joi.number().integer().positive()
+    .messages({
+      'number.base': 'shelter_id должен быть числом',
+      'number.integer': 'shelter_id должен быть целым числом',
+      'number.positive': 'shelter_id должен быть положительным числом'
+    })
+}).xor('animal_id', 'shelter_id')
+  .messages({
+    'object.xor': 'Укажите animal_id или shelter_id (только одно поле)'
+  });
+
+export const userFavoriteBulkSchema = Joi.object({
+  user_id: Joi.number().integer().positive().optional()
+    .messages({
+      'number.base': 'user_id должен быть числом',
+      'number.integer': 'user_id должен быть целым числом',
+      'number.positive': 'user_id должен быть положительным числом'
+    }),
+  animal_ids: Joi.array().items(
+    Joi.number().integer().positive().required()
+      .messages({
+        'number.base': 'animal_id должен быть числом',
+        'number.integer': 'animal_id должен быть целым числом',
+        'number.positive': 'animal_id должен быть положительным числом',
+        'any.required': 'animal_id обязателен'
+      })
+  ).min(1).required()
+    .messages({
+      'array.base': 'animal_ids должен быть массивом чисел',
+      'array.min': 'animal_ids должен содержать хотя бы одно значение',
+      'any.required': 'animal_ids обязателен'
+    })
+});

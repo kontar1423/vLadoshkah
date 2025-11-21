@@ -1,5 +1,35 @@
 import usersService from "../services/usersService.js";
 import logger from "../logger.js";
+import favoriteAnimalsService from "../services/favoriteAnimalsService.js";
+
+function resolveAnimalId(payload = {}) {
+  return payload.animal_id ?? payload.shelter_id;
+}
+
+function isRequestorAllowed(req, targetUserId) {
+  if (!req.user) {
+    return false;
+  }
+
+  return Number(req.user.userId) === Number(targetUserId) || req.user.role === 'admin';
+}
+
+function resolveUserIdFromRequest(req, payloadUserId) {
+  const tokenUserId = Number(req.user?.userId);
+  const payloadId = payloadUserId !== undefined ? Number(payloadUserId) : NaN;
+
+  // Предпочитаем ID из токена
+  if (Number.isInteger(tokenUserId)) {
+    return tokenUserId;
+  }
+
+  // Админ может передать любой user_id
+  if (req.user?.role === 'admin' && Number.isInteger(payloadId)) {
+    return payloadId;
+  }
+
+  return payloadId;
+}
 
 async function getAll(req, res) {
   try {
@@ -159,7 +189,99 @@ async function remove(req, res) {
   }
 }
 
-// Дополнительный контроллер для обновления только фото пользователя
+async function getFavorite(req, res) {
+  const log = req.log || logger;
+  const userId = resolveUserIdFromRequest(req, req.query.user_id);
+  const animalId = Number(resolveAnimalId(req.query));
+
+  if (!Number.isInteger(userId) || !Number.isInteger(animalId)) {
+    return res.status(400).json({ error: 'Invalid user_id or animal_id' });
+  }
+
+  if (!isRequestorAllowed(req, userId)) {
+    return res.status(403).json({ error: 'Access denied for this user_id' });
+  }
+
+  try {
+    const isFavorite = await favoriteAnimalsService.isFavorite(userId, animalId);
+    res.json({ isFavorite });
+  } catch (err) {
+    log.error(err, 'Controller: error checking favorite animal');
+    res.status(err.status || 500).json({ error: err.message });
+  }
+}
+
+async function addFavorite(req, res) {
+  const log = req.log || logger;
+  const userId = resolveUserIdFromRequest(req, req.body.user_id);
+  const animalId = Number(resolveAnimalId(req.body));
+
+  if (!Number.isInteger(userId) || !Number.isInteger(animalId)) {
+    return res.status(400).json({ error: 'Invalid user_id or animal_id' });
+  }
+
+  if (!isRequestorAllowed(req, userId)) {
+    return res.status(403).json({ error: 'Access denied for this user_id' });
+  }
+
+  try {
+    const result = await favoriteAnimalsService.addFavorite(userId, animalId);
+    res.status(result.created ? 201 : 200).json({
+      message: result.created ? 'Favorite added' : 'Already in favorites',
+      isFavorite: result.isFavorite
+    });
+  } catch (err) {
+    log.error(err, 'Controller: error adding favorite animal');
+    res.status(err.status || 500).json({ error: err.message });
+  }
+}
+
+async function removeFavorite(req, res) {
+  const log = req.log || logger;
+  const userId = resolveUserIdFromRequest(req, req.body.user_id);
+  const animalId = Number(resolveAnimalId(req.body));
+
+  if (!Number.isInteger(userId) || !Number.isInteger(animalId)) {
+    return res.status(400).json({ error: 'Invalid user_id or animal_id' });
+  }
+
+  if (!isRequestorAllowed(req, userId)) {
+    return res.status(403).json({ error: 'Access denied for this user_id' });
+  }
+
+  try {
+    const result = await favoriteAnimalsService.removeFavorite(userId, animalId);
+    res.json({
+      message: result.removed ? 'Favorite removed' : 'Favorite not found',
+      isFavorite: result.isFavorite
+    });
+  } catch (err) {
+    log.error(err, 'Controller: error removing favorite animal');
+    res.status(err.status || 500).json({ error: err.message });
+  }
+}
+
+async function bulkFavoriteStatus(req, res) {
+  const log = req.log || logger;
+  const userId = resolveUserIdFromRequest(req, req.body.user_id);
+  const animalIds = req.body.animal_ids;
+
+  if (!Number.isInteger(userId)) {
+    return res.status(400).json({ error: 'Invalid user_id' });
+  }
+
+  if (!isRequestorAllowed(req, userId)) {
+    return res.status(403).json({ error: 'Access denied for this user_id' });
+  }
+
+  try {
+    const result = await favoriteAnimalsService.isFavoriteBulk(userId, animalIds);
+    res.json(result);
+  } catch (err) {
+    log.error(err, 'Controller: error checking bulk favorites');
+    res.status(err.status || 500).json({ error: err.message });
+  }
+}
 
 export default { 
   getAll, 
@@ -168,5 +290,9 @@ export default {
   update, 
   remove,
   updateMe,
-  getMe
+  getMe,
+  getFavorite,
+  addFavorite,
+  removeFavorite,
+  bulkFavoriteStatus
 };

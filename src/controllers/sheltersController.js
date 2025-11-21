@@ -5,7 +5,11 @@ import logger from '../logger.js';
 // Получить все приюты
 async function getAll(req, res) {
   try {
-    const shelters = await sheltersService.getAllShelters();
+    let limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
+    if (!Number.isInteger(limit) || limit <= 0) {
+      limit = null;
+    }
+    const shelters = await sheltersService.getAllShelters(limit);
     res.json(shelters);
   } catch (err) {
     const log = req.log || logger;

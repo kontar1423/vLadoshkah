@@ -93,6 +93,15 @@ Content-Type: application/json
 
 Ответы `GET/POST/PUT` — объект пользователя с массивом `photos: [{ url }]`. Обёртка `success` есть только у POST/PUT в контроллере (`{ success, user, message }`).
 
+### Избранные животные (`/api/users/favorite`)
+
+- Требуется авторизация; `user_id` должен совпадать с токеном (кроме `admin`).
+- Поля запроса: `user_id` и `animal_id` (можно передать `shelter_id` как alias для `animal_id`).
+- `GET /api/users/favorite?user_id=1&animal_id=9` — проверить, есть ли лайк у пользователя на животное. Ответ: `{ "isFavorite": true|false }` (404 если не существует пользователь или животное).
+- `POST /api/users/favorite` — добавить лайк; JSON-тело: `{ "user_id": 1, "animal_id": 9 }`. Ответ 201 при создании, 200 если лайк уже существовал: `{ "message": "Favorite added|Already in favorites", "isFavorite": true }`.
+- `DELETE /api/users/favorite` — убрать лайк; JSON-тело как выше. Ответ всегда 200, тело `{ "message": "Favorite removed|Favorite not found", "isFavorite": false }`.
+- `POST /api/users/favorite/animals` — массовая проверка. Тело: `{ "user_id": 1, "animal_ids": [9, 10, 11] }`. Ответ: объект-мэп, где каждому `id` сопоставлен `true|false`, например `{ "9": true, "10": false, "11": true }`.
+
 Пример запроса создания с фото (admin):
 
 ```
@@ -123,7 +132,7 @@ photo=<file>
 
 ## Приюты (`/api/shelters`)
 
-- `GET /api/shelters` — публичный список. Поля: `name`, `address?`, `phone?`, `email?`, `website?`, `description?`, `capacity?`, `working_hours?`, `can_adopt?`, `region?`, `admin_id?`, `status`, `rating`, `photos` (если прикреплены).
+- `GET /api/shelters` — публичный список. Поля: `name`, `address?`, `phone?`, `email?`, `website?`, `description?`, `capacity?`, `working_hours?`, `can_adopt?`, `region?`, `admin_id?`, `status`, `rating`, `photos` (если прикреплены). Дополнительно можно передать `?limit=10`, чтобы ограничить количество записей.
 - `GET /api/shelters/:id` — подробности по ID (+ `photos`).
 - `POST /api/shelters` — создать приют (`admin`; `shelter_admin` создаёт приют только для себя, `admin_id` берётся из токена). Тело как в списке полей выше. Маршрут принимает `multipart/form-data`, но переданный файл `photo` сейчас сервером не сохраняется.
 - `PUT|PATCH /api/shelters/:id` — обновить приют (`admin`; `shelter_admin` может редактировать только приюты, где он указан в `admin_id`, смена владельца запрещена).
@@ -156,7 +165,7 @@ Content-Type: application/json
 ## Животные (`/api/animals`)
 
 Публичные:
-- `GET /api/animals` — список животных с `photos` и `shelter_name`.
+- `GET /api/animals` — список животных с `photos` и `shelter_name`; можно передать `?limit=N`, чтобы ограничить выдачу.
 - `GET /api/animals/:id` — карточка по ID.
 - `GET /api/animals/shelter/:shelterId` — животные конкретного приюта.
 - `GET /api/animals/filters` — фильтры: `type`, `gender` (`male|female|unknown`), `age_min`, `age_max`, `animal_size` (`small|medium|large`), `health`, `shelter_id`, `search` (по имени/цвету/описанию).
@@ -239,21 +248,24 @@ GET /api/photos/file/7a1c...jpg
 
 ## Заявки (`/api/applications`)
 
-Все маршруты требуют авторизации любой роли:
-- `POST /api/applications` — создать заявку. Тело: `user_id`, `shelter_id`, `animal_id`, `description` (10–5000 символов), `status?` (`pending|approved|rejected|cancelled`, по умолчанию `pending`).
-- `GET /api/applications` — получить все заявки (сейчас без фильтра по текущему пользователю).
-- `GET /api/applications/:id` — заявка по ID.
-- `PUT /api/applications/:id` — полное обновление.
-- `PATCH /api/applications/:id` — частичное обновление тех же полей.
-- `DELETE /api/applications/:id` — удаление.
-- `GET /api/applications/count/approved` — количество заявок в статусе `approved` (публично).
+В таблице заявок теперь есть поле `type` (`take`/`give`). По умолчанию создаётся `take`.
 
-Ответы — сырой объект заявки (без обёртки `success`).
+### Взять питомца (`/api/applications/take`)
 
-Пример создания:
+Все маршруты требуют авторизации:
+- `POST /api/applications/take` — создать заявку на принятие. Тело (`application/json`): `shelter_id`, `animal_id`, `description` (10–5000), `status?` (`pending|approved|rejected|cancelled`). `user_id` берётся из токена.
+- `GET /api/applications/take` — все заявки на принятие.
+- `GET /api/applications/take/:id` — заявка по ID.
+- `PUT /api/applications/take/:id` — обновление, те же поля.
+- `DELETE /api/applications/take/:id` — удалить.
+- `GET /api/applications/take/count/approved` — количество approved (публично).
+
+Ответ — объект заявки с `type: "take"`.
+
+Пример запроса:
 
 ```http
-POST /api/applications
+POST /api/applications/take
 Authorization: Bearer <token>
 Content-Type: application/json
 
@@ -266,19 +278,34 @@ Content-Type: application/json
 }
 ```
 
-Пример ответа:
+### Отдать питомца (`/api/applications/give`)
 
-```json
-{
-  "id": 15,
-  "user_id": 1,
-  "shelter_id": 3,
-  "animal_id": 9,
-  "status": "pending",
-  "description": "Хочу забрать питомца домой",
-  "created_at": "2024-05-12T10:00:00.000Z"
-}
+Все маршруты требуют авторизации. При создании записывается питомец в таблицу `animals_to_give`, создаётся заявка с `type="give"`, и опционально сохраняется фото с `entity_type=animal_to_give`.
+
+- `POST /api/applications/give` — создать заявку и питомца. `multipart/form-data` или `application/json`; поля питомца: `name`, `species`, `breed?`, `character?`, `gender?`, `birth_date?` (`YYYY-MM-DD`), `vaccination_status?`, `health_status?`, `special_needs?`, `history?`; общие поля заявки: `shelter_id?`, `status?` (`pending|approved|rejected|cancelled`), `description?` (если не указать — возьмётся из history/special_needs), `user_id` берётся из токена. Опциональное поле файла `photo` (image/*); поле `photos` тоже принимается.
+- `GET /api/applications/give` — все заявки на отдачу (каждая содержит `animal` с `photos`).
+- `GET /api/applications/give/:id` — заявка по ID с данными питомца и фото.
+- `PUT /api/applications/give/:id` — обновить статус/описание и/или поля питомца; можно приложить новый `photo` (добавится ещё одно фото).
+- `DELETE /api/applications/give/:id` — удалить заявку и связанные `animals_to_give` + фото.
+
+Пример создания:
+
+```http
+POST /api/applications/give
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+
+user_id=5
+name=Барсик
+species=cat
+gender=male
+birth_date=2020-01-01
+health_status=здоров
+history=Дружелюбный
+photo=<image>
 ```
+
+Ответ: объект заявки с `type: "give"` и вложенным `animal` со свойствами и `photos: [{ url }]`.
 
 ## Медиа и URL
 

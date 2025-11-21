@@ -3,7 +3,11 @@ import logger from '../logger.js';
 
 async function getAll(req, res) {
   try {
-    const animals = await animalsService.getAllAnimals();
+    let limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
+    if (!Number.isInteger(limit) || limit <= 0) {
+      limit = null;
+    }
+    const animals = await animalsService.getAllAnimals(limit);
     res.json(animals);
   } catch (err) {
     const log = req.log || logger;

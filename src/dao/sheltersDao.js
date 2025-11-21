@@ -1,10 +1,18 @@
 import { query } from '../db.js';
 import { debug, info, error } from '../logger.js';
 
-async function getAll() {
+async function getAll(limit = null) {
   try {
-    const result = await query('SELECT * FROM shelters ORDER BY name');
-    debug({ count: result.rowCount }, 'DAO: fetched all shelters');
+    const params = [];
+    let sql = 'SELECT * FROM shelters ORDER BY name';
+    
+    if (limit && Number.isInteger(limit) && limit > 0) {
+      params.push(limit);
+      sql += ` LIMIT $${params.length}`;
+    }
+
+    const result = await query(sql, params);
+    debug({ count: result.rowCount, limit }, 'DAO: fetched all shelters');
     return result.rows;
   } catch (err) {
     error(err, 'DAO: error fetching all shelters');

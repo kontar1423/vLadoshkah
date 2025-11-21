@@ -21,7 +21,8 @@ class PhotosService {
     const patterns = [
       'photos:all',
       'photos:animal:*',
-      'photos:shelter:*'
+      'photos:shelter:*',
+      'photos:animal_to_give:*'
     ];
     
     if (photo) {

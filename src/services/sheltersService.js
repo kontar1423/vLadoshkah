@@ -63,12 +63,15 @@ async function getOwnedShelter(id, user) {
   return ensureShelterAdminAccess(shelter, user);
 }
 // Получить все приюты с фото
-async function getAllShelters() {
-  const cached = await redisClient.get(CACHE_KEYS.ALL_SHELTERS);
-  if (cached) {
-    return normalizeSheltersCollection(cached);
+async function getAllShelters(limit = null) {
+  if (!limit) {
+    const cached = await redisClient.get(CACHE_KEYS.ALL_SHELTERS);
+    if (cached) {
+      return normalizeSheltersCollection(cached);
+    }
   }
-  const shelters = await sheltersDao.getAll();
+
+  const shelters = await sheltersDao.getAll(limit ? Number(limit) : null);
   const allPhotos = normalizePhotos(await photosDao.getByEntityType('shelter'));
   
   const sheltersWithPhotos = shelters.map(shelter => normalizeShelterPhotos({
@@ -80,6 +83,11 @@ async function getAllShelters() {
       }))
   }));
   
+  // Кэшируем только полный список
+  if (!limit) {
+    await redisClient.set(CACHE_KEYS.ALL_SHELTERS, sheltersWithPhotos, 3600);
+  }
+
   return sheltersWithPhotos;
 }
 
