@@ -6,26 +6,10 @@ jest.mock('../src/initMinio.js', () => ({
   default: jest.fn().mockResolvedValue(undefined)
 }));
 
-// Мокаем DAO, чтобы не ходить в БД при проверках владения
-jest.mock('../src/dao/animalsDao.js', () => ({
-  __esModule: true,
-  default: {
-    getById: jest.fn()
-  }
-}));
-jest.mock('../src/dao/sheltersDao.js', () => ({
-  __esModule: true,
-  default: {
-    getByAdminId: jest.fn()
-  }
-}));
-
 // Импортируем app и сервисы
 import app from '../src/index.js';
 import { generateTestToken, authHeader } from './helpers/authHelper.js';
 import animalsService from '../src/services/animalsService.js';
-import animalsDao from '../src/dao/animalsDao.js';
-import sheltersDao from '../src/dao/sheltersDao.js';
 
 describe('Animals routes', () => {
   const adminToken = generateTestToken({ role: 'admin' });
@@ -52,9 +36,6 @@ describe('Animals routes', () => {
       return Promise.resolve(id === 1 ? true : false);
     });
     jest.spyOn(animalsService, 'findAnimals').mockResolvedValue([{ id: 1, name: 'Rex', photos: [] }]);
-
-    animalsDao.getById.mockResolvedValue({ id: 1, shelter_id: 1 });
-    sheltersDao.getByAdminId.mockResolvedValue([{ id: 1, admin_id: 1 }]);
   });
   
   afterEach(() => {
@@ -161,16 +142,21 @@ describe('Animals routes', () => {
     });
 
     test('allows shelter_admin to create animal only in own shelter', async () => {
-      sheltersDao.getByAdminId.mockResolvedValueOnce([{ id: 1, admin_id: 1 }]);
       const res = await request(app)
         .post('/api/animals')
         .set(authHeader(shelterAdminToken))
         .send({ name: 'Rex', age: 3, type: 'dog', shelter_id: 1 });
       expect(res.status).toBe(201);
+      expect(animalsService.createAnimal).toHaveBeenCalledWith(
+        expect.objectContaining({ shelter_id: 1 }),
+        undefined,
+        expect.objectContaining({ userId: 1, role: 'shelter_admin' })
+      );
     });
 
     test('forbids shelter_admin to create animal in foreign shelter', async () => {
-      sheltersDao.getByAdminId.mockResolvedValueOnce([{ id: 2, admin_id: 1 }]); // нет shelter_id 1
+      const err = Object.assign(new Error('forbidden'), { status: 403 });
+      animalsService.createAnimal.mockRejectedValueOnce(err);
       const res = await request(app)
         .post('/api/animals')
         .set(authHeader(shelterAdminToken))
@@ -222,8 +208,8 @@ describe('Animals routes', () => {
     });
 
     test('forbids shelter_admin moving animal to another shelter', async () => {
-      animalsDao.getById.mockResolvedValueOnce({ id: 1, shelter_id: 1 });
-      sheltersDao.getByAdminId.mockResolvedValueOnce([{ id: 1, admin_id: 1 }]);
+      const err = Object.assign(new Error('forbidden'), { status: 403 });
+      animalsService.updateAnimal.mockRejectedValueOnce(err);
       const res = await request(app)
         .put('/api/animals/1')
         .set(authHeader(shelterAdminToken))
@@ -232,8 +218,8 @@ describe('Animals routes', () => {
     });
 
     test('forbids shelter_admin updating foreign animal', async () => {
-      animalsDao.getById.mockResolvedValueOnce({ id: 1, shelter_id: 2 });
-      sheltersDao.getByAdminId.mockResolvedValueOnce([{ id: 1, admin_id: 1 }]);
+      const err = Object.assign(new Error('forbidden'), { status: 403 });
+      animalsService.updateAnimal.mockRejectedValueOnce(err);
       const res = await request(app)
         .put('/api/animals/1')
         .set(authHeader(shelterAdminToken))
@@ -242,8 +228,6 @@ describe('Animals routes', () => {
     });
 
     test('allows shelter_admin updating own animal', async () => {
-      animalsDao.getById.mockResolvedValueOnce({ id: 1, shelter_id: 1 });
-      sheltersDao.getByAdminId.mockResolvedValueOnce([{ id: 1, admin_id: 1 }]);
       const res = await request(app)
         .put('/api/animals/1')
         .set(authHeader(shelterAdminToken))
@@ -273,8 +257,8 @@ describe('Animals routes', () => {
     });
 
     test('forbids shelter_admin deleting foreign animal', async () => {
-      animalsDao.getById.mockResolvedValueOnce({ id: 1, shelter_id: 2 });
-      sheltersDao.getByAdminId.mockResolvedValueOnce([{ id: 1, admin_id: 1 }]);
+      const err = Object.assign(new Error('forbidden'), { status: 403 });
+      animalsService.removeAnimal.mockRejectedValueOnce(err);
       const res = await request(app)
         .delete('/api/animals/1')
         .set(authHeader(shelterAdminToken));
@@ -282,8 +266,6 @@ describe('Animals routes', () => {
     });
 
     test('allows shelter_admin deleting own animal', async () => {
-      animalsDao.getById.mockResolvedValueOnce({ id: 1, shelter_id: 1 });
-      sheltersDao.getByAdminId.mockResolvedValueOnce([{ id: 1, admin_id: 1 }]);
       const res = await request(app)
         .delete('/api/animals/1')
         .set(authHeader(shelterAdminToken));

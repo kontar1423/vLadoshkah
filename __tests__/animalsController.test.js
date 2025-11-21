@@ -1,8 +1,6 @@
 import { jest } from '@jest/globals';
 import animalsController from '../src/controllers/animalsController.js';
 import animalsService from '../src/services/animalsService.js';
-import sheltersDao from '../src/dao/sheltersDao.js';
-import animalsDao from '../src/dao/animalsDao.js';
 
 describe('animalsController', () => {
   let req, res;
@@ -27,9 +25,6 @@ describe('animalsController', () => {
     };
 
     jest.clearAllMocks();
-    
-    // Мокаем animalsDao для проверки доступа
-    jest.spyOn(animalsDao, 'getById').mockResolvedValue(null);
   });
 
   afterEach(() => {
@@ -183,37 +178,17 @@ describe('animalsController', () => {
       }));
     });
 
-    test('создает животное с проверкой доступа для shelter_admin', async () => {
+    test('прокидывает пользователя в сервис', async () => {
       const mockAnimal = { id: 10, name: 'New Dog', shelter_id: 1 };
       req.user = { role: 'shelter_admin', userId: 1 };
       req.body = { name: 'New Dog', shelter_id: 1 };
 
-      jest.spyOn(sheltersDao, 'getByAdminId').mockResolvedValue([
-        { id: 1, admin_id: 1 }
-      ]);
-      jest.spyOn(animalsService, 'createAnimal').mockResolvedValue(mockAnimal);
+      const spy = jest.spyOn(animalsService, 'createAnimal').mockResolvedValue(mockAnimal);
 
       await animalsController.create(req, res);
 
+      expect(spy).toHaveBeenCalledWith(req.body, undefined, req.user);
       expect(res.status).toHaveBeenCalledWith(201);
-      expect(sheltersDao.getByAdminId).toHaveBeenCalledWith(1);
-    });
-
-    test('возвращает 403 для shelter_admin без доступа к приюту', async () => {
-      req.user = { role: 'shelter_admin', userId: 1 };
-      req.body = { name: 'New Dog', shelter_id: 999 };
-
-      jest.spyOn(sheltersDao, 'getByAdminId').mockResolvedValue([
-        { id: 1, admin_id: 1 }
-      ]);
-
-      await animalsController.create(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.json).toHaveBeenCalledWith({
-        success: false,
-        error: 'You can only create animals in your own shelter'
-      });
     });
 
     test('возвращает 400 при ошибке', async () => {
@@ -239,7 +214,7 @@ describe('animalsController', () => {
       await animalsController.update(req, res);
 
       expect(res.json).toHaveBeenCalledWith(mockAnimal);
-      expect(animalsService.updateAnimal).toHaveBeenCalledWith(1, { name: 'Updated Dog' });
+      expect(animalsService.updateAnimal).toHaveBeenCalledWith(1, { name: 'Updated Dog' }, req.user);
     });
 
     test('возвращает 400 при невалидном ID', async () => {
@@ -273,7 +248,7 @@ describe('animalsController', () => {
 
       expect(res.status).toHaveBeenCalledWith(204);
       expect(res.end).toHaveBeenCalled();
-      expect(animalsService.removeAnimal).toHaveBeenCalledWith(1);
+      expect(animalsService.removeAnimal).toHaveBeenCalledWith(1, req.user);
     });
 
     test('возвращает 400 при невалидном ID', async () => {
@@ -296,4 +271,3 @@ describe('animalsController', () => {
     });
   });
 });
-

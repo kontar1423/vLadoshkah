@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import animalsService from '../src/services/animalsService.js';
 import animalsDao from '../src/dao/animalsDao.js';
+import sheltersDao from '../src/dao/sheltersDao.js';
 import photosDao from '../src/dao/photosDao.js';
 
 describe('animalsService', () => {
@@ -13,6 +14,7 @@ describe('animalsService', () => {
     jest.spyOn(animalsDao, 'update').mockResolvedValue({ id: 1, name: 'Rex Updated', age: 4, type: 'dog', shelter_id: 1 });
     jest.spyOn(animalsDao, 'remove').mockResolvedValue(true);
     jest.spyOn(animalsDao, 'findAnimals').mockResolvedValue([{ id: 1 }]);
+    jest.spyOn(sheltersDao, 'getByAdminId').mockResolvedValue([{ id: 1, admin_id: 1 }]);
     jest.spyOn(photosDao, 'getByEntityType').mockResolvedValue([]);
     jest.spyOn(photosDao, 'getByEntity').mockResolvedValue([]);
   });
@@ -50,12 +52,46 @@ describe('animalsService', () => {
     expect(animalsDao.create).toHaveBeenCalled();
   });
 
+  test('createAnimal allows shelter_admin for own shelter', async () => {
+    const data = { name: 'Rex', age: 3, type: 'dog', shelter_id: 1 };
+    await animalsService.createAnimal(data, null, { role: 'shelter_admin', userId: 1 });
+    expect(sheltersDao.getByAdminId).toHaveBeenCalledWith(1);
+    expect(animalsDao.create).toHaveBeenCalled();
+  });
+
+  test('createAnimal forbids shelter_admin for foreign shelter', async () => {
+    sheltersDao.getByAdminId.mockResolvedValueOnce([{ id: 2, admin_id: 1 }]);
+    const data = { name: 'Rex', age: 3, type: 'dog', shelter_id: 1 };
+    await expect(animalsService.createAnimal(data, null, { role: 'shelter_admin', userId: 1 }))
+      .rejects.toMatchObject({ status: 403 });
+  });
+
   test('updateAnimal works with valid input', async () => {
     const data = { name: 'Rex Updated', age: 4 };
     const updated = await animalsService.updateAnimal(1, data);
     expect(updated).toBeDefined();
     expect(updated.id).toBe(1);
     expect(animalsDao.update).toHaveBeenCalledWith(1, data);
+  });
+
+  test('updateAnimal allows shelter_admin for own animal', async () => {
+    const data = { name: 'Rex Updated' };
+    await animalsService.updateAnimal(1, data, { role: 'shelter_admin', userId: 1 });
+    expect(sheltersDao.getByAdminId).toHaveBeenCalledWith(1);
+    expect(animalsDao.update).toHaveBeenCalledWith(1, expect.objectContaining({ name: 'Rex Updated', shelter_id: 1 }));
+  });
+
+  test('updateAnimal forbids shelter_admin moving to another shelter', async () => {
+    const data = { name: 'Rex', shelter_id: 2 };
+    await expect(animalsService.updateAnimal(1, data, { role: 'shelter_admin', userId: 1 }))
+      .rejects.toMatchObject({ status: 403 });
+  });
+
+  test('updateAnimal forbids shelter_admin updating foreign animal', async () => {
+    animalsDao.getById.mockResolvedValueOnce({ id: 1, shelter_id: 5 });
+    const data = { name: 'Rex' };
+    await expect(animalsService.updateAnimal(1, data, { role: 'shelter_admin', userId: 1 }))
+      .rejects.toMatchObject({ status: 403 });
   });
 
   test('updateAnimal returns null for non-existent id', async () => {
@@ -69,6 +105,12 @@ describe('animalsService', () => {
     const res = await animalsService.removeAnimal(1);
     expect(res).toBeDefined();
     expect(animalsDao.remove).toHaveBeenCalledWith(1);
+  });
+
+  test('removeAnimal forbids shelter_admin deleting foreign animal', async () => {
+    animalsDao.getById.mockResolvedValueOnce({ id: 1, shelter_id: 5 });
+    await expect(animalsService.removeAnimal(1, { role: 'shelter_admin', userId: 1 }))
+      .rejects.toMatchObject({ status: 403 });
   });
 
   test('getAnimalsByShelterId returns animals', async () => {

@@ -27,6 +27,12 @@ describe('Shelters routes', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    if (!jest.isMockFunction(sheltersDao.getById)) {
+      sheltersDao.getById = jest.fn();
+    }
+    if (!jest.isMockFunction(sheltersDao.getByAdminId)) {
+      sheltersDao.getByAdminId = jest.fn();
+    }
     
     // Мокаем методы сервиса используя jest.spyOn
     jest.spyOn(sheltersService, 'getAllShelters').mockResolvedValue([{ id: 1, name: 'Home Shelter', photos: [] }]);
@@ -105,7 +111,11 @@ describe('Shelters routes', () => {
         .set(authHeader(shelterAdminToken))
         .send({ name: 'My Shelter', address: 'Street 1' });
       expect(res.status).toBe(201);
-      expect(sheltersService.createShelter).toHaveBeenCalledWith(expect.objectContaining({ admin_id: 10 }));
+      expect(sheltersService.createShelter).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'My Shelter' }),
+        null,
+        expect.objectContaining({ userId: 10, role: 'shelter_admin' })
+      );
     });
   });
 
@@ -136,7 +146,6 @@ describe('Shelters routes', () => {
     });
 
     test('allows shelter_admin to update own shelter', async () => {
-      sheltersDao.getById.mockResolvedValueOnce({ id: 1, admin_id: 10 });
       const res = await request(app)
         .put('/api/shelters/1')
         .set(authHeader(shelterAdminToken))
@@ -145,7 +154,8 @@ describe('Shelters routes', () => {
     });
 
     test('forbids shelter_admin updating foreign shelter', async () => {
-      sheltersDao.getById.mockResolvedValueOnce({ id: 1, admin_id: 99 });
+      const err = Object.assign(new Error('forbidden'), { status: 403 });
+      sheltersService.updateShelter.mockRejectedValueOnce(err);
       const res = await request(app)
         .put('/api/shelters/1')
         .set(authHeader(shelterAdminToken))
@@ -168,7 +178,6 @@ describe('Shelters routes', () => {
     });
 
     test('allows shelter_admin to delete own shelter', async () => {
-      sheltersDao.getById.mockResolvedValueOnce({ id: 1, admin_id: 10 });
       const res = await request(app)
         .delete('/api/shelters/1')
         .set(authHeader(shelterAdminToken));
@@ -176,7 +185,8 @@ describe('Shelters routes', () => {
     });
 
     test('forbids shelter_admin deleting foreign shelter', async () => {
-      sheltersDao.getById.mockResolvedValueOnce({ id: 1, admin_id: 99 });
+      const err = Object.assign(new Error('forbidden'), { status: 403 });
+      sheltersService.removeShelter.mockRejectedValueOnce(err);
       const res = await request(app)
         .delete('/api/shelters/1')
         .set(authHeader(shelterAdminToken));

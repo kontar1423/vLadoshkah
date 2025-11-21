@@ -110,7 +110,7 @@ describe('sheltersController', () => {
 
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(mockShelter);
-      expect(sheltersService.createShelter).toHaveBeenCalledWith(req.body);
+      expect(sheltersService.createShelter).toHaveBeenCalledWith(req.body, null, req.user);
     });
 
     test('возвращает 400 при ошибке', async () => {
@@ -135,7 +135,7 @@ describe('sheltersController', () => {
       await sheltersController.update(req, res);
 
       expect(res.json).toHaveBeenCalledWith(mockShelter);
-      expect(sheltersService.updateShelter).toHaveBeenCalledWith(1, req.body);
+      expect(sheltersService.updateShelter).toHaveBeenCalledWith(1, req.body, req.user);
     });
 
     test('возвращает 404 если приют не найден', async () => {
@@ -180,7 +180,7 @@ describe('sheltersController', () => {
 
       expect(res.status).toHaveBeenCalledWith(204);
       expect(res.end).toHaveBeenCalled();
-      expect(sheltersService.removeShelter).toHaveBeenCalledWith(1);
+      expect(sheltersService.removeShelter).toHaveBeenCalledWith(1, req.user);
     });
 
     test('возвращает 404 если приют не найден', async () => {
@@ -209,8 +209,7 @@ describe('sheltersController', () => {
       await sheltersController.remove(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Database error' });
+      expect(res.json).toHaveBeenCalledWith({ error: 'DB error' });
     });
   });
 });
-

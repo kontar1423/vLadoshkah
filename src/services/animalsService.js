@@ -1,5 +1,6 @@
 // services/animalsService.js
 import animalsDao from '../dao/animalsDao.js';
+import sheltersDao from '../dao/sheltersDao.js';
 import photosDao from '../dao/photosDao.js';
 import photosService from './photosService.js';
 import redisClient from '../cache/redis-client.js';
@@ -195,9 +196,25 @@ async function getAnimalsByShelterId(shelterId) {
 }
 
 // Создать животное (с поддержкой фото)
-async function createAnimal(animalData, photoFile = null) {
+async function createAnimal(animalData, photoFile = null, currentUser = null) {
   try {
     logger.info({ hasPhoto: !!photoFile }, 'Service: creating animal');
+
+    if (currentUser?.role === 'shelter_admin') {
+      const shelterId = Number(animalData.shelter_id);
+      if (!shelterId) {
+        const err = new Error('shelter_id is required for shelter_admin');
+        err.status = 400;
+        throw err;
+      }
+      const userShelters = await sheltersDao.getByAdminId(currentUser.userId);
+      const hasAccess = userShelters.some((shelter) => shelter.id === shelterId);
+      if (!hasAccess) {
+        const err = new Error('You can only create animals in your own shelter');
+        err.status = 403;
+        throw err;
+      }
+    }
     
     // 1. Создаем животное
     const animal = await animalsDao.create(animalData);
@@ -230,8 +247,28 @@ async function createAnimal(animalData, photoFile = null) {
 }
 
 // Обновить животное
-async function updateAnimal(id, data) {
+async function updateAnimal(id, data, currentUser = null) {
   try {
+    if (currentUser?.role === 'shelter_admin') {
+      const animal = await animalsDao.getById(id);
+      if (!animal) {
+        return null;
+      }
+      const userShelters = await sheltersDao.getByAdminId(currentUser.userId);
+      const hasAccess = userShelters.some((shelter) => shelter.id === animal.shelter_id);
+      if (!hasAccess) {
+        const err = new Error('You can only update animals from your own shelter');
+        err.status = 403;
+        throw err;
+      }
+      if (data?.shelter_id && Number(data.shelter_id) !== animal.shelter_id) {
+        const err = new Error('You cannot move animal to another shelter');
+        err.status = 403;
+        throw err;
+      }
+      data = { ...data, shelter_id: animal.shelter_id };
+    }
+
     // Clear the specific animal cache since we're updating a single animal
     await Promise.all([
       redisClient.delete(CACHE_KEYS.ALL_ANIMALS),
@@ -254,8 +291,22 @@ async function updateAnimal(id, data) {
 }
 
 // Удалить животное
-async function removeAnimal(id) {
+async function removeAnimal(id, currentUser = null) {
   try {
+    if (currentUser?.role === 'shelter_admin') {
+      const animal = await animalsDao.getById(id);
+      if (!animal) {
+        return null;
+      }
+      const userShelters = await sheltersDao.getByAdminId(currentUser.userId);
+      const hasAccess = userShelters.some((shelter) => shelter.id === animal.shelter_id);
+      if (!hasAccess) {
+        const err = new Error('You can only delete animals from your own shelter');
+        err.status = 403;
+        throw err;
+      }
+    }
+
     // При удалении животного каскадно удалятся его фото
     // Clear the specific animal cache since we're removing a single animal
     await Promise.all([

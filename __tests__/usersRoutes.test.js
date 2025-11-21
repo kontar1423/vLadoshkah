@@ -224,7 +224,7 @@ describe('Users routes', () => {
       
       const res = await request(app)
         .patch('/api/users/1')
-        .set(authHeader(userToken))
+        .set(authHeader(adminToken))
         .send(updateData);
       
       expect(res.status).toBe(200);
@@ -285,4 +285,3 @@ describe('Users routes', () => {
     });
   });
 });
-

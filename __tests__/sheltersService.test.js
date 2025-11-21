@@ -6,8 +6,8 @@ import photosDao from '../src/dao/photosDao.js';
 describe('sheltersService', () => {
   beforeEach(() => {
     // Мокаем все методы DAO используя jest.spyOn
-    jest.spyOn(sheltersDao, 'getAll').mockResolvedValue([{ id: 1, name: 'Home' }]);
-    jest.spyOn(sheltersDao, 'getById').mockResolvedValue({ id: 1, name: 'Home' });
+    jest.spyOn(sheltersDao, 'getAll').mockResolvedValue([{ id: 1, name: 'Home', admin_id: 10 }]);
+    jest.spyOn(sheltersDao, 'getById').mockResolvedValue({ id: 1, name: 'Home', admin_id: 10 });
     jest.spyOn(sheltersDao, 'create').mockImplementation((data) => Promise.resolve({ id: 10, ...data }));
     jest.spyOn(sheltersDao, 'update').mockImplementation((id, data) => Promise.resolve({ id, ...data }));
     jest.spyOn(sheltersDao, 'remove').mockResolvedValue(true);
@@ -50,6 +50,12 @@ describe('sheltersService', () => {
     expect(sheltersDao.create).toHaveBeenCalled();
   });
 
+  test('createShelter binds admin_id for shelter_admin', async () => {
+    const res = await sheltersService.createShelter({ name: 'Owned shelter' }, null, { role: 'shelter_admin', userId: 5 });
+    expect(sheltersDao.create).toHaveBeenCalledWith(expect.objectContaining({ admin_id: 5 }));
+    expect(res).toBeDefined();
+  });
+
   test('updateShelter succeeds with valid data', async () => {
     const data = { name: 'Updated Shelter' };
     const updated = await sheltersService.updateShelter(1, data);
@@ -58,10 +64,15 @@ describe('sheltersService', () => {
     expect(sheltersDao.update).toHaveBeenCalledWith(1, data);
   });
 
+  test('updateShelter prohibits non-owned shelter for shelter_admin', async () => {
+    sheltersDao.getById.mockResolvedValueOnce({ id: 1, admin_id: 99 });
+    await expect(sheltersService.updateShelter(1, { name: 'Nope' }, { role: 'shelter_admin', userId: 5 }))
+      .rejects.toMatchObject({ status: 403 });
+  });
+
   test('updateShelter returns null for non-existent id', async () => {
-    sheltersDao.update.mockImplementationOnce(() => Promise.resolve(null));
-    
-    const res = await sheltersService.updateShelter(999, { name: 'Updated' });
+    sheltersDao.getById.mockResolvedValueOnce(null);
+    const res = await sheltersService.updateShelter(999, { name: 'Updated' }, { role: 'shelter_admin', userId: 5 });
     expect(res).toBeNull();
   });
 
@@ -69,5 +80,11 @@ describe('sheltersService', () => {
     const res = await sheltersService.removeShelter(1);
     expect(res).toBeDefined();
     expect(sheltersDao.remove).toHaveBeenCalledWith(1);
+  });
+
+  test('removeShelter prohibits non-owned shelter for shelter_admin', async () => {
+    sheltersDao.getById.mockResolvedValueOnce({ id: 1, admin_id: 99 });
+    await expect(sheltersService.removeShelter(1, { role: 'shelter_admin', userId: 5 }))
+      .rejects.toMatchObject({ status: 403 });
   });
 });

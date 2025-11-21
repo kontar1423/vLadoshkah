@@ -35,6 +35,33 @@ function normalizeSheltersCollection(shelters) {
 
   return normalizeShelterPhotos(shelters);
 }
+
+function ensureShelterAdminAccess(shelter, user) {
+  if (!user || user.role !== 'shelter_admin') {
+    return;
+  }
+
+  if (!shelter) {
+    return null;
+  }
+
+  if (shelter.admin_id !== user.userId) {
+    const err = new Error('You can only manage your own shelter');
+    err.status = 403;
+    throw err;
+  }
+
+  return shelter;
+}
+
+async function getOwnedShelter(id, user) {
+  if (!user || user.role !== 'shelter_admin') {
+    return null;
+  }
+
+  const shelter = await sheltersDao.getById(id);
+  return ensureShelterAdminAccess(shelter, user);
+}
 // Получить все приюты с фото
 async function getAllShelters() {
   const cached = await redisClient.get(CACHE_KEYS.ALL_SHELTERS);
@@ -86,12 +113,18 @@ async function getShelterById(id) {
 }
 
 // Создать приют с возможностью загрузки фото
-async function createShelter(shelterData, photoFiles = null) {
+async function createShelter(shelterData, photoFiles = null, currentUser = null) {
   // Clear the all shelters cache since we're adding a new one
   await redisClient.delete(CACHE_KEYS.ALL_SHELTERS);
+
+  const payload = { ...shelterData };
+  // Привязываем приют к shelter_admin
+  if (currentUser?.role === 'shelter_admin') {
+    payload.admin_id = currentUser.userId;
+  }
   
   // Создаем приют
-  const shelter = await sheltersDao.create(shelterData);
+  const shelter = await sheltersDao.create(payload);
   
   // Если есть фото - загружаем их
   if (photoFiles) {
@@ -106,12 +139,22 @@ async function createShelter(shelterData, photoFiles = null) {
 }
 
 // Обновить приют
-async function updateShelter(id, data) {
+async function updateShelter(id, data, currentUser = null) {
   // Clear both the all shelters cache and the specific shelter cache
   await Promise.all([
     redisClient.delete(CACHE_KEYS.ALL_SHELTERS),
     redisClient.delete(CACHE_KEYS.SHELTER_BY_ID(id))
   ]);
+
+  // Проверяем доступ для shelter_admin
+  const ownedShelter = await getOwnedShelter(id, currentUser);
+  if (currentUser?.role === 'shelter_admin') {
+    if (!ownedShelter) {
+      return null;
+    }
+    // Не даём сменить владельца
+    data = { ...data, admin_id: ownedShelter.admin_id };
+  }
   
   const updatedShelter = await sheltersDao.update(id, data);
   if (!updatedShelter) {
@@ -122,7 +165,7 @@ async function updateShelter(id, data) {
 }
 
 // Удалить приют и все его фото
-async function removeShelter(id) {
+async function removeShelter(id, currentUser = null) {
   // Clear both the all shelters cache and the specific shelter cache
   await Promise.all([
     redisClient.delete(CACHE_KEYS.ALL_SHELTERS),
@@ -130,6 +173,14 @@ async function removeShelter(id) {
   ]);
   
   try {
+    // Проверяем доступ для shelter_admin
+    const ownedShelter = await getOwnedShelter(id, currentUser);
+    if (currentUser?.role === 'shelter_admin') {
+      if (!ownedShelter) {
+        return null;
+      }
+    }
+
     // Удаляем все фото приюта через универсальную функцию
     const photos = await photosDao.getByEntity('shelter', id);
     if (photos.length > 0) {

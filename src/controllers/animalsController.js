@@ -1,6 +1,4 @@
 import animalsService from "../services/animalsService.js";
-import sheltersDao from "../dao/sheltersDao.js";
-import animalsDao from "../dao/animalsDao.js";
 import logger from '../logger.js';
 
 async function getAll(req, res) {
@@ -83,32 +81,10 @@ async function create(req, res) {
     const animalData = req.body;
     const photoFile = req.file; // Фото из multer
     
-    // Проверка доступа для админов приютов
-    if (req.user && req.user.role === 'shelter_admin') {
-      const shelterId = Number(animalData.shelter_id);
-      if (!shelterId) {
-        return res.status(400).json({
-          success: false,
-          error: 'shelter_id is required for shelter_admin'
-        });
-      }
-      
-      // Проверяем, что приют принадлежит этому админу
-      const userShelters = await sheltersDao.getByAdminId(req.user.userId);
-      const hasAccess = userShelters.some(shelter => shelter.id === shelterId);
-      
-      if (!hasAccess) {
-        return res.status(403).json({
-          success: false,
-          error: 'You can only create animals in your own shelter'
-        });
-      }
-    }
-    
     const log = req.log || logger;
     log.info({ hasPhoto: !!photoFile }, 'Controller: creating animal');
     
-    const newAnimal = await animalsService.createAnimal(animalData, photoFile);
+    const newAnimal = await animalsService.createAnimal(animalData, photoFile, req.user);
     
     res.status(201).json({
       success: true,
@@ -133,36 +109,7 @@ async function update(req, res) {
     return res.status(400).json({ error: 'Invalid id' });
   }
   try {
-    // Проверка доступа для админов приютов
-    if (req.user && req.user.role === 'shelter_admin') {
-      const animal = await animalsDao.getById(id);
-      if (!animal) {
-        return res.status(404).json({ error: 'Animal not found' });
-      }
-      
-      // Проверяем, что животное принадлежит приюту этого админа
-      const userShelters = await sheltersDao.getByAdminId(req.user.userId);
-      const hasAccess = userShelters.some(shelter => shelter.id === animal.shelter_id);
-      
-      if (!hasAccess) {
-        return res.status(403).json({
-          success: false,
-          error: 'You can only update animals from your own shelter'
-        });
-      }
-
-      // Не даем передвинуть животное в другой приют
-      if (req.body?.shelter_id && Number(req.body.shelter_id) !== animal.shelter_id) {
-        return res.status(403).json({
-          success: false,
-          error: 'You cannot move animal to another shelter'
-        });
-      }
-      // Фиксируем shelter_id на текущем
-      req.body.shelter_id = animal.shelter_id;
-    }
-    
-    const updated = await animalsService.updateAnimal(id, req.body);
+    const updated = await animalsService.updateAnimal(id, req.body, req.user);
     if (!updated) {
       const log = req.log || logger;
       log.warn({ id }, 'Controller: animal to update not found');
@@ -182,26 +129,7 @@ async function remove(req, res) {
     return res.status(400).json({ error: 'Invalid id' });
   }
   try {
-    // Проверка доступа для админов приютов
-    if (req.user && req.user.role === 'shelter_admin') {
-      const animal = await animalsDao.getById(id);
-      if (!animal) {
-        return res.status(404).json({ error: 'Animal not found' });
-      }
-      
-      // Проверяем, что животное принадлежит приюту этого админа
-      const userShelters = await sheltersDao.getByAdminId(req.user.userId);
-      const hasAccess = userShelters.some(shelter => shelter.id === animal.shelter_id);
-      
-      if (!hasAccess) {
-        return res.status(403).json({
-          success: false,
-          error: 'You can only delete animals from your own shelter'
-        });
-      }
-    }
-    
-    const deleted = await animalsService.removeAnimal(id);
+    const deleted = await animalsService.removeAnimal(id, req.user);
     if (!deleted) {
       const log = req.log || logger;
       log.warn({ id }, 'Controller: animal to delete not found');
