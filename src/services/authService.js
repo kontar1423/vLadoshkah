@@ -4,57 +4,114 @@
     // Регистрация
     async register(userData) {
         try {
+        console.log('🔵 authService: Sending registration request...', userData);
         const response = await api.post('/auth/register', userData);
-        if (response.data.accessToken) {
+        console.log('🟢 authService: Registration response:', response.data);
+        
+        if (response.data.accessToken && response.data.user) {
             this.saveAuthData(response.data);
+            return {
+            success: true,
+            user: response.data.user,
+            message: response.data.message || 'Регистрация успешна'
+            };
+        } else {
+            return {
+            success: false,
+            error: 'Неполные данные от сервера'
+            };
         }
-        return response.data;
         } catch (error) {
-        this.handleAuthError(error);
-        throw error;
+        console.error('🔴 authService: Registration error:', error);
+        
+        let message = 'Ошибка регистрации';
+        
+        if (error.response?.data?.error) {
+            message = error.response.data.error;
+        } else if (error.response?.data?.details) {
+            message = error.response.data.details
+            .map(detail => detail.message)
+            .join(', ');
+        } else if (error.message) {
+            message = error.message;
+        }
+        
+        return {
+            success: false,
+            error: message
+        };
         }
     },
 
     // Логин
     async login(credentials) {
         try {
+        console.log('🔵 authService: Sending login request...', { email: credentials.email });
         const response = await api.post('/auth/login', credentials);
-        if (response.data.accessToken) {
+        console.log('🟢 authService: Login response:', response.data);
+        
+        if (response.data.accessToken && response.data.user) {
             this.saveAuthData(response.data);
+            return {
+            success: true,
+            user: response.data.user,
+            message: response.data.message || 'Вход выполнен успешно'
+            };
+        } else {
+            return {
+            success: false,
+            error: 'Неполные данные от сервера'
+            };
         }
+        } catch (error) {
+        console.error('🔴 authService: Login error:', error);
+        
+        let message = 'Ошибка входа';
+        
+        if (error.response?.data?.error) {
+            message = error.response.data.error;
+        } else if (error.response?.data?.details) {
+            message = error.response.data.details
+            .map(detail => detail.message)
+            .join(', ');
+        } else if (error.response?.status === 401) {
+            message = 'Неверный email или пароль';
+        } else if (error.message) {
+            message = error.message;
+        }
+        
+        return {
+            success: false,
+            error: message
+        };
+        }
+    },
+
+    // Получение текущего пользователя с сервера
+    async getCurrentUserFromServer() {
+        try {
+        console.log('🔵 authService: Getting current user from server...');
+        const response = await api.get('/users/me');
+        console.log('🟢 authService: Current user data:', response.data);
         return response.data;
         } catch (error) {
-        this.handleAuthError(error);
+        console.error('🔴 authService: Error getting current user from server:', error);
         throw error;
         }
     },
 
     // Выход
     logout() {
+        console.log('🔵 authService: Logging out...');
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-    },
-
-    // Обновление токена
-    async refreshToken() {
-        try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) {
-            throw new Error('No refresh token');
-        }
-
-        const response = await api.post('/auth/refresh', { refreshToken });
-        this.saveAuthData(response.data);
-        return response.data;
-        } catch (error) {
-        this.logout();
-        throw error;
-        }
+        console.log('🟢 authService: Logout completed');
     },
 
     // Сохранение данных аутентификации
     saveAuthData(authData) {
+        console.log('🔵 authService: Saving auth data...');
         if (authData.accessToken) {
         localStorage.setItem('accessToken', authData.accessToken);
         }
@@ -64,9 +121,10 @@
         if (authData.user) {
         localStorage.setItem('user', JSON.stringify(authData.user));
         }
+        console.log('🟢 authService: Auth data saved');
     },
 
-    // Получение текущего пользователя
+    // Получение текущего пользователя из localStorage
     getCurrentUser() {
         try {
         const user = localStorage.getItem('user');
@@ -79,17 +137,5 @@
     // Проверка аутентификации
     isAuthenticated() {
         return !!localStorage.getItem('accessToken');
-    },
-
-    // Получение токена
-    getToken() {
-        return localStorage.getItem('accessToken');
-    },
-
-    // Обработка ошибок аутентификации
-    handleAuthError(error) {
-        if (error.response?.status === 401) {
-        this.logout();
-        }
     }
     };

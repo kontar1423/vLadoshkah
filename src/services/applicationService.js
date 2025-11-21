@@ -1,6 +1,6 @@
-    import api from './api';
+import api from './api';
 
-    export const applicationService = {
+export const applicationService = {
     // Создать заявку на усыновление
     async createApplication(applicationData) {
         const response = await api.post('/applications', applicationData);
@@ -35,4 +35,4 @@
         const response = await api.get('/applications/count/approved');
         return response.data;
     }
-    };
+};

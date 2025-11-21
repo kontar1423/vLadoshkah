@@ -1,14 +1,12 @@
-    // src/components/MiniShelterCard.jsx
     import React from 'react';
     import { Link } from 'react-router-dom';
     import PriutPhoto from '../assets/images/priut.jpg';
 
     const MiniShelterCard = ({ shelter }) => {
-    const { id, name, district, description, photoUrl } = shelter; // rating удалён — не нужен
+    const { id, name, district, description, photoUrl } = shelter; 
 
     return (
         <div className="bg-green-90 rounded-custom-small p-4 w-full max-w-[380px] h-full flex flex-col">
-        {/* Фотография */}
         <div className="relative w-full h-40 mb-4 overflow-hidden rounded-custom-small">
             <img
             src={photoUrl || PriutPhoto}
@@ -20,7 +18,6 @@
                 if (fallback) fallback.style.display = 'flex';
             }}
             />
-            {/* Fallback для фото */}
             <div 
             id={`shelter-fallback-${id}`}
             className="hidden w-full h-full bg-gradient-to-br from-green-70 to-green-60 items-center justify-center flex-col p-4 text-center"

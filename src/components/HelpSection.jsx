@@ -12,19 +12,13 @@ const HelpSection = ({ onClose }) => {
 
     return (
         <section className="bg-green-90 overflow-hidden w-full py-8 px-4 sm:px-6 relative">
-            {/* Фоновые декоративные элементы */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-                {/* Большой круг в правом верхнем углу */}
                 <div className="absolute w-64 h-64 -top-32 -right-32 bg-green-80 rounded-full opacity-20"></div>
-                {/* Малый круг в левом нижнем углу */}
                 <div className="absolute w-48 h-48 -bottom-24 -left-24 bg-green-70 rounded-full opacity-15"></div>
-                {/* Геометрическая форма в центре справа */}
                 <div className="absolute w-32 h-32 top-1/2 right-16 bg-green-60 rounded-lg opacity-10 rotate-45"></div>
-                {/* Маленький кружок в левом верхнем углу */}
                 <div className="absolute w-16 h-16 top-8 left-8 bg-green-50 rounded-full opacity-10"></div>
             </div>
 
-            {/* Кнопка закрытия */}
             {onClose && (
                 <button
                     onClick={onClose}
@@ -38,7 +32,6 @@ const HelpSection = ({ onClose }) => {
             )}
 
             <div className="max-w-2xl mx-auto w-full relative z-10">
-                {/* Заголовок с иконкой лапы */}
                 <div className="text-center mb-6">
                     <div className="flex items-center justify-center gap-3 mb-3">
                         <img
@@ -52,11 +45,10 @@ const HelpSection = ({ onClose }) => {
                     </div>
                 </div>
 
-                {/* Информационный блок */}
                 <div className="rounded-custom p-2 mb-2">
                     <div className="space-y-3">
                         <p className="font-inter text-green-30 text-base leading-relaxed">
-                            Это прекрасно! Чтобы ваша помощь была максимально безопасной и эффективной, важно знать:
+                            Помогать - это прекрасно! Чтобы ваша помощь была максимально безопасной и эффективной, важно знать:
                         </p>
                         
                         <p className="font-inter text-green-30 text-base leading-relaxed">
@@ -85,7 +77,6 @@ const HelpSection = ({ onClose }) => {
                     </div>
                 </div>
 
-                {/* Кнопка для связи с приютами */}
                 <div className="text-center">
                     <button
                         onClick={handleContactShelters}

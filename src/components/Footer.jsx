@@ -5,7 +5,7 @@ export const Footer = () => {
     {
       id: 1,
       name: "Telegram",
-      url: "https://t.me/your_telegram",
+      url: "https://web.telegram.org/a/#1216483862",
       ariaLabel: "Свяжитесь с нами через Telegram",
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -16,7 +16,7 @@ export const Footer = () => {
     {
       id: 2,
       name: "WhatsApp",
-      url: "https://wa.me/your_whatsapp",
+      url: "https://wa.me/whatsapp",
       ariaLabel: "Свяжитесь с нами через WhatsApp",
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -27,7 +27,7 @@ export const Footer = () => {
     {
       id: 3,
       name: "VK",
-      url: "https://vk.com/your_vk",
+      url: "https://vk.com",
       ariaLabel: "Свяжитесь с нами через VK",
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

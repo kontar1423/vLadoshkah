@@ -9,7 +9,7 @@ export const Header = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false)
   const userMenuRef = useRef(null)
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isAuthenticated, user, logout, refreshUser } = useAuth() 
   const navigate = useNavigate()
   const location = useLocation()
   const forceScrollToTop = useForceScroll()
@@ -20,6 +20,23 @@ export const Header = () => {
     { id: 3, label: "Приюты", path: "/приюты" },
     { id: 4, label: "Отдать животное", path: "/отдать-животное" },
   ];
+
+  // 🔥 ДОБАВЛЯЕМ: Функция для обновления данных пользователя
+  const handleRefreshUser = async () => {
+    try {
+      await refreshUser();
+      console.log('✅ Header: User data refreshed');
+    } catch (error) {
+      console.error('❌ Header: Error refreshing user data:', error);
+    }
+  };
+
+  // 🔥 ДОБАВЛЯЕМ: Обновляем данные при монтировании компонента
+  useEffect(() => {
+    if (isAuthenticated) {
+      handleRefreshUser();
+    }
+  }, [isAuthenticated]);
 
   const handleScrollToTop = () => {
     window.scrollTo({
@@ -54,9 +71,19 @@ export const Header = () => {
     setIsUserMenuOpen(false);
   };
 
+  // 🔥 ИСПРАВЛЕННАЯ ФУНКЦИЯ: Правильное получение имени
   const getUserDisplayName = () => {
+    console.log('👤 Header: Current user data:', user);
+    
+    // Используем реальные данные пользователя из API
     if (user?.firstname && user?.lastname) {
       return `${user.firstname} ${user.lastname}`;
+    }
+    if (user?.firstname) {
+      return user.firstname;
+    }
+    if (user?.lastname) {
+      return user.lastname;
     }
     return user?.email || 'Пользователь';
   };
@@ -68,6 +95,14 @@ export const Header = () => {
       'shelter_admin': 'Админ приюта'
     };
     return roleMap[user?.role] || 'Пользователь';
+  };
+
+  // Получаем фото профиля
+  const getProfilePhoto = () => {
+    if (user?.photoUrl) {
+      return user.photoUrl;
+    }
+    return "https://c.animaapp.com/qqBlbLv1/img/person@2x.png";
   };
   
   useEffect(() => {
@@ -287,9 +322,9 @@ export const Header = () => {
               onClick={handleUserMenuToggle}
             >
               <img
-                className="w-8 h-8 md:w-10 md:h-10 rounded-full"
+                className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover"
                 alt="Аватар пользователя"
-                src="https://c.animaapp.com/qqBlbLv1/img/person@2x.png"
+                src={getProfilePhoto()}
               />
               {isAuthenticated && (
                 <div className="hidden lg:block text-left">
@@ -351,9 +386,9 @@ export const Header = () => {
                       className="flex items-center gap-3 px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer"
                     >
                       <img
-                        className="w-5 h-5"
+                        className="w-5 h-5 rounded-full object-cover"
                         alt=""
-                        src="https://c.animaapp.com/qqBlbLv1/img/person@2x.png"
+                        src={getProfilePhoto()}
                       />
                       Профиль
                     </div>
@@ -400,9 +435,9 @@ export const Header = () => {
               onClick={handleUserMenuToggle}
             >
               <img
-                className="w-6 h-6"
+                className="w-6 h-6 rounded-full object-cover"
                 alt="User menu"
-                src="https://c.animaapp.com/qqBlbLv1/img/person@2x.png"
+                src={getProfilePhoto()}
               />
             </button>
 

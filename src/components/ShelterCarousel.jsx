@@ -1,4 +1,3 @@
-    // src/components/ShelterCarousel.jsx
     import React, { useState, useEffect, useRef } from 'react';
     import MiniShelterCard from './MiniShelterCard';
 
@@ -7,7 +6,7 @@
     const [isTransitioning, setIsTransitioning] = useState(false);
     const containerRef = useRef(null);
 
-    const CARD_WIDTH = 380; // Шире чем у питомцев
+    const CARD_WIDTH = 380;
     const GAP = 10;
 
     const navigateTo = (newIndex) => {
@@ -20,7 +19,6 @@
     const nextShelter = () => navigateTo((currentIndex + 1) % shelters.length);
     const prevShelter = () => navigateTo((currentIndex - 1 + shelters.length) % shelters.length);
 
-    // Автопрокрутка
     useEffect(() => {
         if (shelters.length <= 1) return;
         const interval = setInterval(() => {
@@ -45,7 +43,6 @@
         );
     }
 
-    // Генерируем 3 карточки: слева, центр, справа
     const getCarouselItems = () => {
         const items = [];
         for (let offset = -1; offset <= 1; offset++) {
@@ -64,7 +61,6 @@
 
     return (
         <div className="relative w-full max-w-7xl mx-auto px-4">
-        {/* Контейнер карусели */}
         <div
             ref={containerRef}
             className="relative h-[520px] flex items-center justify-center overflow-visible"
@@ -74,7 +70,6 @@
             const isLeft = position === -1;
             const isRight = position === 1;
 
-            // Позиционирование
             let translateX = '0px';
             let scale = 1;
             let opacity = 1;
@@ -117,7 +112,6 @@
             })}
         </div>
 
-        {/* Кнопки навигации */}
         {shelters.length > 1 && (
             <>
             <button
@@ -152,7 +146,6 @@
             </>
         )}
 
-        {/* Индикаторы */}
         {shelters.length > 1 && (
             <div className="flex justify-center mt-1 space-x-2">
             {shelters.map((_, i) => (

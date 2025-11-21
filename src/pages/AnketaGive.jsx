@@ -139,7 +139,7 @@ const AnketaGive = () => {
         <div className="min-h-screen bg-green-95 py-8 px-[20px] md:px-[40px] lg:px-[60px]">
             <div className="max-w-4xl mx-auto">
                 {/* Заголовок */}
-                <div className="text-center mb-8 animate-fade-in">
+                <div className="text-center mb-8">
                     <h1 className="font-sf-rounded font-bold text-green-30 text-3xl md:text-4xl lg:text-5xl mb-2">
                         Анкета животного
                     </h1>

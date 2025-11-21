@@ -15,11 +15,9 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
     const [shelters, setShelters] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Синхронизируем фильтры с внешним состоянием
     useEffect(() => {
         if (isOpen) {
             loadShelters();
-            // При открытии модального окна устанавливаем текущие активные фильтры
             if (initialFilters && Object.keys(initialFilters).length > 0) {
                 const updatedFilters = {
                     type: "Все",
@@ -31,7 +29,6 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                     shelter_id: "Любой",
                 };
 
-                // Преобразуем API фильтры обратно в формат UI
                 if (initialFilters.type) {
                     updatedFilters.type = initialFilters.type;
                 }
@@ -56,7 +53,6 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
 
                 setFilters(updatedFilters);
             } else {
-                // Сбрасываем к значениям по умолчанию
                 setFilters({
                     type: "Все",
                     gender: "Любой",
@@ -178,7 +174,6 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
             age_max: 20,
             shelter_id: "Любой",
         });
-        // Вызываем внешний обработчик сброса
         if (onReset) {
             onReset();
         }
@@ -187,7 +182,6 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
     const handleSubmit = () => {
         console.log("Filters applied:", filters);
         
-        // Конвертация фильтров в формат API
         const apiFilters = {
             type: filters.type === "Все" ? "" : filters.type,
             gender: filters.gender === "Любой" ? "" : filters.gender,
@@ -198,7 +192,6 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
             shelter_id: filters.shelter_id === "Любой" ? "" : filters.shelter_id,
         };
         
-        // Очищаем пустые фильтры
         const cleanedFilters = Object.fromEntries(
             Object.entries(apiFilters).filter(([_, value]) => 
                 value !== "" && value !== null && value !== undefined
@@ -215,14 +208,12 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
 
     if (!isOpen) return null;
 
-    // Рассчитываем позиции для ползунков
     const minPosition = (filters.age_min / 20) * 100;
     const maxPosition = (filters.age_max / 20) * 100;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-green-95 rounded-[40px] w-full max-w-2xl flex flex-col items-start gap-6 p-8 relative max-h-[90vh] overflow-y-auto">
-                {/* Заголовок */}
                 <header className="flex items-center justify-between self-stretch w-full">
                     <h1 className="text-4xl font-sf-rounded font-bold text-green-30">Фильтры</h1>
                     <button 
@@ -241,14 +232,12 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                     </button>
                 </header>
 
-                {/* Форма с фильтрами */}
                 <form className="flex flex-col items-start gap-4 self-stretch w-full">
                     {filterFields.map((field, index) => {
                         if (index % 2 === 1) {
                             const prevField = filterFields[index - 1];
                             return (
                                 <div key={`row-${index}`} className="flex gap-4 self-stretch w-full">
-                                    {/* Первое поле в ряду */}
                                     <div className="flex-1 flex flex-col gap-2">
                                         <label htmlFor={prevField.id} className="text-base font-medium text-green-40">
                                             {prevField.label}
@@ -277,7 +266,6 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                                         </div>
                                     </div>
 
-                                    {/* Второе поле в ряду */}
                                     <div className="flex-1 flex flex-col gap-2">
                                         <label htmlFor={field.id} className="text-base font-medium text-green-40">
                                             {field.label}
@@ -349,7 +337,6 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                         return null;
                     })}
 
-                    {/* Ползунок для возраста */}
                     <div className="self-stretch w-full flex flex-col gap-4">
                         <label className="text-base font-medium text-green-40">
                             Возраст питомца: {filters.age_min} - {filters.age_max} лет
@@ -400,7 +387,6 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                     </div>
                 </form>
 
-                {/* Кнопки действий */}
                 <div className="flex gap-3 self-stretch justify-end pt-4">
                     <button
                         type="button"

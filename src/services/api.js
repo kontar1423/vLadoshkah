@@ -1,26 +1,34 @@
-    import axios from 'axios';
+import axios from 'axios';
 
-    const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://172.29.8.236:4000/api';
 
-    // Создаем экземпляр axios
-    const api = axios.create({
+// Создаем экземпляр axios
+const api = axios.create({
     baseURL: BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    });
+    // 🔥 ВАЖНО: Не устанавливаем Content-Type по умолчанию для FormData
+});
 
-    // Интерцептор для добавления токена
-    api.interceptors.request.use(
+// Интерцептор для добавления токена
+api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('accessToken');
         if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+            config.headers.Authorization = `Bearer ${token}`;
         }
+        
+        // 🔥 ВАЖНО: Для FormData не устанавливаем Content-Type - браузер сделает это сам
+        if (config.data instanceof FormData) {
+            // Удаляем Content-Type, чтобы браузер мог установить его с boundary
+            delete config.headers['Content-Type'];
+        } else if (!config.headers['Content-Type']) {
+            // Для JSON данных устанавливаем Content-Type по умолчанию
+            config.headers['Content-Type'] = 'application/json';
+        }
+        
         return config;
     },
     (error) => Promise.reject(error)
-    );
+);
 
     // Интерцептор для обновления токена при истечении
     api.interceptors.response.use(

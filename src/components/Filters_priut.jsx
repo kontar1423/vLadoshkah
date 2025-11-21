@@ -10,10 +10,8 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
         age_max: 20,
     });
 
-    // Синхронизируем фильтры с внешним состоянием
     useEffect(() => {
         if (isOpen) {
-            // При открытии модального окна устанавливаем текущие активные фильтры
             if (initialFilters && Object.keys(initialFilters).length > 0) {
                 const updatedFilters = {
                     type: "Все",
@@ -21,27 +19,26 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                     animal_size: "Любой",
                     health: "Любое",
                     age_min: 0,
-                    age_max: 20,
+                    age_max: 25,
                 };
 
-                // Преобразуем API фильтры обратно в формат UI
                 if (initialFilters.type) {
                     updatedFilters.type = initialFilters.type === 'dog' ? 'Собаки' : 
                                         initialFilters.type === 'cat' ? 'Кошки' : 'Все';
                 }
                 if (initialFilters.gender) {
                     updatedFilters.gender = initialFilters.gender === 'male' ? 'Мальчик' : 
-                                          initialFilters.gender === 'female' ? 'Девочка' : 'Любой';
+                                        initialFilters.gender === 'female' ? 'Девочка' : 'Любой';
                 }
                 if (initialFilters.animal_size) {
                     updatedFilters.animal_size = initialFilters.animal_size === 'small' ? 'Маленький' : 
-                                               initialFilters.animal_size === 'medium' ? 'Средний' : 
-                                               initialFilters.animal_size === 'large' ? 'Большой' : 'Любой';
+                                            initialFilters.animal_size === 'medium' ? 'Средний' : 
+                                            initialFilters.animal_size === 'large' ? 'Большой' : 'Любой';
                 }
                 if (initialFilters.health) {
                     updatedFilters.health = initialFilters.health === 'healthy' ? 'Здоровый' : 
-                                          initialFilters.health === 'needs_treatment' ? 'Требует лечения' : 
-                                          initialFilters.health === 'special_needs' ? 'Особые потребности' : 'Любое';
+                                        initialFilters.health === 'needs_treatment' ? 'Требует лечения' : 
+                                        initialFilters.health === 'special_needs' ? 'Особые потребности' : 'Любое';
                 }
                 if (initialFilters.age_min !== undefined) {
                     updatedFilters.age_min = initialFilters.age_min;
@@ -52,7 +49,6 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
 
                 setFilters(updatedFilters);
             } else {
-                // Сбрасываем к значениям по умолчанию
                 setFilters({
                     type: "Все",
                     gender: "Любой",
@@ -128,7 +124,6 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
             age_min: 0,
             age_max: 20,
         });
-        // Вызываем внешний обработчик сброса
         if (onReset) {
             onReset();
         }
@@ -136,8 +131,6 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
 
     const handleSubmit = () => {
         console.log("Filters applied:", filters);
-        
-        // Конвертация фильтров в формат API (БЕЗ shelter_id)
         const apiFilters = {
             type: filters.type === "Собаки" ? "dog" : filters.type === "Кошки" ? "cat" : "",
             gender: filters.gender === "Мальчик" ? "male" : filters.gender === "Девочка" ? "female" : "",
@@ -151,7 +144,6 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
             age_max: filters.age_max,
         };
         
-        // Очищаем пустые фильтры
         const cleanedFilters = Object.fromEntries(
             Object.entries(apiFilters).filter(([_, value]) => 
                 value !== "" && value !== null && value !== undefined
@@ -171,7 +163,6 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-green-95 rounded-[40px] w-full max-w-2xl flex flex-col items-start gap-6 p-8 relative max-h-[90vh] overflow-y-auto">
-                {/* Заголовок */}
                 <header className="flex items-center justify-between self-stretch w-full">
                     <h1 className="text-4xl font-sf-rounded font-bold text-green-30">Фильтры</h1>
                     <button 
@@ -190,14 +181,12 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                     </button>
                 </header>
 
-                {/* Форма с фильтрами */}
                 <form className="flex flex-col items-start gap-4 self-stretch w-full">
                     {filterFields.map((field, index) => {
                         if (index % 2 === 1) {
                             const prevField = filterFields[index - 1];
                             return (
                                 <div key={`row-${index}`} className="flex gap-4 self-stretch w-full">
-                                    {/* Первое поле в ряду */}
                                     <div className="flex-1 flex flex-col gap-2">
                                         <label htmlFor={prevField.id} className="text-base font-medium text-green-40">
                                             {prevField.label}
@@ -224,7 +213,6 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                                         </div>
                                     </div>
 
-                                    {/* Второе поле в ряду */}
                                     <div className="flex-1 flex flex-col gap-2">
                                         <label htmlFor={field.id} className="text-base font-medium text-green-40">
                                             {field.label}
@@ -254,7 +242,6 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                             );
                         }
 
-                        // Для нечетного количества полей - последнее поле занимает всю ширину
                         if (index === filterFields.length - 1 && index % 2 === 0) {
                             return (
                                 <div key={field.id} className="flex-1 flex flex-col gap-2 self-stretch w-full">
@@ -288,13 +275,11 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                         return null;
                     })}
 
-                    {/* Ползунок для возраста */}
                     <div className="self-stretch w-full flex flex-col gap-1">
                         <label className="text-base font-medium text-green-40">
                             Возраст питомца: {filters.age_min} - {filters.age_max} лет
                         </label>
                         <div className="relative pt-8">
-                            {/* Ползунок */}
                             <div className="relative h-2 bg-green-80 rounded-full">
                                 <input
                                     type="range"
@@ -312,8 +297,6 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                                     onChange={(e) => handleAgeChange('max', e.target.value)}
                                     className="absolute w-full h-2 opacity-0 cursor-pointer z-20"
                                 />
-                                
-                                {/* Прогресс бар */}
                                 <div 
                                     className="absolute h-2 bg-green-50 rounded-full"
                                     style={{
@@ -322,20 +305,17 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                                     }}
                                 ></div>
                                 
-                                {/* Минимальный ползунок */}
                                 <div 
                                     className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 cursor-pointer z-10"
                                     style={{ left: `${(filters.age_min / 20) * 100}%` }}
                                 ></div>
                                 
-                                {/* Максимальный ползунок */}
                                 <div 
                                     className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 cursor-pointer z-10"
                                     style={{ left: `${(filters.age_max / 20) * 100}%` }}
                                 ></div>
                             </div>
                             
-                            {/* Подписи значений */}
                             <div className="flex justify-between text-sm text-green-40 mt-2">
                                 <span>0</span>
                                 <span>20</span>
@@ -344,7 +324,6 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                     </div>
                 </form>
 
-                {/* Кнопки действий */}
                 <div className="flex gap-3 self-stretch justify-end">
                     <button
                         type="button"

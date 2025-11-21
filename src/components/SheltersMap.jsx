@@ -5,7 +5,6 @@
     import LapaIcon from '../assets/images/lapa.png'; 
     import { geocodingService } from '../services/geocodingService';
 
-    // Фикс для стандартных маркеров
     delete L.Icon.Default.prototype._getIconUrl;
     L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -13,7 +12,6 @@
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
     });
 
-    // Кастомная иконка
     const createCustomIcon = (isHighlighted = false) => {
     const size = isHighlighted ? 40 : 35;
     return L.divIcon({
@@ -56,7 +54,6 @@
     const [sheltersWithCoords, setSheltersWithCoords] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Загрузка координат для приютов
     useEffect(() => {
         const loadCoordinates = async () => {
         setLoading(true);
@@ -64,8 +61,6 @@
         const sheltersWithCoordinates = await Promise.all(
             shelters.map(async (shelter) => {
             let coordinates = null;
-            
-            // Если есть адрес - пытаемся получить реальные координаты
             if (shelter.address) {
                 try {
                 coordinates = await geocodingService.getCoordinates(
@@ -76,12 +71,10 @@
                 }
             }
             
-            // Если не удалось получить координаты по адресу, используем fallback по districtId
             if (!coordinates && shelter.districtId) {
                 coordinates = getCoordinatesByDistrict(shelter.districtId);
             }
             
-            // Если и это не сработало, используем случайные координаты в Москве
             if (!coordinates) {
                 coordinates = getFallbackCoordinates(shelter.id);
             }
@@ -100,7 +93,6 @@
         loadCoordinates();
     }, [shelters]);
 
-    // Функция для получения координат по districtId
     const getCoordinatesByDistrict = (districtId) => {
         const districtCoordinates = {
         'cao': [55.7558, 37.6176],    // Центральный
@@ -120,7 +112,7 @@
         return districtCoordinates[districtId] || null;
     };
 
-    // Fallback координаты (случайные в пределах Москвы)
+
     const getFallbackCoordinates = (shelterId) => {
         const moscowBounds = {
         lat: [55.5, 56.0],

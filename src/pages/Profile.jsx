@@ -1,122 +1,360 @@
+// pages/Profile.jsx
 import React, { useState, useEffect } from 'react'
-import profpic from '../assets/images/profpic.jpg'
+import { useNavigate } from 'react-router-dom'
 import PetCard from '../components/PetCard'
-import { useAuth } from '../context/AuthContext'
 import { animalService } from '../services/animalService'
+import { userService } from '../services/userService'
+import { favoriteService } from '../services/favoriteService'
+import { useAuth } from '../context/AuthContext'
+import { getPhotoUrl } from '../utils/photoHelpers' 
 
 const Profile = () => {
-  const { user } = useAuth();
-  const [volunteerInfo] = useState({
-    name: user?.firstname || "Пользователь",
-    status: "Подтвержденный волонтер",
-    phone: user?.phone || "+79745671234",
-    email: user?.email || "examplebigemail@mail.com",
-    gender: user?.gender === 'male' ? 'Мужской' : user?.gender === 'female' ? 'Женский' : 'Не указан',
-    bio: "Люблю собак. Заберу домой каждую.",
-    image: profpic
-  })
+  const [favoritePets, setFavoritePets] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [userData, setUserData] = useState(null)
+  const { user, updateUser, refreshUser } = useAuth()
+  const navigate = useNavigate()
 
-  const [favoritePets, setFavoritePets] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // Загрузка избранных питомцев
   useEffect(() => {
-    loadFavoritePets();
+    console.log('🔍 Profile: Component mounted or user updated');
+    console.log('📱 Profile: Current user from context:', user);
+    
+    checkAccessAndLoadData();
+  }, [user])
+
+  // 🔥 ДОБАВЛЯЕМ: Слушаем изменения в localStorage для синхронизации избранных
+  useEffect(() => {
+    const handleStorageChange = () => {
+      console.log('🔄 Profile: Storage changed, reloading favorites...');
+      loadFavoritePets();
+    };
+
+    // Слушаем изменения в localStorage
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Слушаем кастомные события (если другие компоненты их отправляют)
+    window.addEventListener('favoritesUpdated', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('favoritesUpdated', handleStorageChange);
+    };
   }, []);
 
-  const loadFavoritePets = async () => {
+  const checkAccessAndLoadData = async () => {
     try {
       setLoading(true);
       
-      // Временная реализация - получаем ID избранных из localStorage
-      const favoriteIds = JSON.parse(localStorage.getItem('favoritePets') || '[]');
+      const token = localStorage.getItem('accessToken');
+      const profileComplete = localStorage.getItem('profileComplete');
       
-      // Загружаем данные по каждому избранному питомцу
-      const petsData = [];
-      for (const petId of favoriteIds) {
-        try {
-          const pet = await animalService.getAnimalById(petId);
-          petsData.push(pet);
-        } catch (error) {
-          console.error(`Ошибка загрузки питомца ${petId}:`, error);
-        }
+      console.log('🔐 Profile: Access check - Token:', !!token, 'ProfileComplete:', profileComplete);
+      
+      if (!token) {
+        navigate('/регистрация');
+        return;
       }
+
+      if (profileComplete !== 'true') {
+        navigate('/личная-информация');
+        return;
+      }
+
+      console.log('✅ Profile: Access granted - loading data...');
+      await loadUserDataFromServer();
+      await loadFavoritePets();
       
-      setFavoritePets(petsData);
     } catch (error) {
-      console.error('Ошибка загрузки избранных питомцев:', error);
+      console.error('💥 Profile: Error in checkAccessAndLoadData:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  const loadUserDataFromServer = async () => {
+    try {
+      console.log('🔄 Profile: Loading fresh user data from server...');
+      
+      const serverUserData = await userService.getCurrentUser();
+      console.log('✅ Profile: User data loaded from server:', serverUserData);
+      
+      setUserData(serverUserData);
+      
+      if (updateUser) {
+        updateUser(serverUserData);
+        console.log('✅ Profile: AuthContext updated with fresh data');
+      }
+      
+      localStorage.setItem('user', JSON.stringify(serverUserData));
+      
+    } catch (error) {
+      console.error('❌ Profile: Error loading user data from server:', error);
+      if (user) {
+        console.log('🔄 Profile: Using context data as fallback');
+        setUserData(user);
+      }
+    }
+  }
+
+  // 🔥 ИСПРАВЛЕННАЯ ФУНКЦИЯ: Загрузка избранных питомцев
+  const loadFavoritePets = async () => {
+    try {
+      console.log('🐕 Profile: Loading favorite pets...');
+      
+      // Получаем ID избранных питомцев из localStorage
+      const favoriteIds = JSON.parse(localStorage.getItem('favoritePets') || '[]');
+      console.log('📋 Profile: Favorite pets IDs from localStorage:', favoriteIds);
+      
+      if (favoriteIds.length === 0) {
+        setFavoritePets([]);
+        return;
+      }
+      
+      // 🔥 ПАРАЛЛЕЛЬНАЯ ЗАГРУЗКА: Загружаем все питомцы одновременно для скорости
+      const petPromises = favoriteIds.map(async (petId) => {
+        try {
+          console.log(`🔄 Profile: Loading pet ${petId}...`);
+          const pet = await animalService.getAnimalById(petId);
+          console.log(`✅ Profile: Pet ${petId} loaded:`, pet?.name);
+          return pet;
+        } catch (error) {
+          console.error(`❌ Profile: Error loading pet ${petId}:`, error);
+          return null;
+        }
+      });
+      
+      const results = await Promise.all(petPromises);
+      
+      // Фильтруем только валидные питомцы (не null и с id)
+      const validPets = results.filter(pet => pet !== null && pet.id);
+      
+      console.log(`✅ Profile: Loaded ${validPets.length} favorite pets:`, 
+        validPets.map(pet => ({ id: pet.id, name: pet.name }))
+      );
+      
+      setFavoritePets(validPets);
+      
+    } catch (error) {
+      console.error('❌ Profile: Error loading favorite pets:', error);
+      setFavoritePets([]);
+    }
+  }
+
+  // 🔥 НОВАЯ ФУНКЦИЯ: Принудительное обновление избранных
+  const forceRefreshFavorites = async () => {
+    console.log('🔄 Profile: Force refreshing favorites...');
+    setLoading(true);
+    try {
+      await loadFavoritePets();
+      console.log('✅ Profile: Favorites force refreshed');
+    } catch (error) {
+      console.error('❌ Profile: Error force refreshing favorites:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const getProfilePhotoUrl = () => {
+    const currentUser = userData || user;
+    
+    if (!currentUser) {
+      console.log('📸 Profile: No user data available');
+      return null;
+    }
+
+    if (currentUser.photoUrl) {
+      const processedUrl = getPhotoUrl({ url: currentUser.photoUrl });
+      return processedUrl;
+    }
+
+    if (currentUser.photos && currentUser.photos.length > 0) {
+      const processedUrl = getPhotoUrl(currentUser.photos[0]);
+      return processedUrl;
+    }
+
+    return null;
+  }
+
+  const getVolunteerInfo = () => {
+    const currentUser = userData || user;
+    
+    if (!currentUser) {
+      return {
+        name: "Пользователь",
+        status: "Подтвержденный волонтер",
+        phone: "Не указан",
+        email: "Email не указан",
+        gender: "Не указан",
+        bio: "Заполните информацию о себе",
+        image: null
+      };
+    }
+    
+    let displayName = "Пользователь";
+    if (currentUser.firstname && currentUser.lastname) {
+      displayName = `${currentUser.firstname} ${currentUser.lastname}`;
+    } else if (currentUser.firstname) {
+      displayName = currentUser.firstname;
+    } else if (currentUser.lastname) {
+      displayName = currentUser.lastname;
+    } else if (currentUser.email) {
+      displayName = currentUser.email.split('@')[0];
+    }
+    
+    let displayGender = "Не указан";
+    if (currentUser.gender === 'male') {
+      displayGender = 'Мужской';
+    } else if (currentUser.gender === 'female') {
+      displayGender = 'Женский';
+    } else if (currentUser.gender === 'other') {
+      displayGender = 'Другое';
+    }
+    
+    const displayBio = currentUser.personalInfo || currentUser.bio || "Расскажите о себе в личной информации";
+    
+    const profileImage = getProfilePhotoUrl();
+    
+    return {
+      name: displayName,
+      status: "Подтвержденный волонтер",
+      phone: currentUser.phone || "Не указан",
+      email: currentUser.email || "Email не указан",
+      gender: displayGender,
+      bio: displayBio,
+      image: profileImage
+    };
+  }
+
+  const refreshProfile = async () => {
+    console.log('🔄 Profile: Manual refresh requested');
+    setLoading(true);
+    
+    try {
+      await loadUserDataFromServer();
+      await loadFavoritePets();
+      console.log('✅ Profile: Manual refresh completed');
+    } catch (error) {
+      console.error('❌ Profile: Manual refresh failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleEditProfile = () => {
+    console.log('📝 Profile: Navigating to edit profile');
+    navigate('/личная-информация');
+  }
+
+  const volunteerInfo = getVolunteerInfo();
 
   return (
     <div className="min-h-screen bg-green-95">
       <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-10">
+        
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Основной контент - избранные питомцы */}
+          
           <main className="flex-1">
             <section className="flex flex-col items-center gap-6 relative">
-              <header className="flex items-center gap-6 relative self-stretch">
+              <header className="flex items-center gap-6 relative self-stretch w-full">
                 <h1 className="w-fit mt-[-1.00px] font-sf-rounded font-bold text-green-20 text-2xl md:text-3xl">
-                  Мои питомцы ({favoritePets.length})
+                  Мои питомцы
                 </h1>
+                <div className="flex gap-2">
+
+                </div>
               </header>
 
               {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-40 mx-auto"></div>
-                  <p className="text-green-30 mt-4">Загрузка избранных питомцев...</p>
-                </div>
-              ) : favoritePets.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                  {favoritePets.map((pet) => (
-                    <PetCard 
-                      key={pet.id}
-                      petData={pet}
-                    />
-                  ))}
+                <div className="text-center py-12 w-full">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-50 mx-auto"></div>
+                  <p className="text-green-30 mt-4 font-inter font-medium">
+                    Загрузка данных профиля...
+                  </p>
                 </div>
               ) : (
-                <div className="text-center py-12 w-full">
-                  <div className="bg-green-90 rounded-custom p-8 max-w-md mx-auto">
-                    <svg 
-                      className="w-16 h-16 text-green-60 mx-auto mb-4"
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                    <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-2">
-                      Нет избранных питомцев
-                    </h3>
-                    <p className="font-inter text-green-20 mb-4">
-                      Добавляйте питомцев в избранное, нажимая на сердечко на карточках животных
-                    </p>
-                  </div>
-                </div>
+                <>
+                  {favoritePets.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                      {favoritePets.map((pet) => (
+                        <PetCard 
+                          key={pet.id}
+                          petData={pet}
+                          onFavoriteChange={forceRefreshFavorites} 
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 w-full">
+                      <div className="bg-green-90 rounded-custom p-8 max-w-md mx-auto">
+                        <svg 
+                          className="w-16 h-16 text-green-60 mx-auto mb-4"
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-2">
+                          Нет избранных питомцев
+                        </h3>
+                        <p className="font-inter text-green-20 mb-4">
+                          Добавляйте питомцев в избранное, нажимая на сердечко на карточках животных
+                        </p>
+                        <button
+                          onClick={() => navigate('/найти-питомца')}
+                          className="px-6 py-2 bg-green-50 text-green-100 font-sf-rounded font-semibold rounded-custom-small hover:bg-green-60 transition-all duration-200"
+                        >
+                          Найти питомцев
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </section>
           </main>
 
           {/* Боковая панель - информация о волонтере */}
-          <aside
-            className="lg:w-[340px] flex flex-col gap-6"
-            aria-label="Информация о пользователе"
-          >
+          <aside className="lg:w-[340px] flex flex-col gap-6">
+            
             {/* Фотография профиля */}
             <div className="relative bg-green-90 rounded-custom overflow-hidden">
-              <div className="relative h-124">
-                <img
-                  className="w-full h-full object-cover"
-                  alt="Фон профиля"
-                  src={volunteerInfo.image}
-                />
-                {/* Затемнение для лучшей читаемости текста */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/50"></div>
+              <div className="relative h-64">
+                {volunteerInfo.image ? (
+                  <>
+                    <img
+                      className="w-full h-full object-cover"
+                      alt="Фото профиля"
+                      src={volunteerInfo.image}
+                      onError={(e) => {
+                        console.error('❌ Profile: Image failed to load:', volunteerInfo.image);
+                        e.target.style.display = 'none';
+                        const container = e.target.parentElement;
+                        if (container) {
+                          const fallback = container.querySelector('.fallback-avatar');
+                          if (fallback) {
+                            fallback.style.display = 'flex';
+                          }
+                        }
+                      }}
+                      onLoad={() => {
+                        console.log('✅ Profile: Image loaded successfully:', volunteerInfo.image);
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/50"></div>
+                  </>
+                ) : null}
                 
-                {/* Имя поверх фотографии */}
+                {/* Заглушка */}
+                <div 
+                  className={`fallback-avatar w-full h-full bg-green-80 flex items-center justify-center ${
+                    volunteerInfo.image ? 'hidden' : 'flex'
+                  }`}
+                >
+                  <span className="text-6xl"></span>
+                </div>
+                
+                {/* Информация поверх фото */}
                 <div className="absolute bottom-6 left-6 right-6">
                   <h2 className="font-sf-rounded font-bold text-green-98 text-2xl md:text-3xl">
                     {volunteerInfo.name}
@@ -130,41 +368,35 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Блок "Личная информация" */}
-            <div className="bg-green-95 rounded-custom p-6 space-y-1">
-              <h3 className="font-sf-rounded font-bold text-green-20 text-lg mb-2">
+            {/* Личная информация */}
+            <div className="bg-green-95 rounded-custom p-6">
+              <h3 className="font-sf-rounded font-bold text-green-20 text-lg mb-4">
                 Личная информация
               </h3>
               
-              {/* Контактная информация */}
-              <div className="space-y-4">
-                <div className="inline-flex w-fit">
+              <div className="space-y-3">
+                <div className="flex flex-col gap-1">
+                  <span className="text-green-40 font-inter font-medium text-sm">Телефон</span>
                   <div className="px-4 py-3 bg-green-98 rounded-custom-small border-2 border-green-30">
-                    <a
-                      href={`tel:${volunteerInfo.phone}`}
-                      className="relative w-fit font-inter font-regular text-green-20 text-base hover:text-green-30 transition-colors whitespace-nowrap"
-                      aria-label={`Позвонить по номеру ${volunteerInfo.phone}`}
-                    >
+                    <span className="font-inter font-regular text-green-20 text-base">
                       {volunteerInfo.phone}
-                    </a>
+                    </span>
                   </div>
                 </div>
 
-                <div className="inline-flex w-fit">
+                <div className="flex flex-col gap-1">
+                  <span className="text-green-40 font-inter font-medium text-sm">Email</span>
                   <div className="px-4 py-3 bg-green-98 rounded-custom-small border-2 border-green-30">
-                    <a
-                      href={`mailto:${volunteerInfo.email}`}
-                      className="relative w-fit font-inter font-regular text-green-20 text-base hover:text-green-30 transition-colors whitespace-nowrap"
-                      aria-label={`Написать на email ${volunteerInfo.email}`}
-                    >
+                    <span className="font-inter font-regular text-green-20 text-base">
                       {volunteerInfo.email}
-                    </a>
+                    </span>
                   </div>
                 </div>
 
-                <div className="inline-flex w-fit">
+                <div className="flex flex-col gap-1">
+                  <span className="text-green-40 font-inter font-medium text-sm">Пол</span>
                   <div className="px-4 py-3 bg-green-98 rounded-custom-small border-2 border-green-30">
-                    <span className="relative w-fit font-inter font-regular text-green-20 text-base whitespace-nowrap">
+                    <span className="font-inter font-regular text-green-20 text-base">
                       {volunteerInfo.gender}
                     </span>
                   </div>
@@ -172,7 +404,7 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Блок "О себе" */}
+            {/* О себе */}
             <div className="bg-green-90 rounded-custom p-6">
               <h3 className="font-sf-rounded font-bold text-green-20 text-lg mb-4">
                 О себе
@@ -182,19 +414,14 @@ const Profile = () => {
               </p>
             </div>
 
-            {/* Блок для представителей приюта */}
-            <div className="bg-green-95 rounded-custom p-1">
-              <p className="font-inter font-regular text-green-20 text-sm leading-relaxed text-left">
-                Вы являетесь представителем приюта?{' '}
-                <a 
-                  href="mailto:admin@ladoshkahsos.ru?subject=Заявка на доступ администратора&body=Здравствуйте! Я хочу получить доступ к функциям администратора для приюта."
-                  className="underline hover:text-green-30 transition-colors"
-                  aria-label="Отправить заявку для доступа к функциям администратора"
-                >
-                Отправьте  заявку
-                </a>
-                {' '}для доступа к функциям администратора
-              </p>
+            {/* Кнопка редактирования */}
+            <div className="text-center">
+              <button
+                onClick={handleEditProfile}
+                className="px-6 py-3 bg-green-50 text-green-100 font-sf-rounded font-semibold text-base rounded-custom-small hover:bg-green-60 transition-all duration-200 w-full"
+              >
+                Редактировать профиль
+              </button>
             </div>
           </aside>
         </div>
@@ -203,4 +430,4 @@ const Profile = () => {
   )
 }
 
-export default Profile
+export default Profile;

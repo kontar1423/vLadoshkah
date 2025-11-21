@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -7,23 +7,45 @@ const Login = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, isAuthenticated } = useAuth()
   const navigate = useNavigate()
+
+  // Если пользователь уже аутентифицирован, перенаправляем
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('✅ Login: User already authenticated, redirecting to profile');
+      navigate('/профиль');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Валидация полей
+    if (!email.trim() || !password.trim()) {
+      setError('Пожалуйста, заполните все поля');
+      return;
+    }
+
     setError('')
     setLoading(true)
 
     try {
+      console.log('🔄 Login: Starting submission...')
+      
       const result = await login(email, password)
+      console.log('🔍 Login: Auth context result:', result)
+      
       if (result.success) {
-        navigate('/профиль')
+        console.log('✅ Login: Successful, redirect will happen via useEffect');
+        // Навигация произойдет автоматически через useEffect выше
       } else {
+        console.error('❌ Login: Failed with error:', result.error)
         setError(result.error)
       }
     } catch (error) {
-      setError('Произошла ошибка при входе')
+      console.error('❌ Login: Unexpected error:', error)
+      setError('Произошла непредвиденная ошибка при входе')
     } finally {
       setLoading(false)
     }
@@ -32,12 +54,12 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-green-95 flex items-center justify-center px-[20px] md:px-[40px] lg:px-[60px] py-10">
       <div className="w-full max-w-4xl">
-          <h1 className="text-green-30 font-sf-rounded font-bold text-3xl md:text-4xl lg:text-5xl mb-2 text-center">
-            Войти
-          </h1>
-          <p className="text-green-40 font-inter font-medium text-base md:text-lg mb-8 text-center">
-            Войдите в свой аккаунт
-          </p>
+        <h1 className="text-green-30 font-sf-rounded font-bold text-3xl md:text-4xl lg:text-5xl mb-2 text-center">
+          Войти
+        </h1>
+        <p className="text-green-40 font-inter font-medium text-base md:text-lg mb-8 text-center">
+          Войдите в свой аккаунт
+        </p>
 
         {error && (
           <div className="animate-fade-up mb-6 p-4 bg-red-90 border border-red-40 rounded-custom-small">

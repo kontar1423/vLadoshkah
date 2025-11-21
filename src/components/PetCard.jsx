@@ -1,6 +1,8 @@
+    // components/PetCard.jsx
     import React, { useState, useEffect } from "react";
     import { Link } from 'react-router-dom';
     import { useAuth } from '../context/AuthContext';
+    import { favoriteService } from '../services/favoriteService';
 
     const PetCard = ({ petData }) => {
     const {
@@ -17,6 +19,17 @@
 
     const { user } = useAuth();
     const [isFavorite, setIsFavorite] = useState(false);
+    const [favoriteLoading, setFavoriteLoading] = useState(false);
+
+    // 🔥 ДОБАВЬТЕ ЭТОТ КОД ДЛЯ ДИАГНОСТИКИ
+    console.log('🐛 PetCard Debug:', {
+        petId: id,
+        user: user,
+        hasUser: !!user,
+        userId: user?.id,
+        isAuthenticated: !!user,
+        localStorageUser: JSON.parse(localStorage.getItem('user') || '{}')
+    });
 
     const UPLOADS_BASE_URL = import.meta.env.VITE_UPLOADS_BASE_URL || 'http://172.29.8.236:9000/uploads';
 
@@ -42,46 +55,105 @@
         return null;
     };
 
+    // 🔥 УЛУЧШЕННАЯ ФУНКЦИЯ: Работа с API избранных
     const handleFavoriteClick = async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!user) {
+        
+        // 🔥 ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА ЧЕРЕЗ LOCALSTORAGE
+        const token = localStorage.getItem('accessToken');
+        const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+        
+        console.log('❤️ Favorite Click Debug:', {
+        contextUser: user,
+        storedUser: storedUser,
+        hasToken: !!token,
+        petId: id
+        });
+
+        if (!user && !storedUser) {
         alert('Пожалуйста, войдите в систему чтобы добавить питомца в избранное');
         return;
         }
+
+        // 🔥 ИСПОЛЬЗУЕМ ПОЛЬЗОВАТЕЛЯ ИЗ КОНТЕКСТА ИЛИ LOCALSTORAGE
+        const currentUser = user || storedUser;
+
+        if (favoriteLoading) return;
+
+        setFavoriteLoading(true);
+        
         try {
         if (isFavorite) {
-            await removeFromFavorites(id);
+            // Удаляем из избранного
+            await favoriteService.removeFavorite(currentUser.id, id);
             setIsFavorite(false);
+            console.log('✅ PetCard: Removed from favorites');
+            
+            // Обновляем localStorage как fallback
+            const favorites = JSON.parse(localStorage.getItem('favoritePets') || '[]');
+            const updatedFavorites = favorites.filter(favId => favId !== id);
+            localStorage.setItem('favoritePets', JSON.stringify(updatedFavorites));
         } else {
-            await addToFavorites(id);
+            // Добавляем в избранное
+            await favoriteService.addFavorite(currentUser.id, id);
             setIsFavorite(true);
+            console.log('✅ PetCard: Added to favorites');
+            
+            // Обновляем localStorage как fallback
+            const favorites = JSON.parse(localStorage.getItem('favoritePets') || '[]');
+            if (!favorites.includes(id)) {
+            favorites.push(id);
+            localStorage.setItem('favoritePets', JSON.stringify(favorites));
+            }
         }
+
+        window.dispatchEvent(new Event('favoritesUpdated'));
+        console.log('📢 PetCard: Sent favoritesUpdated event');
+
         } catch (error) {
-        console.error('Ошибка при работе с избранным:', error);
+        console.error('❌ PetCard: Error updating favorite:', error);
         alert('Не удалось обновить избранное');
+        } finally {
+        setFavoriteLoading(false);
         }
     };
 
-    const addToFavorites = async (petId) => {
-        const favorites = JSON.parse(localStorage.getItem('favoritePets') || '[]');
-        if (!favorites.includes(petId)) {
-        favorites.push(petId);
-        localStorage.setItem('favoritePets', JSON.stringify(favorites));
-        }
-    };
-
-    const removeFromFavorites = async (petId) => {
-        const favorites = JSON.parse(localStorage.getItem('favoritePets') || '[]');
-        const updatedFavorites = favorites.filter(favId => favId !== petId);
-        localStorage.setItem('favoritePets', JSON.stringify(updatedFavorites));
-    };
-
+    // 🔥 ИСПРАВЛЕННЫЙ useEffect: Проверяем избранное через API
     useEffect(() => {
-        if (user && id) {
-        const favorites = JSON.parse(localStorage.getItem('favoritePets') || '[]');
-        setIsFavorite(favorites.includes(id));
+        const checkFavoriteStatus = async () => {
+        // 🔥 ИСПОЛЬЗУЕМ ПОЛЬЗОВАТЕЛЯ ИЗ КОНТЕКСТА ИЛИ LOCALSTORAGE
+        const currentUser = user || JSON.parse(localStorage.getItem('user') || 'null');
+        
+        if (currentUser && currentUser.id && id) {
+            try {
+            console.log('🔍 Checking favorite status for:', {
+                userId: currentUser.id,
+                petId: id
+            });
+            
+            const result = await favoriteService.checkFavorite(currentUser.id, id);
+            setIsFavorite(result.isFavorite);
+            
+            // Синхронизируем с localStorage
+            const favorites = JSON.parse(localStorage.getItem('favoritePets') || '[]');
+            if (result.isFavorite && !favorites.includes(id)) {
+                favorites.push(id);
+                localStorage.setItem('favoritePets', JSON.stringify(favorites));
+            } else if (!result.isFavorite && favorites.includes(id)) {
+                const updatedFavorites = favorites.filter(favId => favId !== id);
+                localStorage.setItem('favoritePets', JSON.stringify(updatedFavorites));
+            }
+            } catch (error) {
+            console.error('❌ PetCard: Error checking favorite status:', error);
+            // Fallback на localStorage
+            const favorites = JSON.parse(localStorage.getItem('favoritePets') || '[]');
+            setIsFavorite(favorites.includes(id));
+            }
         }
+        };
+
+        checkFavoriteStatus();
     }, [user, id]);
 
     const mainPhoto = photos.length > 0 ? photos[0] : null;
@@ -92,7 +164,6 @@
         className="flex flex-col w-full max-w-[320px] h-[420px] bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl"
         aria-label={`Карточка питомца ${name}`}
         >
-        {/* Квадратный фиксированный контейнер для фото */}
         <div className="relative w-full aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden">
             {photoUrl ? (
             <>
@@ -106,13 +177,12 @@
                     if (fallback) fallback.style.display = 'flex';
                 }}
                 />
-                {/* Fallback — тоже квадратный */}
                 <div 
                 className="hidden w-full h-full bg-gradient-to-br from-green-70 to-green-60 items-center justify-center flex-col p-4 text-center"
                 >
                 <span className="text-green-98 font-inter mb-1">{name}</span>
                 <span className="text-green-95 font-inter text-sm">
-                    {type === 'dog' ? '🐕 Собака' : type === 'cat' ? '🐈 Кошка' : '🐾 Питомец'}
+                    {type === 'dog' ? ' Собака' : type === 'cat' ? ' Кошка' : ' Питомец'}
                 </span>
                 {color && (
                     <span className="text-green-95 font-inter text-xs mt-1">
@@ -126,7 +196,7 @@
             <div className="w-full h-full bg-gradient-to-br from-green-70 to-green-60 flex items-center justify-center flex-col p-4 text-center">
                 <span className="text-green-98 font-inter mb-1">{name}</span>
                 <span className="text-green-95 font-inter text-sm">
-                {type === 'dog' ? '🐕 Собака' : type === 'cat' ? '🐈 Кошка' : '🐾 Питомец'}
+                {type === 'dog' ? ' Собака' : type === 'cat' ? ' Кошка' : ' Питомец'}
                 </span>
                 {color && (
                 <span className="text-green-95 font-inter text-xs mt-1">
@@ -137,7 +207,6 @@
             )}
         </div>
 
-        {/* Информация о питомце */}
         <div className="flex items-center gap-2 w-full px-4 relative -mt-6">
             <div className="px-3 py-1 bg-green-90 rounded-full border-2 border-green-30 shadow-sm">
             <span className="font-inter text-green-30 text-sm md:text-base">
@@ -156,7 +225,6 @@
             </div>
         </div>
 
-        {/* Доп. информация с фиксированной высотой */}
         <div className="flex-1 px-4 py-4 min-h-[72px] flex flex-col justify-start">
             {personality && (
             <p className="text-green-40 text-xs font-inter line-clamp-3 mb-1">
@@ -170,7 +238,6 @@
             )}
         </div>
 
-        {/* Кнопки */}
         <div className="flex w-full items-center gap-2 px-4 pb-4 pt-1">
             <Link
             to={`/питомец/${id}`}
@@ -180,21 +247,26 @@
             </Link>
             <button
             onClick={handleFavoriteClick}
+            disabled={favoriteLoading}
             className={`flex w-8 h-8 items-center justify-center rounded-custom-small transition-colors shadow-sm ${
                 isFavorite 
                 ? 'bg-red-50 text-red-300 hover:bg-red-100' 
                 : 'bg-green-60 text-green-98 hover:bg-green-50'
-            }`}
+            } ${favoriteLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             aria-label={isFavorite ? "Удалить из избранного" : "Добавить в избранное"}
             >
-            <svg 
+            {favoriteLoading ? (
+                <div className="w-4 h-4 border-2 border-green-98 border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+                <svg 
                 className={`w-4 h-4 ${isFavorite ? 'fill-current' : 'stroke-current'}`}
                 fill={isFavorite ? "currentColor" : "none"}
                 strokeWidth={isFavorite ? 0 : 2}
                 viewBox="0 0 24 24"
-            >
+                >
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
+                </svg>
+            )}
             </button>
         </div>
         </article>

@@ -1,4 +1,3 @@
-    // src/components/PetCarousel.jsx
     import React, { useState, useEffect, useRef } from 'react';
     import PetCard from './PetCard';
 
@@ -20,7 +19,6 @@
     const nextPet = () => navigateTo((currentIndex + 1) % pets.length);
     const prevPet = () => navigateTo((currentIndex - 1 + pets.length) % pets.length);
 
-    // Автопрокрутка
     useEffect(() => {
         if (pets.length <= 1) return;
         const interval = setInterval(() => {
@@ -60,7 +58,6 @@
 
     return (
         <div className="relative w-full max-w-6xl mx-auto px-4">
-        {/* Контейнер карусели */}
         <div
             ref={containerRef}
             className="relative h-[460px] flex items-center justify-center overflow-visible"
@@ -70,7 +67,6 @@
             const isLeft = position === -1;
             const isRight = position === 1;
 
-            // Позиционирование с учетом плавных переходов
             let translateX = '0px';
             let scale = 1;
             let opacity = 1;
@@ -113,7 +109,6 @@
             })}
         </div>
 
-        {/* Кнопки навигации - вынесены за пределы контейнера карточек */}
         {pets.length > 1 && (
             <>
             <button
@@ -148,7 +143,6 @@
             </>
         )}
 
-        {/* Индикаторы */}
         {pets.length > 1 && (
             <div className="flex justify-center mt-6 space-x-2">
             {pets.map((_, i) => (
