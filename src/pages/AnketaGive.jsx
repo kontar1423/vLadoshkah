@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { applicationService } from '../services/applicationService';
 
 const AnketaGive = () => {
     const location = useLocation();
@@ -8,34 +9,33 @@ const AnketaGive = () => {
 
     const [formData, setFormData] = useState({
         // Основная информация
-        petName: '',
-        petSpecies: '',
-        petBreed: '',
-        petCharacter: '',
-        petGender: '',
-        petDate: '',
+        name: '',
+        species: '',
+        breed: '',
+        character: '',
+        gender: '',
+        birth_date: '',
         
         // Медицинские данные
-        vaccinationStatus: '',
-        healthStatus: '',
-        specialNeeds: '',
+        vaccination_status: '',
+        health_status: '',
+        special_needs: '',
         
         // Характер и история
-        petHistory: '',
-        
-        
+        history: '',
     });
 
     const [petPhotos, setPetPhotos] = useState([]);
     const [isFormValid, setIsFormValid] = useState(false);
     const [touchedFields, setTouchedFields] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Валидация формы
     useEffect(() => {
         const requiredFields = [
-            'petName',
-            'petSpecies', 
-            'petGender'
+            'name',
+            'species', 
+            'gender'
         ];
 
         const isAllRequiredFieldsFilled = requiredFields.every(field => 
@@ -54,7 +54,6 @@ const AnketaGive = () => {
             [name]: value
         }));
 
-        // Отмечаем поле как "тронутое" для показа ошибок
         setTouchedFields(prev => ({
             ...prev,
             [name]: true
@@ -94,14 +93,6 @@ const AnketaGive = () => {
         });
     };
 
-    const isFieldValid = (fieldName) => {
-        const requiredFields = ['petName', 'petSpecies', 'petGender'];
-        if (requiredFields.includes(fieldName)) {
-            return formData[fieldName] && formData[fieldName].trim() !== '';
-        }
-        return true;
-    };
-
     const getFieldError = (fieldName) => {
         if (!touchedFields[fieldName]) return null;
         
@@ -112,12 +103,42 @@ const AnketaGive = () => {
         return null;
     };
 
-    const handleSubmit = (e) => {
+    const prepareFormDataForBackend = () => {
+        const formDataToSend = new FormData();
+        
+        // Добавляем основные поля питомца
+        Object.keys(formData).forEach(key => {
+            if (formData[key]) {
+                formDataToSend.append(key, formData[key]);
+            }
+        });
+
+        // Добавляем опциональные поля заявки
+        if (shelterId) {
+            formDataToSend.append('shelter_id', shelterId);
+        }
+        
+        // Если description не указан, создаем из истории/нужд
+        if (!formData.description) {
+            const description = `Питомец для отдачи: ${formData.name}. ${formData.history || ''} ${formData.special_needs || ''}`.trim();
+            if (description) {
+                formDataToSend.append('description', description.substring(0, 5000));
+            }
+        }
+
+        // Добавляем фотографии
+        petPhotos.forEach((photo, index) => {
+            formDataToSend.append('photo', photo.file);
+        });
+
+        return formDataToSend;
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
         if (!isFormValid) {
-            // Помечаем все обязательные поля как "тронутые" для показа ошибок
-            const requiredFields = ['petName', 'petSpecies', 'petGender', 'ownerName', 'ownerPhone'];
+            const requiredFields = ['name', 'species', 'gender'];
             const newTouchedFields = { ...touchedFields };
             requiredFields.forEach(field => {
                 newTouchedFields[field] = true;
@@ -128,11 +149,32 @@ const AnketaGive = () => {
             return;
         }
 
-        // Здесь будет логика отправки данных
-        console.log('Данные анкеты:', formData);
-        console.log('Фотографии:', petPhotos);
-        alert('Анкета успешно отправлена!');
-        navigate('/приюты');
+        setIsSubmitting(true);
+
+        try {
+            const formDataToSend = prepareFormDataForBackend();
+            
+            // Отправляем данные в бэкенд через новый эндпоинт
+            const response = await applicationService.createGiveApplication(formDataToSend);
+
+            console.log('Заявка на отдачу успешно создана:', response.data);
+            alert('Анкета успешно отправлена! Мы свяжемся с вами в ближайшее время.');
+            navigate('/приюты');
+            
+        } catch (error) {
+            console.error('Ошибка при отправке анкеты:', error);
+            
+            if (error.response?.status === 401) {
+                alert('Необходима авторизация. Пожалуйста, войдите в систему.');
+                navigate('/войти');
+            } else if (error.response?.data?.message) {
+                alert(`Ошибка: ${error.response.data.message}`);
+            } else {
+                alert('Произошла ошибка при отправке анкеты. Пожалуйста, попробуйте еще раз.');
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -162,42 +204,42 @@ const AnketaGive = () => {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label htmlFor="petName" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
+                                <label htmlFor="name" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
                                     Кличка животного *
                                 </label>
                                 <input
                                     type="text"
-                                    id="petName"
-                                    name="petName"
-                                    value={formData.petName}
+                                    id="name"
+                                    name="name"
+                                    value={formData.name}
                                     onChange={handleChange}
                                     onBlur={handleBlur}
                                     required
                                     className={`w-full px-4 py-3 bg-green-98 border-2 rounded-custom-small text-green-20 font-sf-rounded placeholder-green-40 focus:outline-none transition-colors ${
-                                        getFieldError('petName') 
+                                        getFieldError('name') 
                                             ? 'border-red-500 focus:border-red-500' 
                                             : 'border-green-40 focus:border-green-50'
                                     }`}
                                     placeholder="Введите кличку"
                                 />
-                                {getFieldError('petName') && (
-                                    <p className="text-red-500 text-xs mt-1">{getFieldError('petName')}</p>
+                                {getFieldError('name') && (
+                                    <p className="text-red-500 text-xs mt-1">{getFieldError('name')}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label htmlFor="petSpecies" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
+                                <label htmlFor="species" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
                                     Вид животного *
                                 </label>
                                 <select
-                                    id="petSpecies"
-                                    name="petSpecies"
-                                    value={formData.petSpecies}
+                                    id="species"
+                                    name="species"
+                                    value={formData.species}
                                     onChange={handleChange}
                                     onBlur={handleBlur}
                                     required
                                     className={`w-full px-4 py-3 bg-green-98 border-2 rounded-custom-small text-green-40 font-sf-rounded focus:outline-none transition-colors ${
-                                        getFieldError('petSpecies') 
+                                        getFieldError('species') 
                                             ? 'border-red-500 focus:border-red-500' 
                                             : 'border-green-40 focus:border-green-50'
                                     }`}
@@ -207,20 +249,20 @@ const AnketaGive = () => {
                                     <option value="dog">Собака</option>
                                     <option value="other">Другое</option>
                                 </select>
-                                {getFieldError('petSpecies') && (
-                                    <p className="text-red-500 text-xs mt-1">{getFieldError('petSpecies')}</p>
+                                {getFieldError('species') && (
+                                    <p className="text-red-500 text-xs mt-1">{getFieldError('species')}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label htmlFor="petBreed" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
+                                <label htmlFor="breed" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
                                     Порода
                                 </label>
                                 <input
                                     type="text"
-                                    id="petBreed"
-                                    name="petBreed"
-                                    value={formData.petBreed}
+                                    id="breed"
+                                    name="breed"
+                                    value={formData.breed}
                                     onChange={handleChange}
                                     className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-40 font-sf-rounded placeholder-green-40 focus:border-green-50 focus:outline-none transition-colors"
                                     placeholder="Например: дворняжка"
@@ -228,28 +270,28 @@ const AnketaGive = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="petDate" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
+                                <label htmlFor="birth_date" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
                                     Дата рождения 
                                 </label>
                                 <input
                                     type="date"
-                                    id="petDate"
-                                    name="petDate"
-                                    value={formData.petDate}
+                                    id="birth_date"
+                                    name="birth_date"
+                                    value={formData.birth_date}
                                     onChange={handleChange}
                                     className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-40 font-sf-rounded focus:border-green-50 focus:outline-none transition-colors"
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="petCharacter" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
+                                <label htmlFor="character" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
                                     Характер
                                 </label>
                                 <input
                                     type="text"
-                                    id="petCharacter"
-                                    name="petCharacter"
-                                    value={formData.petCharacter}
+                                    id="character"
+                                    name="character"
+                                    value={formData.character}
                                     onChange={handleChange}
                                     className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-40 font-sf-rounded placeholder-green-40 focus:border-green-50 focus:outline-none transition-colors"
                                     placeholder="Например: ласковый"
@@ -257,18 +299,18 @@ const AnketaGive = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="petGender" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
+                                <label htmlFor="gender" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
                                     Пол *
                                 </label>
                                 <select
-                                    id="petGender"
-                                    name="petGender"
-                                    value={formData.petGender}
+                                    id="gender"
+                                    name="gender"
+                                    value={formData.gender}
                                     onChange={handleChange}
                                     onBlur={handleBlur}
                                     required
                                     className={`w-full px-4 py-3 bg-green-98 border-2 rounded-custom-small text-green-40 font-sf-rounded focus:outline-none transition-colors ${
-                                        getFieldError('petGender') 
+                                        getFieldError('gender') 
                                             ? 'border-red-500 focus:border-red-500' 
                                             : 'border-green-40 focus:border-green-50'
                                     }`}
@@ -277,8 +319,8 @@ const AnketaGive = () => {
                                     <option value="male">Мужской</option>
                                     <option value="female">Женский</option>
                                 </select>
-                                {getFieldError('petGender') && (
-                                    <p className="text-red-500 text-xs mt-1">{getFieldError('petGender')}</p>
+                                {getFieldError('gender') && (
+                                    <p className="text-red-500 text-xs mt-1">{getFieldError('gender')}</p>
                                 )}
                             </div>
                         </div>
@@ -384,13 +426,13 @@ const AnketaGive = () => {
                         
                         <div className="space-y-6">
                             <div>
-                                <label htmlFor="vaccinationStatus" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
+                                <label htmlFor="vaccination_status" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
                                     Статус вакцинации
                                 </label>
                                 <select
-                                    id="vaccinationStatus"
-                                    name="vaccinationStatus"
-                                    value={formData.vaccinationStatus}
+                                    id="vaccination_status"
+                                    name="vaccination_status"
+                                    value={formData.vaccination_status}
                                     onChange={handleChange}
                                     className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-40 font-sf-rounded focus:border-green-50 focus:outline-none transition-colors"
                                 >
@@ -403,13 +445,13 @@ const AnketaGive = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="healthStatus" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
+                                <label htmlFor="health_status" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
                                     Состояние здоровья
                                 </label>
                                 <textarea
-                                    id="healthStatus"
-                                    name="healthStatus"
-                                    value={formData.healthStatus}
+                                    id="health_status"
+                                    name="health_status"
+                                    value={formData.health_status}
                                     onChange={handleChange}
                                     rows="3"
                                     className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 font-sf-rounded placeholder-green-40 focus:border-green-50 focus:outline-none transition-colors resize-none"
@@ -418,13 +460,13 @@ const AnketaGive = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="specialNeeds" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
+                                <label htmlFor="special_needs" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
                                     Особые потребности
                                 </label>
                                 <textarea
-                                    id="specialNeeds"
-                                    name="specialNeeds"
-                                    value={formData.specialNeeds}
+                                    id="special_needs"
+                                    name="special_needs"
+                                    value={formData.special_needs}
                                     onChange={handleChange}
                                     rows="2"
                                     className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 font-sf-rounded placeholder-green-40 focus:border-green-50 focus:outline-none transition-colors resize-none"
@@ -437,18 +479,15 @@ const AnketaGive = () => {
                     {/* Характер и история */}
                     <div className="bg-green-95 rounded-custom p-6 animate-fade-up" style={{ animationDelay: '0.3s' }}>
                         <h2 className="font-sf-rounded font-bold text-green-30 text-2xl mb-6">
-                            Характер и история
+                            История животного
                         </h2>
                         
                         <div className="space-y-6">
                             <div>
-                                <label htmlFor="petHistory" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
-                                    История животного
-                                </label>
                                 <textarea
-                                    id="petHistory"
-                                    name="petHistory"
-                                    value={formData.petHistory}
+                                    id="history"
+                                    name="history"
+                                    value={formData.history}
                                     onChange={handleChange}
                                     rows="3"
                                     className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 font-sf-rounded placeholder-green-40 focus:border-green-50 focus:outline-none transition-colors resize-none"
@@ -458,27 +497,26 @@ const AnketaGive = () => {
                         </div>
                     </div>
 
-                    
-
                     {/* Кнопки действий */}
                     <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6 animate-fade-up" style={{ animationDelay: '0.5s' }}>
                         <button
                             type="button"
                             onClick={() => navigate(-1)}
-                            className="px-8 py-4 bg-green-80 text-green-40 font-sf-rounded font-semibold text-base rounded-custom-small hover:bg-green-70 transition-colors"
+                            disabled={isSubmitting}
+                            className="px-8 py-4 bg-green-80 text-green-40 font-sf-rounded font-semibold text-base rounded-custom-small hover:bg-green-70 transition-colors disabled:opacity-50"
                         >
                             Назад
                         </button>
                         <button
                             type="submit"
-                            disabled={!isFormValid}
+                            disabled={!isFormValid || isSubmitting}
                             className={`px-8 py-4 font-sf-rounded font-semibold text-base rounded-custom-small transition-all duration-200 ${
-                                isFormValid
+                                isFormValid && !isSubmitting
                                     ? 'bg-green-50 text-green-100 hover:bg-green-60 active:bg-green-40 shadow-lg hover:shadow-xl cursor-pointer'
                                     : 'bg-green-80 text-green-60 cursor-not-allowed'
                             }`}
                         >
-                            {isFormValid ? 'Отправить анкету' : 'Заполните все обязательные поля'}
+                            {isSubmitting ? 'Отправка...' : isFormValid ? 'Отправить анкету' : 'Заполните все обязательные поля'}
                         </button>
                     </div>
                 </form>

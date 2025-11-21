@@ -1,40 +1,121 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import PetCard from '../components/PetCard';
 import { animalService } from '../services/animalService';
 import { shelterService } from '../services/shelterService';
+import { applicationService } from '../services/applicationService';
+import AdoptionConfirmationModal from '../components/AdoptionConfirmationModal';
 
 const PetProfile = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [currentPet, setCurrentPet] = useState(null);
     const [shelterData, setShelterData] = useState(null);
     const [similarPets, setSimilarPets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    
+    // Состояния для заявки на усыновление
+    const [isApplied, setIsApplied] = useState(false);
+    const [isLoadingApplication, setIsLoadingApplication] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [checkingApplicationStatus, setCheckingApplicationStatus] = useState(true);
 
-    // Используем тот же базовый URL что и в PetCard
     const UPLOADS_BASE_URL = import.meta.env.VITE_UPLOADS_BASE_URL || 'http://172.29.8.236:9000';
 
-    // Унифицированная функция для получения URL фото (как в PetCard)
+    // Проверяем статус заявки при загрузке компонента
+    useEffect(() => {
+        checkApplicationStatus();
+    }, [id]);
+
+    const checkApplicationStatus = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                setIsApplied(false);
+                return;
+            }
+
+            const applications = await applicationService.getUserApplications();
+            const hasApplied = applications.some(app => 
+                app.animal_id === parseInt(id) && app.status !== 'rejected'
+            );
+            setIsApplied(hasApplied);
+        } catch (error) {
+            console.error('Error checking application status:', error);
+            setIsApplied(false);
+        } finally {
+            setCheckingApplicationStatus(false);
+        }
+    };
+
+    const handleAdoptClick = () => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            alert('Пожалуйста, войдите в систему чтобы подать заявку на усыновление');
+            navigate('/войти');
+            return;
+        }
+
+        setIsModalOpen(true);
+    };
+
+    const handleConfirmAdoption = async () => {
+        setIsLoadingApplication(true);
+        try {
+            const applicationData = {
+                animal_id: parseInt(id),
+                shelter_id: currentPet.shelter_id,
+                status: 'pending',
+                description: `Заявка на усыновление питомца ${currentPet.name}`
+            };
+
+            await applicationService.createApplication(applicationData);
+            setIsApplied(true);
+            setIsModalOpen(false);
+            alert('Заявка успешно отправлена! Приют свяжется с вами в ближайшее время.');
+            
+        } catch (error) {
+            console.error('Error creating adoption application:', error);
+            
+            if (error.response?.status === 401) {
+                alert('Сессия истекла. Пожалуйста, войдите снова.');
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                navigate('/войти');
+            } else if (error.response?.status === 409) {
+                alert('Вы уже подавали заявку на этого питомца');
+                setIsApplied(true);
+            } else {
+                alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.');
+            }
+        } finally {
+            setIsLoadingApplication(false);
+        }
+    };
+
+    const handleCloseModal = () => {
+        if (!isLoadingApplication) {
+            setIsModalOpen(false);
+        }
+    };
+
+    // Остальной код компонента остается без изменений...
     const getPhotoUrl = (photo) => {
         if (!photo) return null;
         
         console.log('Processing photo:', photo);
         
-        // Если photo - строка с URL
         if (typeof photo === 'string') {
             if (photo.startsWith('http')) return photo;
-            // Добавляем базовый URL если нужно
             return `${UPLOADS_BASE_URL}${photo.startsWith('/') ? '' : '/'}${photo}`;
         }
         
-        // Если photo - объект с полем url
         if (photo.url) {
             if (photo.url.startsWith('http')) return photo.url;
             return `${UPLOADS_BASE_URL}${photo.url.startsWith('/') ? '' : '/'}${photo.url}`;
         }
         
-        // Если photo - объект с полем object_name
         if (photo.object_name) {
             return `${UPLOADS_BASE_URL}/${photo.object_name}`;
         }
@@ -42,7 +123,6 @@ const PetProfile = () => {
         return null;
     };
 
-    // Загрузка данных питомца и приюта
     useEffect(() => {
         const loadPetData = async () => {
             try {
@@ -51,16 +131,13 @@ const PetProfile = () => {
 
                 console.log('Loading pet with ID:', id);
 
-                // Загружаем данные питомца
                 const petData = await animalService.getAnimalById(id);
                 console.log('Pet data from API:', petData);
                 
-                // Нормализуем данные питомца с правильной обработкой фото
                 const normalizedPet = normalizePetData(petData);
                 console.log('Normalized pet data:', normalizedPet);
                 setCurrentPet(normalizedPet);
 
-                // Загружаем данные приюта
                 if (normalizedPet.shelter_id) {
                     try {
                         const shelter = await shelterService.getShelterById(normalizedPet.shelter_id);
@@ -68,7 +145,6 @@ const PetProfile = () => {
                         setShelterData(shelter);
                     } catch (shelterError) {
                         console.warn('Error loading shelter data:', shelterError);
-                        // Если не удалось загрузить приют, используем данные из животного
                         setShelterData({
                             name: normalizedPet.shelter_name,
                             address: normalizedPet.address || 'Адрес не указан'
@@ -76,7 +152,6 @@ const PetProfile = () => {
                     }
                 }
 
-                // Загружаем похожих питомцев
                 if (normalizedPet.shelter_id) {
                     try {
                         const similar = await animalService.getAnimalsByShelter(normalizedPet.shelter_id);
@@ -106,26 +181,22 @@ const PetProfile = () => {
         }
     }, [id]);
 
-    // Функция для нормализации данных питомца с унифицированной обработкой фото
     const normalizePetData = (petData) => {
         if (!petData) return null;
 
-        // Унифицированная обработка photos (как в PetCard)
         let photos = [];
         if (Array.isArray(petData.photos)) {
             photos = petData.photos.map(photo => {
                 const photoUrl = getPhotoUrl(photo);
                 console.log('Photo URL generated:', photoUrl);
                 
-                // Создаем объект с унифицированной структурой
                 return {
                     id: photo.id || Math.random(),
                     url: photoUrl,
                     object_name: photo.object_name || null
                 };
-            }).filter(photo => photo.url !== null); // Фильтруем некорректные фото
+            }).filter(photo => photo.url !== null);
         } else if (petData.photo_url) {
-            // Если фото приходит как отдельное поле
             const photoUrl = getPhotoUrl(petData.photo_url);
             photos = [{
                 id: 1,
@@ -158,7 +229,6 @@ const PetProfile = () => {
         };
     };
 
-    // Mock данные для fallback
     const getMockPetData = () => ({
         id: parseInt(id),
         name: "Бэлла",
@@ -210,7 +280,6 @@ const PetProfile = () => {
         }
     ];
 
-    // Форматирование возраста
     const formatAge = (age) => {
         if (typeof age === 'number') {
             if (age < 1) return "Меньше года";
@@ -221,7 +290,6 @@ const PetProfile = () => {
         return age;
     };
 
-    // Характеристики питомца
     const getPetInfo = () => {
         if (!currentPet) return [];
         
@@ -246,7 +314,6 @@ const PetProfile = () => {
         return details;
     };
 
-    // Отображение размера
     const getSizeDisplay = (size) => {
         const sizeMap = {
             'small': 'Маленький',
@@ -256,7 +323,6 @@ const PetProfile = () => {
         return sizeMap[size] || size;
     };
 
-    // Получение основной фотографии
     const getMainPhoto = () => {
         if (!currentPet || !currentPet.photos || currentPet.photos.length === 0) {
             return null;
@@ -456,6 +522,8 @@ const PetProfile = () => {
                         </div>
                     </section>
 
+                    
+
                     {/* Контакты приюта */}
                     <section className="flex flex-col items-start justify-center gap-4 mb-8">
                         <div className="flex items-center justify-between p-6 relative self-stretch w-full bg-green-90 rounded-custom">
@@ -489,6 +557,44 @@ const PetProfile = () => {
                         </div>
                     </section>
 
+                                        
+                    {/* Кнопка заявки на усыновление */}
+                    <section className="flex flex-col items-start justify-center gap-4 mb-6">
+                        <div className="flex flex-col items-start p-6 relative self-stretch w-full bg-green-90 rounded-custom gap-4">
+                            <div className="w-full">
+                                <h3 className="font-inter font-semibold text-green-30 text-lg mb-2">
+                                    Хотите забрать {currentPet.name} домой?
+                                </h3>
+                                <p className="text-green-40 font-inter text-sm">
+                                    Подайте заявку на усыновление и приют свяжется с вами для обсуждения деталей
+                                </p>
+                            </div>
+                            
+                            <div className="w-2/3 mx-auto">
+                                {checkingApplicationStatus ? (
+                                    <div className="w-full px-8 py-2 bg-green-70 text-green-40 font-sf-rounded font-semibold rounded-custom-small opacity-50 text-lg text-center">
+                                        Проверка...
+                                    </div>
+                                ) : isApplied ? (
+                                    <button
+                                        disabled
+                                        className="w-full px-8 py-2 bg-green-70 text-green-40 font-sf-rounded font-semibold rounded-custom-small cursor-not-allowed opacity-75 text-lg text-center"
+                                    >
+                                        ✓ Заявка отправлена
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleAdoptClick}
+                                        className="w-full px-8 py-2 bg-green-70 text-green-100 font-sf-rounded font-semibold rounded-custom-small hover:bg-green-60 active:bg-green-40 shadow-lg hover:shadow-xl transition-all duration-200 text-lg text-center"
+                                    >
+                                        Хочу забрать к себе
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </section>
+
+
                     {/* Похожие питомцы */}
                     {similarPets.length > 0 && (
                         <section className="flex flex-col items-center gap-4 relative self-stretch">
@@ -511,6 +617,15 @@ const PetProfile = () => {
                 </div>
                 </div>
             </div>
+
+            {/* Модальное окно подтверждения заявки */}
+            <AdoptionConfirmationModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onConfirm={handleConfirmAdoption}
+                petName={currentPet?.name}
+                isLoading={isLoadingApplication}
+            />
         </div>
     );
 };
