@@ -36,7 +36,9 @@ async function getByEmail(email) {
 async function create({firstname, lastname, role, gender, email, phone, password}) {
   try {
     const result = await query(
-      'INSERT INTO users(firstname, lastname, role, gender, email, phone, password) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *',
+      `INSERT INTO users(
+        firstname, lastname, role, gender, email, phone, password, created_at, updated_at
+      ) VALUES($1,$2,$3,$4,$5,$6,$7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *`,
       [firstname, lastname, role, gender, email, phone, password]
     );
     info({ user: result.rows[0] }, 'DAO: created user');

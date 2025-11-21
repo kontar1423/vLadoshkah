@@ -29,19 +29,24 @@ router.use(express.urlencoded({ extended: true }));
 // GET /api/users - получить всех пользователей (публичный)
 router.get('/', usersController.getAll);
 
+// Текущий пользователь (должно идти до параметризованных роутов)
+router.get('/me', authenticateToken, usersController.getMe);
+router.patch('/me', authenticateToken, validate(updateUserSchema), usersController.updateMe);
+router.put('/me', authenticateToken, validate(updateUserSchema), usersController.updateMe);
+
+// PUT /api/users/:id - обновить пользователя (требует авторизации)
+router.put('/:id', authenticateToken, authorize('admin'), validate(userIdSchema, 'params'), validate(updateUserSchema), usersController.update);
+
+// PATCH /api/users/:id - частично обновить пользователя (требует авторизации)
+router.patch('/:id', authenticateToken, authorize('admin'), validate(userIdSchema, 'params'), validate(updateUserSchema), usersController.update);
+
 // GET /api/users/:id - получить пользователя по ID (публичный)
 router.get('/:id', validate(userIdSchema, 'params'), usersController.getById);
 
-// POST /api/users - создать нового пользователя (требует авторизации)
-router.post('/', authenticateToken, upload.single('photo'), validate(createUserSchema), usersController.create);
-
-// PUT /api/users/:id - обновить пользователя (требует авторизации)
-router.put('/:id', authenticateToken, validate(userIdSchema, 'params'), validate(updateUserSchema), usersController.update);
-
-// PATCH /api/users/:id - частично обновить пользователя (требует авторизации)
-router.patch('/:id', authenticateToken, validate(userIdSchema, 'params'), validate(updateUserSchema), usersController.update);
-
 // DELETE /api/users/:id - удалить пользователя (только для админов)
 router.delete('/:id', authenticateToken, authorize('admin'), validate(userIdSchema, 'params'), usersController.remove);
+
+// POST /api/users - создать нового пользователя (требует авторизации)
+router.post('/', authenticateToken, upload.single('photo'), validate(createUserSchema), usersController.create);
 
 export default router;
