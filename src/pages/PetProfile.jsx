@@ -33,13 +33,12 @@ const PetProfile = () => {
             const token = localStorage.getItem('accessToken');
             if (!token) {
                 setIsApplied(false);
+                setCheckingApplicationStatus(false);
                 return;
             }
 
-            const applications = await applicationService.getUserApplications();
-            const hasApplied = applications.some(app => 
-                app.animal_id === parseInt(id) && app.status !== 'rejected'
-            );
+            // 🔥 ИСПРАВЛЕНИЕ: Используем правильный метод из сервиса
+            const hasApplied = await applicationService.checkTakeApplicationForAnimal(parseInt(id));
             setIsApplied(hasApplied);
         } catch (error) {
             console.error('Error checking application status:', error);
@@ -49,6 +48,7 @@ const PetProfile = () => {
         }
     };
 
+    // 🔥 ИСПРАВЛЕННАЯ ФУНКЦИЯ - проверяем авторизацию перед открытием модалки
     const handleAdoptClick = () => {
         const token = localStorage.getItem('accessToken');
         if (!token) {
@@ -57,6 +57,7 @@ const PetProfile = () => {
             return;
         }
 
+        // Только если пользователь авторизован - открываем модальное окно
         setIsModalOpen(true);
     };
 
@@ -70,7 +71,8 @@ const PetProfile = () => {
                 description: `Заявка на усыновление питомца ${currentPet.name}`
             };
 
-            await applicationService.createApplication(applicationData);
+            // 🔥 ИСПРАВЛЕНИЕ: Используем правильный метод из сервиса
+            await applicationService.createTakeApplication(applicationData);
             setIsApplied(true);
             setIsModalOpen(false);
             alert('Заявка успешно отправлена! Приют свяжется с вами в ближайшее время.');
@@ -522,8 +524,6 @@ const PetProfile = () => {
                         </div>
                     </section>
 
-                    
-
                     {/* Контакты приюта */}
                     <section className="flex flex-col items-start justify-center gap-4 mb-8">
                         <div className="flex items-center justify-between p-6 relative self-stretch w-full bg-green-90 rounded-custom">
@@ -556,7 +556,6 @@ const PetProfile = () => {
                             </Link>
                         </div>
                     </section>
-
                                         
                     {/* Кнопка заявки на усыновление */}
                     <section className="flex flex-col items-start justify-center gap-4 mb-6">
@@ -593,7 +592,6 @@ const PetProfile = () => {
                             </div>
                         </div>
                     </section>
-
 
                     {/* Похожие питомцы */}
                     {similarPets.length > 0 && (

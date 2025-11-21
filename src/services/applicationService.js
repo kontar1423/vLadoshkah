@@ -38,6 +38,16 @@ export const applicationService = {
         return response.data;
     },
 
+    async checkTakeApplicationForAnimal(animalId) {
+    try {
+        const applications = await this.getUserTakeApplications();
+        return applications.some(app => app.animal_id === animalId && app.status !== 'rejected');
+    } catch (error) {
+        console.error('Error checking application for animal:', error);
+        return false;
+    }
+},
+
     // Проверить есть ли заявка на конкретного питомца
     async checkTakeApplicationForAnimal(animalId) {
         const applications = await this.getUserTakeApplications();

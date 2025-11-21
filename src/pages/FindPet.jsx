@@ -785,7 +785,7 @@ const FindPet = () => {
                           >
                             <button
                               onClick={() => handleShelterClick(shelter)}
-                              className={`relative self-stretch font-inter font-medium text-base py-4 text-left hover:underline transition-colors cursor-pointer w-full text-left ${
+                              className={`relative self-stretch font-inter font-medium text-base py-4 hover:underline transition-colors cursor-pointer w-full text-left ${
                                 highlightedShelter === shelter.id 
                                   ? 'text-green-40 font-bold' 
                                   : 'text-green-30'
