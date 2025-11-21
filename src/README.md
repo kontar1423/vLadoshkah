@@ -49,5 +49,10 @@ Jest покрывает DAO/роуты/сервисы/миддлвары (20 sui
 - `npm run dev` — разработка
 - `npm start` — production
 
-Документация по REST API находится в `README.md` в корне.
+## Rate limit
 
+По умолчанию действует лимит на IP: 100 запросов в минуту на все `/api/*` и 10 запросов за 5 минут на `/api/auth/*`. Настройки можно изменить переменными окружения `RATE_LIMIT_WINDOW_SECONDS`, `RATE_LIMIT_MAX_REQUESTS`, `RATE_LIMIT_AUTH_WINDOW_SECONDS`, `RATE_LIMIT_AUTH_MAX_REQUESTS`.
+
+Отключение: `RATE_LIMIT_ENABLED=false` выключит глобальный лимит; `RATE_LIMIT_AUTH_ENABLED=false` отключит только `/api/auth` (по умолчанию следует за глобальной настройкой).
+
+Документация по REST API находится в `README.md` в корне.

@@ -82,7 +82,10 @@ jest.mock('../src/cache/redis-client.js', () => ({
     isConnected: jest.fn().mockReturnValue(true),
     client: {
       isOpen: true,
-      on: jest.fn()
+      on: jest.fn(),
+      incr: jest.fn().mockResolvedValue(1),
+      ttl: jest.fn().mockResolvedValue(60),
+      expire: jest.fn().mockResolvedValue(true)
     }
   }
 }));
@@ -183,4 +186,3 @@ jest.mock('../src/dao/photosDao.js', () => ({
     remove: jest.fn().mockResolvedValue({ id: 1 })
   }
 }));
-

@@ -1,203 +1,399 @@
-# vLadoshkah API – Frontend Guide
+# vLadoshkah API — руководство для фронтенда
 
-Это краткое руководство для разработки клиентских приложений. Здесь описаны доступные эндпоинты, правила авторизации и структура данных. Техническая документация по запуску бэкенда находится в `src/README.md`.
+Подробное описание, как подключаться к API, какие эндпоинты доступны и что ожидать в ответах. Инструкции по развёртыванию сервера находятся в `src/README.md`.
 
----
+## Подключение
 
-## Быстрый запуск для презентации
+- Базовый URL: `http://<host>:<port>/api` (по умолчанию порт `4000`).
+- Формат: `application/json`, для загрузки файлов — `multipart/form-data`.
+- Аутентификация: JWT в заголовке `Authorization: Bearer <accessToken>`.
+- Срок жизни токенов: access — 7d, refresh — 30d (по умолчанию из `.env`).
+- Готовность сервера: `GET /healthz` (200 OK при доступной БД).
+- Общие заголовки: `Accept: application/json`; для форм — `Content-Type: multipart/form-data` (браузер ставит сам).
+- Авторизация на фронте: сохраняйте `accessToken` (для запросов) и `refreshToken` (для обновления) в защищённом месте; при 401 с причиной `Token expired` обновляйте через `/api/auth/refresh`.
 
-1. `cp .envExample .env` и при необходимости обновите пароли/хосты.
-2. Запустите инфраструктуру: `docker compose up -d` (Postgres, Redis, MinIO, Kafka).
-3. Примените миграции: `npm run migrate`.
-4. Запустите API: `npm start` (порт `4000`).
-5. Для показа интерфейса откройте `front_test/admin.html` и авторизуйтесь любым валидным админ-аккаунтом.
+## Роли и доступ
 
----
+Три роли: `user`, `shelter_admin`, `admin`.
+- Публичные GET для животных/приютов/фотографий доступны всем.
+- Создание/обновление/удаление животных — `admin` или `shelter_admin` (админ приюта может работать только со “своими” животными).
+- CRUD по приютам — `admin`; `shelter_admin` может редактировать/удалять только свои приюты (по `admin_id`).
+- CRUD по пользователям — только `admin`, кроме `/users/me`.
+- Все заявки (`/api/applications`) требуют авторизации любой роли.
 
-## Базовые сведения
+## Структура ошибок
 
-- **Базовый URL:** `/api`
-- **Формат:** JSON
-- **Аутентификация:** JWT в заголовке `Authorization: Bearer <token>`
-- **Срок действия токенов:** access – 7 дней, refresh – 30 дней
+Чаще всего возвращается объект с полем `error` и статус-кодом:
 
----
+```json
+{ "error": "Invalid token" }
+```
+
+Коды: 400 (валидация), 401 (нет/просрочен токен), 403 (нет прав), 404 (не найдено), 409 (конфликт), 500 (ошибка сервера).
+
+Пример ответа валидации (Joi):
+
+```json
+{
+  "error": "Validation error",
+  "details": [
+    { "message": "\"email\" is required", "path": ["email"] }
+  ]
+}
+```
 
 ## Аутентификация (`/api/auth`)
 
-| Метод | Эндпоинт | Описание |
-|-------|----------|----------|
-| POST  | `/register` | Регистрация пользователя (`email`, `password`, `role?`) |
-| POST  | `/login` | Авторизация, возвращает пару токенов |
-| POST  | `/refresh` | Обновление access-токена по refresh-токену |
+| Метод | Путь | Тело запроса | Ответ |
+|-------|------|--------------|-------|
+| POST  | `/register` | `email` (обяз.), `password` (обяз., ≥6), `role?` (`user`/`admin`/`shelter_admin`) | 201 `{ success, message, user, accessToken, refreshToken }` |
+| POST  | `/login` | `email`, `password` | 200 `{ success, message, user, accessToken, refreshToken }` |
+| POST  | `/refresh` | `refreshToken` | 200 `{ success, message, accessToken, refreshToken }` |
 
-Пример ответа на `/login`:
+Пример запроса логина:
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{ "email": "user@example.com", "password": "secret123" }
+```
+
+Типичный ответ:
 
 ```json
 {
   "success": true,
+  "message": "Login successful",
   "user": { "id": 1, "email": "user@example.com", "role": "user" },
-  "accessToken": "jwt",
-  "refreshToken": "jwt"
+  "accessToken": "<jwt>",
+  "refreshToken": "<jwt>"
 }
 ```
 
----
+Обновление токена:
+
+```http
+POST /api/auth/refresh
+Authorization: Bearer <старый accessToken> (можно без)
+Content-Type: application/json
+
+{ "refreshToken": "<refreshToken>" }
+```
 
 ## Пользователи (`/api/users`)
 
-- `GET /api/users` — публичный список пользователей.
-- `GET /api/users/:id` — профиль пользователя.
-- `POST /api/users` — создание пользователя администратором (поддерживается `multipart/form-data` с фото).
-- `PUT/PATCH /api/users/:id` — обновление данных (требуется авторизация).
-- `DELETE /api/users/:id` — удаление (только `admin`).
+- `GET /api/users` — публичный список пользователей без паролей, с массивом `photos` (если есть). Поля профиля: `firstname`, `lastname`, `gender`, `phone`, `bio`.
+- `GET /api/users/:id` — публичный профиль.
+- `GET /api/users/me` — профиль по access токену.
+- `PUT|PATCH /api/users/me` — частичное/полное обновление текущего пользователя (только поля профиля, без email). Токен обязателен. Поддерживает `bio`.
+- `POST /api/users` — создание пользователя (роль `admin`). Тело: `email` (обяз.), `password` (обяз., ≥6), `firstname?`, `lastname?`, `role?`, `gender?`, `phone?`, `bio?`. Поддерживает `multipart/form-data` с файлом `photo` (загружается в MinIO).
+- `PUT|PATCH /api/users/:id` — обновление пользователя (только `admin`). Принимает те же текстовые поля, включая `bio` (файл сейчас не обрабатывается).
+- `DELETE /api/users/:id` — удалить пользователя (только `admin`).
 
-Валидация:
+Ответы `GET/POST/PUT` — объект пользователя с массивом `photos: [{ url }]`. Обёртка `success` есть только у POST/PUT в контроллере (`{ success, user, message }`).
 
-- email/пароль обязательные для POST
-- пароль ≥ 6 символов
-- роли: `user`, `shelter_admin`, `admin`
+Пример запроса создания с фото (admin):
 
----
+```
+POST /api/users
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
 
-## Приюты (`/api/shelters`)
+email=user@example.com
+password=secret123
+firstname=Jane
+role=admin
+photo=<file>
+```
 
-- `GET /api/shelters` — публичный список, включает новые поля:
-  - `can_adopt` (boolean) — принимает ли приют заявки на усыновление
-  - `region` (строка: `cao`, `sao`, `svao`, `vao`, `yuvao`, `yao`, `yuzao`, `zao`, `szao`, `zelao`, `tinao`, `nao`)
-  - `rating` (число 0–5, шаг 0.01) — средняя оценка по голосам
-- `GET /api/shelters/:id` — подробности приюта.
-- `POST /api/shelters` — создание (роль `admin`). Поля: `name`, `address?`, `phone?`, `email?`, `website?`, `description?`, `capacity?`, `working_hours?`, `can_adopt?`, `region?`, `admin_id?`, `status?`.
-- `PUT/PATCH /api/shelters/:id` — обновление тех же полей.
-- `DELETE /api/shelters/:id` — удаление приюта.
-- `POST /api/shelters/vote` — аутентифицированный голос за приют. Тело: `{ "shelter_id": 3, "vote": 1-5 }`. Один пользователь может проголосовать за конкретный приют только один раз; ответ содержит обновлённый `rating`.
-
-Создание с учётом новых атрибутов:
+Пример ответа `GET /api/users/1`:
 
 ```json
 {
-  "name": "Добрые руки",
-  "address": "ул. Ленина, 10",
-  "phone": "+79998887766",
-  "email": "new@shelter.ru",
-  "capacity": 80,
-  "working_hours": "Пн-Пт 09:00–19:00",
-  "can_adopt": true,
-  "region": "zao",
-  "admin_id": 12,
-  "status": "active",
-  "rating": 4.67
+  "id": 1,
+  "email": "user@example.com",
+  "role": "user",
+  "firstname": "Jane",
+  "lastname": "Doe",
+  "bio": "О себе",
+  "photos": [{ "url": "/uploads/<object>" }]
 }
 ```
 
----
+## Приюты (`/api/shelters`)
+
+- `GET /api/shelters` — публичный список. Поля: `name`, `address?`, `phone?`, `email?`, `website?`, `description?`, `capacity?`, `working_hours?`, `can_adopt?`, `region?`, `admin_id?`, `status`, `rating`, `photos` (если прикреплены).
+- `GET /api/shelters/:id` — подробности по ID (+ `photos`).
+- `POST /api/shelters` — создать приют (`admin`; `shelter_admin` создаёт приют только для себя, `admin_id` берётся из токена). Тело как в списке полей выше. Маршрут принимает `multipart/form-data`, но переданный файл `photo` сейчас сервером не сохраняется.
+- `PUT|PATCH /api/shelters/:id` — обновить приют (`admin`; `shelter_admin` может редактировать только приюты, где он указан в `admin_id`, смена владельца запрещена).
+- `DELETE /api/shelters/:id` — удалить приют (`admin`; `shelter_admin` может удалить только свой приют), связанные фото также удаляются.
+- `POST /api/shelters/vote` — голос за приют (любая авторизованная роль). Тело: `shelter_id` (int), `vote` (1–5). Ответ: `{ message, rating, vote }`, повторный голос того же пользователя вернёт 409.
+
+Пример запроса голосования:
+
+```http
+POST /api/shelters/vote
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{ "shelter_id": 3, "vote": 5 }
+```
+
+Пример ответа `GET /api/shelters/3`:
+
+```json
+{
+  "id": 3,
+  "name": "Добрые руки",
+  "region": "zao",
+  "rating": "4.67",
+  "can_adopt": true,
+  "photos": [{ "url": "/uploads/..." }]
+}
+```
 
 ## Животные (`/api/animals`)
 
-Публичные GET-эндпоинты:
+Публичные:
+- `GET /api/animals` — список животных с `photos` и `shelter_name`.
+- `GET /api/animals/:id` — карточка по ID.
+- `GET /api/animals/shelter/:shelterId` — животные конкретного приюта.
+- `GET /api/animals/filters` — фильтры: `type`, `gender` (`male|female|unknown`), `age_min`, `age_max`, `animal_size` (`small|medium|large`), `health`, `shelter_id`, `search` (по имени/цвету/описанию).
+- `GET /api/animals/search/:term` — роут для поиска; на практике использует те же `query` что и `/filters` (значение `:term` не применяется).
 
-- `/api/animals` — список.
-- `/api/animals/:id` — карточка.
-- `/api/animals/filters` — фильтр по `type`, `gender`, `age_min/max`, `animal_size`, `health`, `shelter_id`, `search`.
-- `/api/animals/shelter/:shelterId` — животные конкретного приюта.
-- `/api/animals/search/:term` — поиск по имени/типу.
-
-Админские эндпоинты (`admin` или `shelter_admin`, `multipart/form-data` при создании):
-
-- `POST /api/animals` — требует минимум `name`, `age`, `type`, `shelter_id`; допускает фото (поле `photo`).
-- `PUT/PATCH /api/animals/:id` — обновление данных.
-- `DELETE /api/animals/:id` — удаление.
+Изменение данных (требуется `admin` или `shelter_admin`; приютный админ может трогать только свои объекты и не может менять `shelter_id` при обновлении):
+- `POST /api/animals` — `multipart/form-data` c обязательными `name`, `age`, `type`, `shelter_id` и опциональным файлом `photo`. Доп.поля: `health?`, `gender?`, `color?`, `weight?`, `personality?`, `animal_size?`, `history?`.
+- `PUT|PATCH /api/animals/:id` — обновление любых полей выше (текст/числа, без файла).
+- `DELETE /api/animals/:id` — удаляет животное и его фото.
 
 Пример ответа списка:
 
 ```json
-[
-  {
-    "id": 9,
-    "name": "Барсик",
-    "type": "cat",
-    "age": 2,
-    "shelter_id": 4,
-    "animal_size": "medium",
-    "health": "здоров",
-    "photos": [{ "url": "/uploads/7d...jpg" }]
-  }
-]
+[{
+  "id": 9,
+  "name": "Барсик",
+  "type": "cat",
+  "age": 2,
+  "shelter_id": 4,
+  "animal_size": "medium",
+  "health": "здоров",
+  "photos": [{ "url": "/uploads/7d...jpg" }]
+}] 
 ```
 
----
+Фильтры `GET /api/animals/filters` (query):
+- `type=cat|dog|...`
+- `gender=male|female|unknown`
+- `age_min`, `age_max` (int)
+- `animal_size=small|medium|large`
+- `health=<строка>`
+- `shelter_id=<int>`
+- `search=<строка>` (ищет в name/color/type/personality/history)
+
+Пример создания с фото:
+
+```
+POST /api/animals
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+
+name=Барсик
+age=2
+type=cat
+shelter_id=4
+animal_size=small
+photo=<file>
+```
 
 ## Фото (`/api/photos`)
 
-- `POST /api/photos/upload` — загрузка файла (`photo`), авторизация обязательна.
-- `GET /api/photos` — список фото.
-- `GET /api/photos/info/:id` — метаданные.
-- `GET /api/photos/file/:objectName` — получение файла.
-- `GET /api/photos/entity/:entityType/:entityId` — фото, привязанные к `animal`, `shelter` или `user`.
-- `DELETE /api/photos/:id` — удаление (требуется авторизация).
+- `POST /api/photos/upload` — загрузка файла `photo` (обязательно), токен обязателен. Тело `multipart/form-data` также требует `entity_type` (`animal|shelter|user`) и `entity_id` (int). Ответ: `{ id, original_name, object_name, url, entity_type, entity_id, size, mimetype }`.
+- `GET /api/photos` — все фото.
+- `GET /api/photos/info/:id` — метаданные по ID.
+- `GET /api/photos/file/:objectName` — сам файл (стрим с корректным `Content-Type`).
+- `GET /api/photos/entity/:entityType/:entityId` — фото конкретной сущности.
+- `DELETE /api/photos/:id` — удалить фото (авторизация нужна).
 
-Ответ загрузки:
+Поле `url` в ответах возвращается без хоста (например, `/uploads/<object>`); можно использовать его напрямую, если MinIO доступен по тому же домену, или собрать ссылку вручную на `http://<host>:9000/uploads/<objectName>`. Надёжнее для фронтенда забирать файл через `GET /api/photos/file/:objectName`.
 
-```json
-{
-  "id": 12,
-  "object_name": "animal_12_abc.jpg",
-  "url": "/uploads/animal_12_abc.jpg"
-}
+Пример загрузки:
+
+```
+POST /api/photos/upload
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+
+entity_type=animal
+entity_id=12
+photo=<file>
 ```
 
----
+Пример отдачи файла:
+
+```
+GET /api/photos/file/7a1c...jpg
+```
+
+Если нужен прямой линк без API: `http://<host>:9000/uploads/7a1c...jpg` при доступности MinIO с фронта.
 
 ## Заявки (`/api/applications`)
 
-Все операции требуют авторизации.
-
-- `POST /api/applications` — создать заявку (`user_id`, `shelter_id`, `animal_id`, `description`, `status?`).
-- `GET /api/applications` — список по текущему пользователю.
-- `GET /api/applications/:id` — одна заявка.
+Все маршруты требуют авторизации любой роли:
+- `POST /api/applications` — создать заявку. Тело: `user_id`, `shelter_id`, `animal_id`, `description` (10–5000 символов), `status?` (`pending|approved|rejected|cancelled`, по умолчанию `pending`).
+- `GET /api/applications` — получить все заявки (сейчас без фильтра по текущему пользователю).
+- `GET /api/applications/:id` — заявка по ID.
 - `PUT /api/applications/:id` — полное обновление.
-- `PATCH /api/applications/:id` — частичное обновление.
-- `DELETE /api/applications/:id` — отмена.
-- `GET /api/applications/count/approved` — количество одобренных заявок (для дашбордов).
+- `PATCH /api/applications/:id` — частичное обновление тех же полей.
+- `DELETE /api/applications/:id` — удаление.
+- `GET /api/applications/count/approved` — количество заявок в статусе `approved` (публично).
 
-Валидация описания — 10–5000 символов, `status` ∈ `pending|approved|rejected|cancelled`.
+Ответы — сырой объект заявки (без обёртки `success`).
 
----
+Пример создания:
 
-## Фотогалерея и медиа в админке
+```http
+POST /api/applications
+Authorization: Bearer <token>
+Content-Type: application/json
 
-`admin.html` и `animal.html` используют те же эндпоинты:
-
-- загрузка фотографий приютов и животных реализована через `/api/photos/upload`.
-- вкладка “Приюты” в админке хранит `can_adopt` и `region`, а также поддерживает множественную загрузку фото.
-
----
-
-## Ошибки и коды ответа
-
-```json
 {
-  "success": false,
-  "error": "Validation error",
-  "details": [{ "field": "email", "message": "Email обязателен" }]
+  "user_id": 1,
+  "shelter_id": 3,
+  "animal_id": 9,
+  "description": "Хочу забрать питомца домой",
+  "status": "pending"
 }
 ```
 
-| Код | Значение |
-|-----|----------|
-| 400 | Ошибка валидации / некорректный запрос |
-| 401 | Требуется валидный JWT |
-| 403 | Недостаточно прав |
-| 404 | Ресурс не найден |
-| 409 | Конфликт (например, дубликат данных) |
-| 500 | Внутренняя ошибка |
+Пример ответа:
 
----
+```json
+{
+  "id": 15,
+  "user_id": 1,
+  "shelter_id": 3,
+  "animal_id": 9,
+  "status": "pending",
+  "description": "Хочу забрать питомца домой",
+  "created_at": "2024-05-12T10:00:00.000Z"
+}
+```
 
-## Дополнительно
+## Медиа и URL
 
-- Кэширование через Redis: животные/приюты — 1 час, пользователи — 30 минут, заявки — 5 минут.
-- Kafka и MinIO используются на серверной стороне для нотификаций и хранения файлов; клиентской интеграции не требуется.
-- Все пароли хранятся только в хешированном виде, API никогда не возвращает поле `password`.
+У животных/приютов/пользователей в ответах есть `photos: [{ url }]`. Значение `url` уже относительное (без `http://localhost`). Для отображения:
+- либо подставьте домен MinIO (`http://<host>:9000${url}`), 
+- либо возьмите `object_name` из `url` и запросите файл через `/api/photos/file/:objectName`.
 
-Для вопросов по запуску окружения, тестированию или структуре каталогов смотрите `src/README.md` или обращайтесь к команде бэкенда.
+## Шпаргалка для фронта
+
+- Авторизация: после логина кладите `accessToken` в `Authorization` заголовок, обновляйте по `/api/auth/refresh` при 401 `Token expired`.
+- Загрузка файлов: используйте `FormData` (`photo` поле + `entity_type`, `entity_id`), метод `POST /api/photos/upload`.
+- Кеширование на бэке прозрачно; фронту ничего делать не нужно.
+- Приютный админ (`shelter_admin`) может CRUD только животных своего приюта; ошибки `403` приходят при попытке изменить чужие записи.
+- В ответах числовые идентификаторы приходят числами, кроме `rating` (numeric(3,2) в БД) — может прийти строкой, учитывайте при отображении.
+
+## Примеры запросов (fetch/axios)
+
+### Auth: логин и работа с токенами (fetch)
+
+```js
+// login
+const login = async (email, password) => {
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  if (!res.ok) throw new Error('Login failed');
+  return res.json(); // { user, accessToken, refreshToken }
+};
+
+// refresh
+const refresh = async (refreshToken) => {
+  const res = await fetch('/api/auth/refresh', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken })
+  });
+  if (!res.ok) throw new Error('Refresh failed');
+  return res.json();
+};
+```
+
+### Retry при 401 Token expired (fetch)
+
+```js
+const withAuth = (getAccess, getRefresh, saveTokens) => async (url, options = {}) => {
+  const call = async (token) => fetch(url, {
+    ...options,
+    headers: { ...(options.headers || {}), Authorization: `Bearer ${token}` }
+  });
+
+  let res = await call(getAccess());
+  if (res.status === 401) {
+    const refreshed = await refresh(getRefresh());
+    saveTokens(refreshed.accessToken, refreshed.refreshToken);
+    res = await call(refreshed.accessToken);
+  }
+  return res;
+};
+```
+
+### Получить список животных (axios)
+
+```js
+import axios from 'axios';
+
+const api = axios.create({ baseURL: '/api' });
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('accessToken');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+const animals = await api.get('/animals', {
+  params: { type: 'cat', animal_size: 'small' }
+});
+console.log(animals.data); // [{ id, name, photos: [...] }, ...]
+```
+
+### Загрузка фото животного (axios + FormData)
+
+```js
+const uploadAnimalPhoto = async (animalId, file) => {
+  const form = new FormData();
+  form.append('entity_type', 'animal');
+  form.append('entity_id', animalId);
+  form.append('photo', file);
+
+  const res = await api.post('/photos/upload', form, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return res.data; // { id, object_name, url, ... }
+};
+```
+
+### Создать заявку (fetch)
+
+```js
+const createApplication = async (token, payload) => {
+  const res = await fetch('/api/applications', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Failed to create application');
+  return res.json();
+};
+// payload: { user_id, shelter_id, animal_id, description, status? }
+```
+
+### Обработка 403
+
+- 403 означает отсутствие прав (например, `shelter_admin` пытается изменить чужое животное). Это не вопрос токена — не надо рефрешить, показывайте пользователю понятное сообщение.

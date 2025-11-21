@@ -33,13 +33,13 @@ async function getByEmail(email) {
   }
 }
 
-async function create({firstname, lastname, role, gender, email, phone, password}) {
+async function create({firstname, lastname, role, gender, email, phone, bio, password}) {
   try {
     const result = await query(
       `INSERT INTO users(
-        firstname, lastname, role, gender, email, phone, password, created_at, updated_at
-      ) VALUES($1,$2,$3,$4,$5,$6,$7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *`,
-      [firstname, lastname, role, gender, email, phone, password]
+        firstname, lastname, role, gender, email, phone, bio, password, created_at, updated_at
+      ) VALUES($1,$2,$3,$4,$5,$6,$7,$8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *`,
+      [firstname, lastname, role, gender, email, phone, bio, password]
     );
     info({ user: result.rows[0] }, 'DAO: created user');
     return result.rows[0];
@@ -49,7 +49,7 @@ async function create({firstname, lastname, role, gender, email, phone, password
   }
 }
 
-async function update(id, { firstname, lastname, role, gender, email, phone, password}) {
+async function update(id, { firstname, lastname, role, gender, email, phone, bio, password}) {
   try {
     const currentUser = await getById(id);
     if (!currentUser) {
@@ -62,11 +62,12 @@ async function update(id, { firstname, lastname, role, gender, email, phone, pas
       gender: gender !== undefined ? gender : currentUser.gender,
       email: email !== undefined ? email : currentUser.email,
       phone: phone !== undefined ? phone : currentUser.phone,
+      bio: bio !== undefined ? bio : currentUser.bio,
       password: password !== undefined ? password : currentUser.password,
     };
     const result = await query(
-      'UPDATE users SET firstname=$1, lastname=$2, role=$3, gender=$4, email=$5, phone=$6, password=$7, updated_at = CURRENT_TIMESTAMP WHERE id=$8 RETURNING *',
-      [updatedData.firstname, updatedData.lastname, updatedData.role, updatedData.gender, updatedData.email, updatedData.phone, updatedData.password, id]
+      'UPDATE users SET firstname=$1, lastname=$2, role=$3, gender=$4, email=$5, phone=$6, bio=$7, password=$8, updated_at = CURRENT_TIMESTAMP WHERE id=$9 RETURNING *',
+      [updatedData.firstname, updatedData.lastname, updatedData.role, updatedData.gender, updatedData.email, updatedData.phone, updatedData.bio, updatedData.password, id]
     );
     info({ user: result.rows[0] }, 'DAO: updated user');
     return result.rows[0] || null;

@@ -35,6 +35,10 @@ export const createUserSchema = Joi.object({
   phone: Joi.string().max(30).optional().allow(null, '')
     .messages({
       'string.max': 'Телефон не должен превышать 30 символов'
+    }),
+  bio: Joi.string().max(2000).optional().allow(null, '')
+    .messages({
+      'string.max': 'Bio не должна превышать 2000 символов'
     })
 });
 
@@ -64,6 +68,10 @@ export const updateUserSchema = Joi.object({
   phone: Joi.string().max(30).optional().allow(null, '')
     .messages({
       'string.max': 'Телефон не должен превышать 30 символов'
+    }),
+  bio: Joi.string().max(2000).optional().allow(null, '')
+    .messages({
+      'string.max': 'Bio не должна превышать 2000 символов'
     })
 }).min(1).messages({
   'object.min': 'Должно быть указано хотя бы одно поле для обновления'
@@ -79,4 +87,3 @@ export const userIdSchema = Joi.object({
       'any.required': 'ID обязателен'
     })
 });
-

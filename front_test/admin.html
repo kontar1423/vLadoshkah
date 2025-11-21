@@ -698,6 +698,7 @@
         const API_BASE = 'http://localhost:4000/api';
         let accessToken = localStorage.getItem('accessToken');
         let userEmail = localStorage.getItem('userEmail');
+        let userPhotoFile = null;
         let animalPhotos = [];
         let shelterPhotos = [];
 
@@ -733,11 +734,17 @@
 
         function handlePhotoUpload(event, type) {
             const files = Array.from(event.target.files);
+            const filesToProcess = type === 'user' ? [files[0]].filter(Boolean) : files;
             const previewContainer = document.getElementById(type === 'user' ? 'userPhotoPreview' : 
                                                               type === 'animal' ? 'animalPhotosPreview' : 
                                                               'shelterPhotosPreview');
             
-            files.forEach(file => {
+            if (type === 'user') {
+                // Для пользователя храним только один файл и очищаем предыдущий превью
+                previewContainer.innerHTML = '';
+            }
+            
+            filesToProcess.forEach(file => {
                 if (!file.type.startsWith('image/')) {
                     showMessage('Можно загружать только изображения', 'error');
                     return;
@@ -754,7 +761,9 @@
                     `;
                     previewContainer.appendChild(previewItem);
 
-                    if (type === 'animal') {
+                    if (type === 'user') {
+                        userPhotoFile = file;
+                    } else if (type === 'animal') {
                         animalPhotos.push(file);
                     } else if (type === 'shelter') {
                         shelterPhotos.push(file);
@@ -763,6 +772,7 @@
                 reader.readAsDataURL(file);
             });
 
+            // Сбрасываем поле, чтобы можно было выбрать тот же файл повторно
             event.target.value = '';
         }
 
@@ -776,7 +786,10 @@
                 target.remove();
             }
 
-            if (type === 'animal') {
+            if (type === 'user') {
+                userPhotoFile = null;
+                document.getElementById('userPhoto').value = '';
+            } else if (type === 'animal') {
                 animalPhotos = animalPhotos.filter(file => file.name !== fileName);
             } else if (type === 'shelter') {
                 shelterPhotos = shelterPhotos.filter(file => file.name !== fileName);
@@ -1076,11 +1089,11 @@
             formData.append('gender', document.getElementById('userGender').value);
             formData.append('phone', document.getElementById('userPhone').value);
             
-            const photoFile = document.getElementById('userPhoto').files[0];
+            const photoFile = userPhotoFile || document.getElementById('userPhoto').files[0];
             if (photoFile) {
                 formData.append('photo', photoFile);
             }
-
+                
             try {
                 const response = await fetch(`${API_BASE}/users`, {
                     method: 'POST',
@@ -1124,6 +1137,7 @@
                     document.getElementById('userForm').reset();
                     document.getElementById('userPhotoPreview').innerHTML = '';
                     document.getElementById('shelterSelectGroup').style.display = 'none';
+                    userPhotoFile = null;
                     loadUsers();
                 } else {
                     showMessage(result.error || 'Ошибка создания пользователя', 'error');

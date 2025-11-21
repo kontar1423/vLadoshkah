@@ -150,6 +150,16 @@ async function update(req, res) {
           error: 'You can only update animals from your own shelter'
         });
       }
+
+      // Не даем передвинуть животное в другой приют
+      if (req.body?.shelter_id && Number(req.body.shelter_id) !== animal.shelter_id) {
+        return res.status(403).json({
+          success: false,
+          error: 'You cannot move animal to another shelter'
+        });
+      }
+      // Фиксируем shelter_id на текущем
+      req.body.shelter_id = animal.shelter_id;
     }
     
     const updated = await animalsService.updateAnimal(id, req.body);

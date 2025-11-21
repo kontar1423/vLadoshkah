@@ -9,7 +9,7 @@ const bcryptConfig = authConfig.bcrypt;
 
 /**
  * Регистрация нового пользователя (минимальная - только email и password)
- * Остальные данные профиля (firstname, lastname, gender, phone) можно дополнить через PUT /api/users/:id
+ * Остальные данные профиля (firstname, lastname, gender, phone, bio) можно дополнить через PUT /api/users/:id
  * @param {Object} userData - Данные пользователя (email - обязательный, password - обязательный, role - опциональный, по умолчанию 'user')
  * @returns {Promise<Object>} - Созданный пользователь (без пароля) и токены (accessToken, refreshToken)
  */
@@ -51,7 +51,7 @@ async function register(userData) {
     const hashedPassword = await bcrypt.hash(password, bcryptConfig.saltRounds);
     
     // Создаем пользователя только с email и password
-    // Остальные поля (firstname, lastname, gender, phone) можно дополнить позже через PUT /api/users/:id
+    // Остальные поля (firstname, lastname, gender, phone, bio) можно дополнить позже через PUT /api/users/:id
     const user = await userDAO.create({
       email,
       password: hashedPassword,
@@ -59,7 +59,8 @@ async function register(userData) {
       firstname: null,
       lastname: null,
       gender: null,
-      phone: null
+      phone: null,
+      bio: null
     });
 
     // Удаляем пароль из ответа
@@ -218,4 +219,3 @@ export default {
   login,
   refreshAccessToken
 };
-

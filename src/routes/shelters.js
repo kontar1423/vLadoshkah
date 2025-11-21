@@ -36,15 +36,15 @@ router.post('/vote', authenticateToken, validate(shelterVoteSchema), sheltersCon
 router.get('/:id', validate(shelterIdSchema, 'params'), sheltersController.getById);
 
 // POST /api/shelters - создать новый приют (только админ сайта)
-router.post('/', authenticateToken, authorize('admin'), upload.single('photo'), validate(createShelterSchema), sheltersController.create);
+router.post('/', authenticateToken, authorize('admin', 'shelter_admin'), upload.single('photo'), validate(createShelterSchema), sheltersController.create);
 
-// PUT /api/shelters/:id - обновить приют (только админ сайта)
-router.put('/:id', authenticateToken, authorize('admin'), validate(shelterIdSchema, 'params'), validate(updateShelterSchema), sheltersController.update);
+// PUT /api/shelters/:id - обновить приют (админ сайта или админ своего приюта)
+router.put('/:id', authenticateToken, authorize('admin', 'shelter_admin'), validate(shelterIdSchema, 'params'), validate(updateShelterSchema), sheltersController.update);
 
-// PATCH /api/shelters/:id - частично обновить приют (только админ сайта)
-router.patch('/:id', authenticateToken, authorize('admin'), validate(shelterIdSchema, 'params'), validate(updateShelterSchema), sheltersController.update);
+// PATCH /api/shelters/:id - частично обновить приют (админ сайта или админ своего приюта)
+router.patch('/:id', authenticateToken, authorize('admin', 'shelter_admin'), validate(shelterIdSchema, 'params'), validate(updateShelterSchema), sheltersController.update);
 
-// DELETE /api/shelters/:id - удалить приют (только админ сайта)
-router.delete('/:id', authenticateToken, authorize('admin'), validate(shelterIdSchema, 'params'), sheltersController.remove);
+// DELETE /api/shelters/:id - удалить приют (админ сайта или админ своего приюта)
+router.delete('/:id', authenticateToken, authorize('admin', 'shelter_admin'), validate(shelterIdSchema, 'params'), sheltersController.remove);
 
 export default router;

@@ -1,6 +1,7 @@
 import sheltersService from "../services/sheltersService.js";
 import serviceVotesService from "../services/VotesService.js";
 import logger from '../logger.js';
+import sheltersDao from "../dao/sheltersDao.js";
 
 // Получить все приюты
 async function getAll(req, res) {
@@ -34,6 +35,11 @@ async function getById(req, res) {
 // Создать приют
 async function create(req, res) {
   try {
+    // Принудительно привязываем приют к shelter_admin
+    if (req.user?.role === 'shelter_admin') {
+      req.body.admin_id = req.user.userId;
+    }
+
     const shelter = await sheltersService.createShelter(req.body);
     res.status(201).json(shelter);
   } catch (err) {
@@ -50,6 +56,20 @@ async function update(req, res) {
     if (!Number.isInteger(id)) {
       return res.status(400).json({ error: 'Invalid id' });
     }
+
+    // Для shelter_admin проверяем, что приют принадлежит ему
+    if (req.user?.role === 'shelter_admin') {
+      const shelter = await sheltersDao.getById(id);
+      if (!shelter) {
+        return res.status(404).json({ error: 'Not found' });
+      }
+      if (shelter.admin_id !== req.user.userId) {
+        return res.status(403).json({ error: 'You can only update your own shelter' });
+      }
+      // Не даём сменить владельца
+      req.body.admin_id = shelter.admin_id;
+    }
+
     const shelter = await sheltersService.updateShelter(id, req.body);
     if (!shelter) return res.status(404).json({ error: 'Not found' });
     res.json(shelter);
@@ -67,6 +87,18 @@ async function remove(req, res) {
     if (!Number.isInteger(id)) {
       return res.status(400).json({ error: 'Invalid id' });
     }
+
+    // Для shelter_admin проверяем, что приют принадлежит ему
+    if (req.user?.role === 'shelter_admin') {
+      const shelter = await sheltersDao.getById(id);
+      if (!shelter) {
+        return res.status(404).json({ error: 'Not found' });
+      }
+      if (shelter.admin_id !== req.user.userId) {
+        return res.status(403).json({ error: 'You can only delete your own shelter' });
+      }
+    }
+
     const shelter = await sheltersService.removeShelter(id);
     if (!shelter) return res.status(404).json({ error: 'Not found' });
     res.status(204).end();

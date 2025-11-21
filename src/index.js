@@ -15,9 +15,54 @@ import pool from './db.js'; // импортируем пул подключен�
 import kafkaProducer from './messaging/kafka-producer.js';
 import kafkaConsumer from './messaging/kafka-consumer.js';
 import notificationService from './services/notificationService.js';
+import createRateLimiter from './middleware/rateLimit.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
+
+const parseBool = (value, defaultValue = true) => {
+  if (value === undefined) return defaultValue;
+  const normalized = String(value).trim().toLowerCase();
+  return !['false', '0', 'off', 'no'].includes(normalized);
+};
+
+const isGlobalRateLimitEnabled = parseBool(process.env.RATE_LIMIT_ENABLED, true);
+const isAuthRateLimitEnabled = parseBool(
+  process.env.RATE_LIMIT_AUTH_ENABLED,
+  isGlobalRateLimitEnabled
+);
+
+const globalWindowSeconds = Number(process.env.RATE_LIMIT_WINDOW_SECONDS) || 60;
+const globalMaxRequests = Number(process.env.RATE_LIMIT_MAX_REQUESTS) || 100;
+const authWindowSeconds = Number(process.env.RATE_LIMIT_AUTH_WINDOW_SECONDS) || 300;
+const authMaxRequests = Number(process.env.RATE_LIMIT_AUTH_MAX_REQUESTS) || 10;
+
+info({
+  rateLimit: {
+    global: {
+      enabled: isGlobalRateLimitEnabled,
+      windowSeconds: globalWindowSeconds,
+      maxRequests: globalMaxRequests
+    },
+    auth: {
+      enabled: isAuthRateLimitEnabled,
+      windowSeconds: authWindowSeconds,
+      maxRequests: authMaxRequests
+    }
+  }
+}, 'Rate limit configuration');
+
+const globalRateLimiter = createRateLimiter({
+  windowSeconds: globalWindowSeconds,
+  maxRequests: globalMaxRequests,
+  keyPrefix: 'rl:global'
+});
+
+const authRateLimiter = createRateLimiter({
+  windowSeconds: authWindowSeconds,
+  maxRequests: authMaxRequests,
+  keyPrefix: 'rl:auth'
+});
 
 async function initializeRedis() {
   try {
@@ -77,8 +122,17 @@ app.use(pinoHttp({
   }
 }));
 
+// Global rate limit (fallback в память, если Redis недоступен)
+if (isGlobalRateLimitEnabled) {
+  app.use('/api', globalRateLimiter);
+}
+
 // Routes
-app.use('/api/auth', authRouter);
+if (isAuthRateLimitEnabled) {
+  app.use('/api/auth', authRateLimiter, authRouter);
+} else {
+  app.use('/api/auth', authRouter);
+}
 app.use('/api/animals', animalsRouter);
 app.use('/api/shelters', sheltersRouter);
 app.use('/api/users', usersRouter);

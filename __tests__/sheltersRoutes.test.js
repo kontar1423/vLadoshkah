@@ -6,13 +6,24 @@ jest.mock('../src/initMinio.js', () => ({
   default: jest.fn().mockResolvedValue(undefined)
 }));
 
+// Мокаем DAO приютов для проверок владения
+jest.mock('../src/dao/sheltersDao.js', () => ({
+  __esModule: true,
+  default: {
+    getById: jest.fn(),
+    getByAdminId: jest.fn(),
+  }
+}));
+
 // Импортируем app и сервисы
 import app from '../src/index.js';
 import { generateTestToken, authHeader } from './helpers/authHelper.js';
 import sheltersService from '../src/services/sheltersService.js';
+import sheltersDao from '../src/dao/sheltersDao.js';
 
 describe('Shelters routes', () => {
   const adminToken = generateTestToken({ role: 'admin' });
+  const shelterAdminToken = generateTestToken({ role: 'shelter_admin', userId: 10 });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -31,6 +42,8 @@ describe('Shelters routes', () => {
     jest.spyOn(sheltersService, 'removeShelter').mockImplementation((id) => {
       return Promise.resolve(id === 1 ? true : false);
     });
+
+    sheltersDao.getById.mockResolvedValue({ id: 1, admin_id: 10 });
   });
   
   afterEach(() => {
@@ -85,6 +98,15 @@ describe('Shelters routes', () => {
         .send({ name: '' });
       expect(res.status).toBe(400);
     });
+
+    test('sets admin_id from shelter_admin token', async () => {
+      const res = await request(app)
+        .post('/api/shelters')
+        .set(authHeader(shelterAdminToken))
+        .send({ name: 'My Shelter', address: 'Street 1' });
+      expect(res.status).toBe(201);
+      expect(sheltersService.createShelter).toHaveBeenCalledWith(expect.objectContaining({ admin_id: 10 }));
+    });
   });
 
   describe('PUT /api/shelters/:id', () => {
@@ -112,6 +134,24 @@ describe('Shelters routes', () => {
         .send({ name: 'Updated Shelter' });
       expect(res.status).toBe(404);
     });
+
+    test('allows shelter_admin to update own shelter', async () => {
+      sheltersDao.getById.mockResolvedValueOnce({ id: 1, admin_id: 10 });
+      const res = await request(app)
+        .put('/api/shelters/1')
+        .set(authHeader(shelterAdminToken))
+        .send({ name: 'Mine' });
+      expect(res.status).toBe(200);
+    });
+
+    test('forbids shelter_admin updating foreign shelter', async () => {
+      sheltersDao.getById.mockResolvedValueOnce({ id: 1, admin_id: 99 });
+      const res = await request(app)
+        .put('/api/shelters/1')
+        .set(authHeader(shelterAdminToken))
+        .send({ name: 'Not mine' });
+      expect(res.status).toBe(403);
+    });
   });
 
   describe('DELETE /api/shelters/:id', () => {
@@ -125,6 +165,22 @@ describe('Shelters routes', () => {
         .delete('/api/shelters/1')
         .set(authHeader(adminToken));
       expect(res.status).toBe(204);
+    });
+
+    test('allows shelter_admin to delete own shelter', async () => {
+      sheltersDao.getById.mockResolvedValueOnce({ id: 1, admin_id: 10 });
+      const res = await request(app)
+        .delete('/api/shelters/1')
+        .set(authHeader(shelterAdminToken));
+      expect(res.status).toBe(204);
+    });
+
+    test('forbids shelter_admin deleting foreign shelter', async () => {
+      sheltersDao.getById.mockResolvedValueOnce({ id: 1, admin_id: 99 });
+      const res = await request(app)
+        .delete('/api/shelters/1')
+        .set(authHeader(shelterAdminToken));
+      expect(res.status).toBe(403);
     });
   });
 });
