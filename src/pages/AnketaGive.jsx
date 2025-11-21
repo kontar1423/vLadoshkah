@@ -8,7 +8,6 @@ const AnketaGive = () => {
     const { shelterId, shelterName } = location.state || {};
 
     const [formData, setFormData] = useState({
-        // Основная информация
         name: '',
         species: '',
         breed: '',
@@ -16,12 +15,10 @@ const AnketaGive = () => {
         gender: '',
         birth_date: '',
         
-        // Медицинские данные
         vaccination_status: '',
         health_status: '',
         special_needs: '',
         
-        // Характер и история
         history: '',
     });
 
@@ -30,7 +27,6 @@ const AnketaGive = () => {
     const [touchedFields, setTouchedFields] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Валидация формы
     useEffect(() => {
         const requiredFields = [
             'name',
@@ -106,19 +102,16 @@ const AnketaGive = () => {
     const prepareFormDataForBackend = () => {
         const formDataToSend = new FormData();
         
-        // Добавляем основные поля питомца
         Object.keys(formData).forEach(key => {
             if (formData[key]) {
                 formDataToSend.append(key, formData[key]);
             }
         });
 
-        // Добавляем опциональные поля заявки
         if (shelterId) {
             formDataToSend.append('shelter_id', shelterId);
         }
         
-        // Если description не указан, создаем из истории/нужд
         if (!formData.description) {
             const description = `Питомец для отдачи: ${formData.name}. ${formData.history || ''} ${formData.special_needs || ''}`.trim();
             if (description) {
@@ -126,7 +119,6 @@ const AnketaGive = () => {
             }
         }
 
-        // Добавляем фотографии
         petPhotos.forEach((photo, index) => {
             formDataToSend.append('photo', photo.file);
         });
@@ -154,7 +146,6 @@ const AnketaGive = () => {
         try {
             const formDataToSend = prepareFormDataForBackend();
             
-            // Отправляем данные в бэкенд через новый эндпоинт
             const response = await applicationService.createGiveApplication(formDataToSend);
 
             console.log('Заявка на отдачу успешно создана:', response.data);
@@ -180,7 +171,6 @@ const AnketaGive = () => {
     return (
         <div className="min-h-screen bg-green-95 py-8 px-[20px] md:px-[40px] lg:px-[60px]">
             <div className="max-w-4xl mx-auto">
-                {/* Заголовок */}
                 <div className="text-center mb-8">
                     <h1 className="font-sf-rounded font-bold text-green-30 text-3xl md:text-4xl lg:text-5xl mb-2">
                         Анкета животного
@@ -196,7 +186,6 @@ const AnketaGive = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
-                    {/* Основная информация о животном */}
                     <div className="bg-green-95 rounded-custom p-6 animate-fade-up" style={{ animationDelay: '0.1s' }}>
                         <h2 className="font-sf-rounded font-bold text-green-30 text-2xl mb-6">
                             Основная информация
@@ -325,7 +314,6 @@ const AnketaGive = () => {
                             </div>
                         </div>
 
-                        {/* Секция для загрузки фотографий */}
                         <div className="mt-8 pt-6 border-t border-green-80">
                             <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-4">
                                 Фотографии животного *
@@ -335,7 +323,6 @@ const AnketaGive = () => {
                             </p>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Область загрузки */}
                                 <div className="flex flex-col items-center justify-center">
                                     <label 
                                         htmlFor="petPhotos"
@@ -369,7 +356,6 @@ const AnketaGive = () => {
                                     </p>
                                 </div>
 
-                                {/* Предпросмотр загруженных фото */}
                                 <div>
                                     {petPhotos.length > 0 ? (
                                         <div className="space-y-3">
@@ -418,7 +404,6 @@ const AnketaGive = () => {
                         </div>
                     </div>
 
-                    {/* Медицинские данные */}
                     <div className="bg-green-95 rounded-custom p-6 animate-fade-up" style={{ animationDelay: '0.2s' }}>
                         <h2 className="font-sf-rounded font-bold text-green-30 text-2xl mb-6">
                             Медицинские данные
@@ -476,7 +461,6 @@ const AnketaGive = () => {
                         </div>
                     </div>
 
-                    {/* Характер и история */}
                     <div className="bg-green-95 rounded-custom p-6 animate-fade-up" style={{ animationDelay: '0.3s' }}>
                         <h2 className="font-sf-rounded font-bold text-green-30 text-2xl mb-6">
                             История животного
@@ -497,7 +481,6 @@ const AnketaGive = () => {
                         </div>
                     </div>
 
-                    {/* Кнопки действий */}
                     <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6 animate-fade-up" style={{ animationDelay: '0.5s' }}>
                         <button
                             type="button"

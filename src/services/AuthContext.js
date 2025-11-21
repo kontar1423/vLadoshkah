@@ -25,14 +25,14 @@
         
         if (token) {
         try {
-            console.log('🔄 AuthContext: Loading fresh user data from server...');
+            console.log('AuthContext: Loading fresh user data from server...');
             const userData = await authService.getCurrentUserFromServer();
             setIsAuthenticated(true);
             setUser(userData);
             localStorage.setItem('user', JSON.stringify(userData));
-            console.log('✅ AuthContext: User authenticated with fresh data:', userData);
+            console.log('AuthContext: User authenticated with fresh data:', userData);
         } catch (error) {
-            console.error('❌ AuthContext: Failed to load user from server, using localStorage fallback');
+            console.error('AuthContext: Failed to load user from server, using localStorage fallback');
             const userData = authService.getCurrentUser();
             if (userData) {
             setIsAuthenticated(true);
@@ -52,10 +52,10 @@
     const register = async (userData) => {
         try {
         setLoading(true);
-        console.log('🔄 AuthContext: Registering user...');
+        console.log('AuthContext: Registering user...');
         
         const result = await authService.register(userData);
-        console.log('🔄 AuthContext: Register result:', result);
+        console.log('AuthContext: Register result:', result);
         
         if (result.success && result.user) {
             setIsAuthenticated(true);
@@ -63,7 +63,7 @@
             
             localStorage.setItem('profileComplete', 'false');
             
-            console.log('✅ AuthContext: Registration successful, user authenticated');
+            console.log('AuthContext: Registration successful, user authenticated');
             return { success: true, user: result.user };
         } else {
             return { 
@@ -72,7 +72,7 @@
             };
         }
         } catch (error) {
-        console.error('🔄 AuthContext: Register exception:', error);
+        console.error('AuthContext: Register exception:', error);
         return { 
             success: false, 
             error: 'Неожиданная ошибка при регистрации' 
@@ -121,15 +121,15 @@
             const updatedUser = { ...user, ...userData };
             setUser(updatedUser);
             localStorage.setItem('user', JSON.stringify(updatedUser));
-            console.log('✅ AuthContext: User data updated locally', updatedUser);
+            console.log('AuthContext: User data updated locally', updatedUser);
             
             const freshUserData = await authService.getCurrentUserFromServer();
             setUser(freshUserData);
             localStorage.setItem('user', JSON.stringify(freshUserData));
-            console.log('✅ AuthContext: Fresh user data loaded from server', freshUserData);
+            console.log('AuthContext: Fresh user data loaded from server', freshUserData);
         }
         } catch (error) {
-        console.error('❌ AuthContext: Error updating user:', error);
+        console.error('AuthContext: Error updating user:', error);
         }
     };
 
@@ -138,10 +138,10 @@
         const freshUserData = await authService.getCurrentUserFromServer();
         setUser(freshUserData);
         localStorage.setItem('user', JSON.stringify(freshUserData));
-        console.log('✅ AuthContext: User data refreshed from server', freshUserData);
+        console.log('AuthContext: User data refreshed from server', freshUserData);
         return freshUserData;
         } catch (error) {
-        console.error('❌ AuthContext: Error refreshing user:', error);
+        console.error('AuthContext: Error refreshing user:', error);
         throw error;
         }
     };

@@ -14,8 +14,6 @@ const PetProfile = () => {
     const [similarPets, setSimilarPets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
-    // Состояния для заявки на усыновление
     const [isApplied, setIsApplied] = useState(false);
     const [isLoadingApplication, setIsLoadingApplication] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,7 +21,6 @@ const PetProfile = () => {
 
     const UPLOADS_BASE_URL = import.meta.env.VITE_UPLOADS_BASE_URL || 'http://172.29.8.236:9000';
 
-    // Проверяем статус заявки при загрузке компонента
     useEffect(() => {
         checkApplicationStatus();
     }, [id]);
@@ -36,8 +33,6 @@ const PetProfile = () => {
                 setCheckingApplicationStatus(false);
                 return;
             }
-
-            // 🔥 ИСПРАВЛЕНИЕ: Используем правильный метод из сервиса
             const hasApplied = await applicationService.checkTakeApplicationForAnimal(parseInt(id));
             setIsApplied(hasApplied);
         } catch (error) {
@@ -48,7 +43,6 @@ const PetProfile = () => {
         }
     };
 
-    // 🔥 ИСПРАВЛЕННАЯ ФУНКЦИЯ - проверяем авторизацию перед открытием модалки
     const handleAdoptClick = () => {
         const token = localStorage.getItem('accessToken');
         if (!token) {
@@ -57,7 +51,6 @@ const PetProfile = () => {
             return;
         }
 
-        // Только если пользователь авторизован - открываем модальное окно
         setIsModalOpen(true);
     };
 
@@ -71,7 +64,6 @@ const PetProfile = () => {
                 description: `Заявка на усыновление питомца ${currentPet.name}`
             };
 
-            // 🔥 ИСПРАВЛЕНИЕ: Используем правильный метод из сервиса
             await applicationService.createTakeApplication(applicationData);
             setIsApplied(true);
             setIsModalOpen(false);
@@ -102,7 +94,6 @@ const PetProfile = () => {
         }
     };
 
-    // Остальной код компонента остается без изменений...
     const getPhotoUrl = (photo) => {
         if (!photo) return null;
         
@@ -231,56 +222,7 @@ const PetProfile = () => {
         };
     };
 
-    const getMockPetData = () => ({
-        id: parseInt(id),
-        name: "Бэлла",
-        age: 7,
-        weight: "25 кг",
-        height: "35 см",
-        coat: "Шерсть длинная",
-        color: "Окрас черно-рыжий",
-        breed: "Border collie",
-        description: `Бэлла попала в приют после жизни на улице...`,
-        shelter_id: 1,
-        shelter_name: "ПетДом",
-        gender: "female",
-        photos: [],
-        type: "dog",
-        personality: "спокойная, сдержанная, флегматичная",
-        health: "здорова, все прививки сделаны"
-    });
-
-    const getMockShelterData = () => ({
-        name: "ПетДом",
-        address: "Адрес: Шмаковская 23к4",
-        phone: "+7 (123) 456-78-90",
-        email: "pethome@example.com"
-    });
-
-    const getMockSimilarPets = () => [
-        {
-            id: 2,
-            name: "Честер",
-            age: 1,
-            gender: "male",
-            type: "dog",
-            photos: [],
-            shelter_name: "ПетДом",
-            personality: "игривый, активный",
-            breed: "Лабрадор"
-        },
-        {
-            id: 3,
-            name: "Горемыка",
-            age: 2,
-            gender: "female",
-            type: "dog",
-            photos: [],
-            shelter_name: "ПетДом",
-            personality: "дружелюбная, ласковая",
-            breed: "Дворняжка"
-        }
-    ];
+    
 
     const formatAge = (age) => {
         if (typeof age === 'number') {
@@ -388,13 +330,9 @@ const PetProfile = () => {
     return (
         <div className="min-h-screen bg-green-95 py-10">
             <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px]">
-                {/* Основной контент */}
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
-                
-                {/* Левая колонка - фото и характеристики */}
                 <div className="lg:w-1/3">
                     <article className="flex flex-col items-start gap-6 bg-green-95 rounded-custom p-6">
-                    {/* Фото питомца */}
                     <div className="w-full aspect-[1.01] rounded-custom overflow-hidden relative">
                         {mainPhotoUrl ? (
                             <img
@@ -410,7 +348,6 @@ const PetProfile = () => {
                             />
                         ) : null}
                         
-                        {/* Fallback если фото нет или не загрузилось */}
                         <div 
                             id={`fallback-${currentPet.id}`}
                             className={`w-full h-full bg-gradient-to-br from-green-70 to-green-60 rounded-custom flex items-center justify-center flex-col p-4 ${mainPhotoUrl ? 'hidden' : 'flex'}`}
@@ -428,20 +365,15 @@ const PetProfile = () => {
                             )}
                         </div>
                         
-                        {/* Градиент только внизу фото */}
                         <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-green-95 to-transparent"></div>
-                        
-                        {/* Имя и пол поверх фото */}
                         <div className="absolute bottom-6 left-6 right-6">
                             <div className="flex items-center gap-4">
-                                {/* Имя в окне green-90 с текстом green-20 */}
                                 <div className="px-4 py-2 bg-green-90 rounded-full">
                                     <h2 className="font-sf-rounded font-bold text-green-20 text-2xl">
                                         {currentPet.name}
                                     </h2>
                                 </div>
                                 
-                                {/* Пол полупрозрачный green-90 с текстом green-20 */}
                                 <div className="flex w-11 h-11 items-center justify-center bg-green-90/80 rounded-[100px] backdrop-blur-sm">
                                     <span className="text-green-20 text-sm font-semibold">
                                         {currentPet.gender === "male" ? "♂" : "♀"}
@@ -451,10 +383,8 @@ const PetProfile = () => {
                         </div>
                     </div>
 
-                    {/* Характеристики питомца */}
                     {(petInfo.length > 0 || petDetails.length > 0) && (
                         <div className="flex flex-col gap-4 w-full">
-                            {/* Основные характеристики */}
                             {petInfo.length > 0 && (
                                 <div className="flex flex-wrap gap-2">
                                     {petInfo.map((info) => (
@@ -470,7 +400,6 @@ const PetProfile = () => {
                                 </div>
                             )}
 
-                            {/* Дополнительные детали */}
                             {petDetails.length > 0 && (
                                 <div className="flex flex-wrap gap-2">
                                     {petDetails.map((detail) => (
@@ -488,9 +417,7 @@ const PetProfile = () => {
                         </div>
                     )}
 
-                    {/* Характер и здоровье */}
                     <div className="w-full space-y-3">
-                        {/* Характер */}
                         <div className="bg-green-90 rounded-custom-small p-4">
                             <h4 className="font-inter font-semibold text-green-30 text-sm mb-2">
                                 Характер
@@ -500,7 +427,6 @@ const PetProfile = () => {
                             </p>
                         </div>
 
-                        {/* Здоровье */}
                         <div className="bg-green-90 rounded-custom-small p-4">
                             <h4 className="font-inter font-semibold text-green-30 text-sm mb-2">
                                 Состояние здоровья
@@ -513,9 +439,7 @@ const PetProfile = () => {
                     </article>
                 </div>
 
-                {/* Правая колонка - описание и контакты */}
                 <div className="lg:w-2/3">
-                    {/* Описание питомца */}
                     <section className="flex flex-col items-start justify-center gap-4 mb-6">
                         <div className="flex items-center justify-center p-6 relative self-stretch w-full bg-green-90 rounded-custom">
                             <p className="flex-1 font-inter font-regular text-green-20 text-[16px] leading-relaxed whitespace-pre-line">
@@ -524,7 +448,6 @@ const PetProfile = () => {
                         </div>
                     </section>
 
-                    {/* Контакты приюта */}
                     <section className="flex flex-col items-start justify-center gap-4 mb-8">
                         <div className="flex items-center justify-between p-6 relative self-stretch w-full bg-green-90 rounded-custom">
                             <address className="flex-1 font-inter font-semibold text-green-20 text-[16px] leading-relaxed not-italic">
@@ -557,7 +480,6 @@ const PetProfile = () => {
                         </div>
                     </section>
                                         
-                    {/* Кнопка заявки на усыновление */}
                     <section className="flex flex-col items-start justify-center gap-4 mb-6">
                         <div className="flex flex-col items-start p-6 relative self-stretch w-full bg-green-90 rounded-custom gap-4">
                             <div className="w-full">
@@ -593,7 +515,6 @@ const PetProfile = () => {
                         </div>
                     </section>
 
-                    {/* Похожие питомцы */}
                     {similarPets.length > 0 && (
                         <section className="flex flex-col items-center gap-4 relative self-stretch">
                             <div className="flex items-center gap-[25px] relative self-stretch w-full mb-6">
@@ -616,7 +537,6 @@ const PetProfile = () => {
                 </div>
             </div>
 
-            {/* Модальное окно подтверждения заявки */}
             <AdoptionConfirmationModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}

@@ -3,7 +3,6 @@
     export const geocodingService = {
     async getCoordinates(address) {
         try {
-        // Используем Nominatim (бесплатный сервис OpenStreetMap)
         const response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`
         );

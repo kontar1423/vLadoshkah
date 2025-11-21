@@ -5,7 +5,6 @@ import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
 import Home from './pages/Home'
 import FindPet from './pages/FindPet'
-import Help from './pages/Help'
 import Shelters from './pages/Shelters'
 import GiveAnimal from './pages/GiveAnimal'
 import Login from './pages/Login'
@@ -31,7 +30,6 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/найти-питомца" element={<FindPet />} />
-              <Route path="/помочь" element={<Help />} />
               <Route path="/приюты" element={<Shelters />} />
               <Route path="/отдать-животное" element={<GiveAnimal />} />
               <Route path="/войти" element={<Login />} />

@@ -1,4 +1,3 @@
-    // src/pages/AnketaInfo.jsx
     import React from 'react';
 
     const AnketaInfo = () => {

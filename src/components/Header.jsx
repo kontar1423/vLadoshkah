@@ -21,17 +21,17 @@ export const Header = () => {
     { id: 4, label: "Отдать животное", path: "/отдать-животное" },
   ];
 
-  // 🔥 ДОБАВЛЯЕМ: Функция для обновления данных пользователя
+
   const handleRefreshUser = async () => {
     try {
       await refreshUser();
-      console.log('✅ Header: User data refreshed');
+      console.log('Header: User data refreshed');
     } catch (error) {
-      console.error('❌ Header: Error refreshing user data:', error);
+      console.error('Header: Error refreshing user data:', error);
     }
   };
 
-  // 🔥 ДОБАВЛЯЕМ: Обновляем данные при монтировании компонента
+  
   useEffect(() => {
     if (isAuthenticated) {
       handleRefreshUser();
@@ -71,11 +71,9 @@ export const Header = () => {
     setIsUserMenuOpen(false);
   };
 
-  // 🔥 ИСПРАВЛЕННАЯ ФУНКЦИЯ: Правильное получение имени
+
   const getUserDisplayName = () => {
-    console.log('👤 Header: Current user data:', user);
-    
-    // Используем реальные данные пользователя из API
+    console.log('Header: Current user data:', user);
     if (user?.firstname && user?.lastname) {
       return `${user.firstname} ${user.lastname}`;
     }
@@ -97,7 +95,6 @@ export const Header = () => {
     return roleMap[user?.role] || 'Пользователь';
   };
 
-  // Получаем фото профиля
   const getProfilePhoto = () => {
     if (user?.photoUrl) {
       return user.photoUrl;

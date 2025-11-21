@@ -7,50 +7,19 @@ import artem from '../assets/images/artem.jpg'
 
 const AdminProfile = () => {
     const navigate = useNavigate()
-    
-    const [volunteerInfo] = useState({
-        name: "Константин",
-        status: "Подтвержденный волонтер",
-        phone: "+79745671234",
-        email: "examplebigemail@mail.com",
-        gender: "Мужской",
-        bio: "Люблю собак. Заберу домой каждую.",
-        image: profpic
-    })
 
-    // Изначально приют не подтвержден
+
     const [shelterInfo, setShelterInfo] = useState(null)
     const [shelterPets, setShelterPets] = useState([])
 
-    // Состояние для отслеживания отправленной заявки
     const [hasPendingApplication, setHasPendingApplication] = useState(false)
 
-    const [personalPets] = useState([
-        {
-        id: 1,
-        name: "Честер",
-        age: "11 мес",
-        gender: "male",
-        genderIcon: null,
-        image: pesik
-        },
-        {
-        id: 2,
-        name: "Артемка", 
-        age: "2 дня",
-        gender: "female",
-        genderIcon: null,
-        image: artem
-        }
-    ])
 
     const handleRegisterShelter = () => {
-        // Перенаправление на страницу регистрации приюта
         navigate('/регистрация-приюта')
     }
 
     const handleAddPet = () => {
-        // Перенаправление на страницу добавления питомца с передачей данных о приюте
         navigate('/Anketa_give', { 
             state: { 
                 shelterId: shelterInfo.id, 
@@ -59,33 +28,17 @@ const AdminProfile = () => {
         })
     }
 
-    // Функция для отправки заявки на подтверждение приюта
     const handleSubmitApplication = () => {
-        // Здесь будет логика отправки заявки администратору
         console.log('Заявка на подтверждение приюта отправлена')
         setHasPendingApplication(true)
-        
-        // Имитация отправки заявки
-        setTimeout(() => {
-            // После "подтверждения" администратором
-            setShelterInfo({
-                id: 1,
-                name: "Приют 'Ладошки'",
-                status: "active"
-            })
-            setHasPendingApplication(false)
-        }, 2000) // Имитация задержки обработки заявки
     }
 
     return (
         <div className="min-h-screen bg-green-95">
         <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-10">
             <div className="flex flex-col lg:flex-row gap-8">
-            {/* Основной контент */}
             <main className="flex-1">
-                {/* Секция администратора приюта */}
                 {!shelterInfo ? (
-                // Блок регистрации приюта (пока не подтвержден)
                 <section className="bg-green-90 rounded-custom p-8 mb-8 border-2 border-green-80">
                     <div className="text-center">
                     <div className="w-20 h-20 bg-green-80 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -120,7 +73,6 @@ const AdminProfile = () => {
                     </div>
                 </section>
                 ) : (
-                // Блок информации о приюте (после подтверждения)
                 <>
                     <section className="bg-green-90 rounded-custom p-6 mb-8 border-2 border-green-50">
                         <div className="flex items-center justify-between">
@@ -140,7 +92,6 @@ const AdminProfile = () => {
                         </div>
                     </section>
 
-                    {/* Блок добавления питомца (только для подтвержденного приюта) */}
                     <section className="bg-green-90 rounded-custom p-6 mb-8">
                         <div className="flex items-center justify-between">
                         <div>
@@ -160,10 +111,8 @@ const AdminProfile = () => {
                         </div>
                     </section>
 
-                    {/* Разделитель */}
                     <div className="border-t border-green-80 my-8"></div>
 
-                    {/* Секция питомцев приюта (только если есть зарегистрированный приют) */}
                     {shelterPets.length > 0 && (
                     <section className="mb-12">
                         <header className="flex items-center gap-4 mb-6">
@@ -188,7 +137,6 @@ const AdminProfile = () => {
                 </>
                 )}
 
-                {/* Секция личных питомцев (всегда видна) */}
                 <section className="flex flex-col items-center gap-6 relative">
                 <header className="flex items-center gap-6 relative self-stretch">
                     <h1 className="w-fit mt-[-1.00px] font-sf-rounded font-bold text-green-20 text-2xl md:text-3xl">
@@ -210,12 +158,10 @@ const AdminProfile = () => {
                 </section>
             </main>
 
-            {/* Боковая панель - информация о волонтере */}
             <aside
                 className="lg:w-[340px] flex flex-col gap-6"
                 aria-label="Информация о пользователе"
             >
-                {/* Фотография профиля */}
                 <div className="relative bg-green-90 rounded-custom overflow-hidden">
                 <div className="relative h-124">
                     <img
@@ -238,7 +184,6 @@ const AdminProfile = () => {
                 </div>
                 </div>
 
-                {/* Блок "Личная информация" */}
                 <div className="bg-green-95 rounded-custom p-6 space-y-1">
                 <h3 className="font-sf-rounded font-bold text-green-20 text-lg mb-2">
                     Личная информация
@@ -277,7 +222,6 @@ const AdminProfile = () => {
                 </div>
                 </div>
 
-                {/* Блок "О себе" */}
                 <div className="bg-green-90 rounded-custom p-6">
                 <h3 className="font-sf-rounded font-bold text-green-20 text-lg mb-4">
                     О себе
@@ -287,7 +231,6 @@ const AdminProfile = () => {
                 </p>
                 </div>
 
-                {/* Блок для представителей приюта (только если приют не подтвержден) */}
                 {!shelterInfo && !hasPendingApplication && (
                 <div className="bg-green-95 rounded-custom p-4">
                     <p className="font-inter font-regular text-green-20 text-sm leading-relaxed text-left">

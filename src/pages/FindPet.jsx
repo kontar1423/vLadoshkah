@@ -31,7 +31,6 @@ const FindPet = () => {
   const [activeFilters, setActiveFilters] = useState({});
   const [highlightedShelter, setHighlightedShelter] = useState(null);
 
-  // Функция для получения читаемого названия фильтра
   const getFilterDisplayName = (filterKey, filterValue) => {
     const filterLabels = {
       type: {
@@ -70,14 +69,12 @@ const FindPet = () => {
     return filterLabels[filterKey]?.[filterValue] || filterValue;
   };
 
-  // Функция для склонения слова "год"
   const getAgeWord = (age) => {
     if (age % 10 === 1 && age % 100 !== 11) return 'год';
     if ([2, 3, 4].includes(age % 10) && ![12, 13, 14].includes(age % 100)) return 'года';
     return 'лет';
   };
 
-  // Функция для форматирования отображения фильтров
   const formatActiveFilters = () => {
     const filterEntries = Object.entries(activeFilters).filter(([_, value]) => 
       value !== '' && value !== undefined && value !== null
@@ -112,14 +109,11 @@ const FindPet = () => {
 
     return displayFilters;
   };
-
-  // Загрузка животных и приютов
   useEffect(() => {
     loadAnimals();
     loadShelters();
   }, []);
 
-  // Фильтрация приютов при изменении поискового запроса
   useEffect(() => {
     if (shelterSearchQuery.trim() === "") {
       setFilteredShelters(shelters);
@@ -186,7 +180,6 @@ const FindPet = () => {
 
   const handleShelterSearchSubmit = (e) => {
     e.preventDefault();
-    // Поиск работает через useEffect
   };
 
   const scrollToPets = () => {
@@ -196,7 +189,7 @@ const FindPet = () => {
     }
   };
 
-  // Обработчик применения фильтров
+
   const handleApplyFilters = (filters) => {
     console.log("Applied filters:", filters);
     setActiveFilters(filters);
@@ -238,7 +231,7 @@ const FindPet = () => {
     setCurrentPage(1);
   };
 
-  // Поиск по имени животного
+
   useEffect(() => {
     if (searchTerm.trim() === "") {
       applyFiltersToPets(activeFilters);
@@ -256,7 +249,7 @@ const FindPet = () => {
     setCurrentPage(1);
   }, [searchTerm, allPets, activeFilters]);
 
-  // Вспомогательная функция для применения фильтров
+  
   const applyFilters = (pets, filters) => {
     if (!filters || Object.keys(filters).length === 0) return pets;
 
@@ -302,7 +295,7 @@ const FindPet = () => {
     setFilteredPets(filtered);
   };
 
-  // Сброс фильтров
+  
   const handleResetFilters = () => {
     setActiveFilters({});
     setSearchTerm("");
@@ -310,17 +303,16 @@ const FindPet = () => {
     setCurrentPage(1);
   };
 
-  // Функция для подсветки приюта на карте
+  
   const highlightShelterOnMap = (shelterId) => {
     setHighlightedShelter(shelterId);
   };
 
-  // Обработчик клика по приюту в списке
+  
   const handleShelterClick = (shelter) => {
     highlightShelterOnMap(shelter.id);
   };
 
-  // Пагинация
   const indexOfLastPet = currentPage * petsPerPage;
   const indexOfFirstPet = indexOfLastPet - petsPerPage;
   const currentPets = filteredPets.slice(indexOfFirstPet, indexOfLastPet);
@@ -363,8 +355,6 @@ const FindPet = () => {
       )}
 
       <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px]">
-        
-        {/* Hero Section */}
         <section className="relative w-full h-screen rounded-custom overflow-hidden bg-gradient-to-r mb-32">
           <div className="absolute top-0 right-0 w-[500px] h-full flex items-center justify-end">
             <img
@@ -394,7 +384,6 @@ const FindPet = () => {
           </div>
         </section>
 
-        {/* Why Help Section */}
         <section className="mt-8 md:mt-16 max-w-[1160px] mx-auto mb-12">
           <div className="relative w-full h-auto min-h-[300px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-green-80 rounded-full -translate-y-32 translate-x-32 opacity-50"></div>
@@ -435,7 +424,6 @@ const FindPet = () => {
           </div>
         </section>
 
-        {/* Statistics Section with Search */}
         <section className="mt-8 md:mt-16 max-w-[1160px] mx-auto mb-28">
           <div className="relative w-full bg-green-90 rounded-custom overflow-hidden p-8 md:p-12">
             <div className="absolute top-0 right-0 w-64 h-64 bg-green-80 rounded-full -translate-y-32 translate-x-32 opacity-50"></div>
@@ -552,7 +540,6 @@ const FindPet = () => {
           </div>
         </section>
 
-        {/* Pets Grid Section */}
         <section id="pets-section" className="w-full max-w-[1260px] mx-auto py-30 mb-25">
           <div className="mb-6">
             <div className="bg-green-90 rounded-custom-small px-6 py-3 inline-block">
@@ -719,7 +706,6 @@ const FindPet = () => {
           )}
         </section>
 
-        {/* Map Section */}
         <section className="mt-8 md:mt-16 max-w-[1160px] mx-auto mb-8">
           <div className="flex flex-col items-center gap-[25px] relative">
             <h1 className="self-stretch mt-[-1.00px] font-sf-rounded font-bold text-green-30 text-3xl md:text-4xl text-center">
@@ -727,9 +713,7 @@ const FindPet = () => {
             </h1>
 
             <div className="h-[600px] items-start self-stretch w-full flex flex-col lg:flex-row gap-4">
-              {/* Left Side - Search and Shelters */}
               <aside className="flex-col w-full lg:w-[338px] items-start self-stretch">
-                {/* Search Section */}
                 <div className="bg-green-95 rounded-custom p-1 mb-2">
                   <form
                     className="items-center self-stretch w-full flex"
@@ -765,7 +749,6 @@ const FindPet = () => {
                   </form>
                 </div>
 
-                {/* Filtered Shelters List */}
                 <div className="bg-green-90 rounded-custom p-4 flex-1 max-h-[500px] overflow-y-auto">
                   <nav
                     className="flex flex-col items-start h-full"
@@ -824,7 +807,6 @@ const FindPet = () => {
                 </div>
               </aside>
 
-              {/* Right Side - Map */}
               <div className="relative w-full lg:w-[812px] h-[600px] rounded-custom overflow-hidden border-2 border-green-40">
                 <SheltersMap 
                   shelters={shelters}

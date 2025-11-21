@@ -9,7 +9,7 @@ const PersonalInfo = () => {
         lastname: '',
         phone: '',
         gender: '',
-        bio: '' // 🔥 ИЗМЕНЕНО: personalInfo → bio
+        bio: '' 
     })
     const [profilePhoto, setProfilePhoto] = useState(null)
     const [photoPreview, setPhotoPreview] = useState('')
@@ -20,16 +20,16 @@ const PersonalInfo = () => {
     const navigate = useNavigate()
 
     useEffect(() => {
-        console.log('🔍 PersonalInfo: Checking access...');
+        console.log(' PersonalInfo: Checking access...');
         
         const token = localStorage.getItem('accessToken');
         if (!token) {
-            console.log('❌ PersonalInfo: No token found, redirecting to register');
+            console.log('PersonalInfo: No token found, redirecting to register');
             navigate('/регистрация');
             return;
         }
 
-        console.log('✅ PersonalInfo: Token found, loading form...');
+        console.log('PersonalInfo: Token found, loading form...');
         loadUserProfile();
     }, [navigate])
 
@@ -37,13 +37,13 @@ const PersonalInfo = () => {
         try {
             const userData = await userService.getCurrentUser();
             if (userData) {
-                console.log('📱 PersonalInfo: Loaded user data from server:', userData);
+                console.log(' PersonalInfo: Loaded user data from server:', userData);
                 setFormData({
                     firstname: userData.firstname || '',
                     lastname: userData.lastname || '',
                     phone: userData.phone || '',
                     gender: userData.gender || '',
-                    bio: userData.bio || userData.personalInfo || '' // 🔥 ИЗМЕНЕНО: используем bio
+                    bio: userData.bio || userData.personalInfo || '' 
                 });
                 
                 if (userData.photoUrl || (userData.photos && userData.photos[0])) {
@@ -52,16 +52,16 @@ const PersonalInfo = () => {
                 }
             }
         } catch (error) {
-            console.log('📱 PersonalInfo: Could not load from server, using localStorage');
+            console.log('PersonalInfo: Could not load from server, using localStorage');
             const cachedUser = JSON.parse(localStorage.getItem('user') || 'null');
             if (cachedUser) {
-                console.log('📱 PersonalInfo: Using cached user from localStorage:', cachedUser);
+                console.log('PersonalInfo: Using cached user from localStorage:', cachedUser);
                 setFormData({
                     firstname: cachedUser.firstname || '',
                     lastname: cachedUser.lastname || '',
                     phone: cachedUser.phone || '',
                     gender: cachedUser.gender || '',
-                    bio: cachedUser.bio || cachedUser.personalInfo || '' // 🔥 ИЗМЕНЕНО
+                    bio: cachedUser.bio || cachedUser.personalInfo || '' 
                 });
                 
                 if (cachedUser.photoUrl) {
@@ -73,8 +73,8 @@ const PersonalInfo = () => {
 
     const isProfileComplete = () => {
         return formData.firstname.trim() && 
-               formData.lastname.trim() && 
-               formData.gender;
+            formData.lastname.trim() && 
+            formData.gender;
     }
 
     const handleChange = (e) => {
@@ -115,7 +115,6 @@ const PersonalInfo = () => {
         }
     }
 
-    // 🔥 ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТПРАВКИ - отправляем bio вместо personalInfo
     const handleSubmit = async (e) => {
         e.preventDefault()
         setError('')
@@ -128,63 +127,55 @@ const PersonalInfo = () => {
         setLoading(true)
 
         try {
-            console.log('🔄 PersonalInfo: Starting profile update...');
+            console.log(' PersonalInfo: Starting profile update...');
             
-            // 🔥 ПОДГОТОВКА ДАННЫХ ДЛЯ ОТПРАВКИ - используем bio
             const userDataToUpdate = {
                 firstname: formData.firstname.trim(),
                 lastname: formData.lastname.trim(),
                 gender: formData.gender
             };
             
-            // Добавляем опциональные поля только если они не пустые
             if (formData.phone.trim()) {
                 userDataToUpdate.phone = formData.phone.trim();
             }
             
-            // 🔥 ВАЖНОЕ ИСПРАВЛЕНИЕ: отправляем как bio
             if (formData.bio.trim()) {
                 userDataToUpdate.bio = formData.bio.trim();
-                console.log('📝 PersonalInfo: Sending bio field:', formData.bio.trim());
+                console.log(' PersonalInfo: Sending bio field:', formData.bio.trim());
             }
 
-            console.log('📤 PersonalInfo: User data to update:', userDataToUpdate);
+            console.log(' PersonalInfo: User data to update:', userDataToUpdate);
 
-            // 🔥 ОТПРАВЛЯЕМ ДАННЫЕ НА СЕРВЕР
             const updatedUser = await userService.updateUserProfileWithPhoto(
                 userDataToUpdate, 
                 profilePhoto
             );
 
-            console.log('✅ PersonalInfo: Profile updated successfully:', updatedUser);
+            console.log(' PersonalInfo: Profile updated successfully:', updatedUser);
             
-            // 🔥 ЗАГРУЗКА ПОЛНЫХ ДАННЫХ С СЕРВЕРА
-            console.log('🔄 PersonalInfo: Loading complete user data from server...');
+            console.log(' PersonalInfo: Loading complete user data from server...');
             const completeUserData = await userService.getCurrentUser();
-            console.log('✅ PersonalInfo: Complete user data loaded:', completeUserData);
+            console.log(' PersonalInfo: Complete user data loaded:', completeUserData);
             
-            // 🔥 ОБНОВЛЯЕМ AUTHCONTEXT
             if (updateUser) {
                 updateUser(completeUserData);
-                console.log('✅ PersonalInfo: AuthContext updated with complete data');
+                console.log(' PersonalInfo: AuthContext updated with complete data');
             }
             
-            // 🔥 СОХРАНЯЕМ В LOCALSTORAGE
             localStorage.setItem('user', JSON.stringify(completeUserData));
             localStorage.setItem('profileComplete', 'true');
             
-            console.log('✅ PersonalInfo: All data synchronized, redirecting...');
+            console.log('PersonalInfo: All data synchronized, redirecting...');
             
-            // 🔥 ПЕРЕХОДИМ В ПРОФИЛЬ
             navigate('/профиль');
             
         } catch (error) {
-            console.error('❌ PersonalInfo: Error updating profile:', error);
+            console.error('PersonalInfo: Error updating profile:', error);
             
-            // 🔥 ОБРАБОТКА ОШИБОК
+            
             if (error.response?.data) {
                 const errorData = error.response.data;
-                console.error('❌ Server error details:', errorData);
+                console.error(' Server error details:', errorData);
                 
                 if (errorData.details && Array.isArray(errorData.details)) {
                     const errorMessages = errorData.details.map(detail => 
@@ -223,7 +214,6 @@ const PersonalInfo = () => {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Блок загрузки фото */}
                     <div className="animate-fade-up" style={{ animationDelay: '0.1s' }}>
                         <div className="text-center">
                             <div className="w-32 h-32 bg-green-90 border-2 border-green-40 rounded-full flex items-center justify-center mx-auto mb-4 relative overflow-hidden">
@@ -268,7 +258,6 @@ const PersonalInfo = () => {
                         </div>
                     </div>
 
-                    {/* Остальная форма */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="animate-fade-up" style={{ animationDelay: '0.2s' }}>
                             <label htmlFor="firstname" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
@@ -354,7 +343,7 @@ const PersonalInfo = () => {
                         </label>
                         <textarea
                             id="bio"
-                            name="bio" // 🔥 ИЗМЕНЕНО: personalInfo → bio
+                            name="bio" 
                             value={formData.bio}
                             onChange={handleChange}
                             rows={6}

@@ -30,8 +30,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    
-    // Валидация
+
     if (formData.password !== formData.confirmPassword) {
       setError('Пароли не совпадают')
       return
@@ -50,24 +49,24 @@ const Register = () => {
     setLoading(true)
 
     try {
-      console.log('🔄 Register: Starting registration...');
+      console.log(' Register: Starting registration...');
       
       const result = await registerUser({
         email: formData.email,
         password: formData.password
       })
 
-      console.log('🔍 Register: Registration result:', result);
+      console.log('Register: Registration result:', result);
 
       if (result.success) {
-        console.log('✅ Register: Successful! Redirecting to personal info...');
+        console.log('Register: Successful! Redirecting to personal info...');
         navigate('/личная-информация');
       } else {
-        console.error('❌ Register: Failed with error:', result.error);
+        console.error(' Register: Failed with error:', result.error);
         setError(result.error || 'Ошибка при регистрации');
       }
     } catch (error) {
-      console.error('💥 Register: Unexpected error:', error);
+      console.error('Register: Unexpected error:', error);
       setError('Произошла непредвиденная ошибка при регистрации');
     } finally {
       setLoading(false);

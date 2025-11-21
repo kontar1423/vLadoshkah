@@ -15,15 +15,14 @@ const Profile = () => {
     const navigate = useNavigate()
     const lastUserIdRef = useRef(null)
 
-    // 🔥 НОВАЯ ФУНКЦИЯ: Получение ключа для localStorage с привязкой к пользователю
     const getFavoriteStorageKey = () => {
         const currentUser = userData || user;
         return currentUser ? `favoritePets_${currentUser.id}` : 'favoritePets_anonymous';
     };
 
     useEffect(() => {
-        console.log('🔍 Profile: Component mounted or user updated');
-        console.log('📱 Profile: Current user from context:', user);
+        console.log('Profile: Component mounted or user updated');
+        console.log('Profile: Current user from context:', user);
         
         if (!user?.id) return;
 
@@ -33,10 +32,8 @@ const Profile = () => {
         checkAccessAndLoadData();
     }, [user?.id])
 
-    // 🔥 ИСПРАВЛЕННЫЙ useEffect: Слушаем изменения с учетом пользователя
     useEffect(() => {
         const handleStorageChange = (event) => {
-            // Проверяем, относится ли изменение к избранным текущего пользователя
             const storageKey = getFavoriteStorageKey();
             if (event.key === storageKey || !event.key) {
                 console.log('🔄 Profile: Storage changed for current user, reloading favorites...');
@@ -48,7 +45,6 @@ const Profile = () => {
             const eventUserId = event.detail?.userId;
             const currentUserId = (userData || user)?.id;
             
-            // Обновляем только если событие для текущего пользователя или без указания пользователя
             if (!eventUserId || eventUserId === currentUserId) {
                 console.log('🔄 Profile: Custom favorites update, reloading...');
                 loadFavoritePets();
@@ -62,7 +58,7 @@ const Profile = () => {
             window.removeEventListener('storage', handleStorageChange);
             window.removeEventListener('favoritesUpdated', handleCustomFavoritesUpdate);
         };
-    }, [user?.id, userData?.id]); // 🔥 ДОБАВЛЕНА ЗАВИСИМОСТЬ ОТ ID пользователя
+    }, [user?.id, userData?.id]); 
 
     const checkAccessAndLoadData = async () => {
         try {
@@ -71,7 +67,7 @@ const Profile = () => {
             const token = localStorage.getItem('accessToken');
             const profileComplete = localStorage.getItem('profileComplete');
             
-            console.log('🔐 Profile: Access check - Token:', !!token, 'ProfileComplete:', profileComplete);
+            console.log('Profile: Access check - Token:', !!token, 'ProfileComplete:', profileComplete);
             
             if (!token) {
                 navigate('/регистрация');
@@ -83,12 +79,12 @@ const Profile = () => {
                 return;
             }
 
-            console.log('✅ Profile: Access granted - loading data...');
+            console.log('Profile: Access granted - loading data...');
             await loadUserDataFromServer();
             await loadFavoritePets();
             
         } catch (error) {
-            console.error('💥 Profile: Error in checkAccessAndLoadData:', error);
+            console.error('Profile: Error in checkAccessAndLoadData:', error);
         } finally {
             setLoading(false);
         }
@@ -96,38 +92,36 @@ const Profile = () => {
 
     const loadUserDataFromServer = async () => {
         try {
-            console.log('🔄 Profile: Loading fresh user data from server...');
+            console.log('Profile: Loading fresh user data from server...');
             
             const serverUserData = refreshUser
                 ? await refreshUser()
                 : await userService.getCurrentUser();
-            console.log('✅ Profile: User data loaded from server:', serverUserData);
+            console.log('Profile: User data loaded from server:', serverUserData);
             
             setUserData(serverUserData);
             localStorage.setItem('user', JSON.stringify(serverUserData));
             
         } catch (error) {
-            console.error('❌ Profile: Error loading user data from server:', error);
+            console.error('Profile: Error loading user data from server:', error);
             if (user) {
-                console.log('🔄 Profile: Using context data as fallback');
+                console.log('Profile: Using context data as fallback');
                 setUserData(user);
             }
         }
     }
 
-    // 🔥 ИСПРАВЛЕННАЯ ФУНКЦИЯ: Загрузка избранных питомцев с привязкой к пользователю
     const loadFavoritePets = async () => {
         try {
-            console.log('🐕 Profile: Loading favorite pets...');
+            console.log('Profile: Loading favorite pets...');
             
             const currentUser = userData || user;
             if (!currentUser?.id) {
-                console.log('❌ Profile: No user ID available');
+                console.log('Profile: No user ID available');
                 setFavoritePets([]);
                 return;
             }
             
-            // 🔥 ИСПРАВЛЕНИЕ: Используем ключ с ID пользователя
             const storageKey = getFavoriteStorageKey();
             const favoriteIds = JSON.parse(localStorage.getItem(storageKey) || '[]');
             const uniqueFavoriteIds = [...new Set(favoriteIds)];
@@ -138,16 +132,14 @@ const Profile = () => {
                 setFavoritePets([]);
                 return;
             }
-            
-            // Параллельная загрузка питомцев
             const petPromises = uniqueFavoriteIds.map(async (petId) => {
                 try {
-                    console.log(`🔄 Profile: Loading pet ${petId}...`);
+                    console.log(`Profile: Loading pet ${petId}...`);
                     const pet = await animalService.getAnimalById(petId);
-                    console.log(`✅ Profile: Pet ${petId} loaded:`, pet?.name);
+                    console.log(`Profile: Pet ${petId} loaded:`, pet?.name);
                     return pet;
                 } catch (error) {
-                    console.error(`❌ Profile: Error loading pet ${petId}:`, error);
+                    console.error(`Profile: Error loading pet ${petId}:`, error);
                     return null;
                 }
             });
@@ -155,27 +147,25 @@ const Profile = () => {
             const results = await Promise.all(petPromises);
             const validPets = results.filter(pet => pet !== null && pet.id);
             
-            console.log(`✅ Profile: Loaded ${validPets.length} favorite pets for user ${currentUser.id}:`, 
+            console.log(`Profile: Loaded ${validPets.length} favorite pets for user ${currentUser.id}:`, 
                 validPets.map(pet => ({ id: pet.id, name: pet.name }))
             );
             
             setFavoritePets(validPets);
             
         } catch (error) {
-            console.error('❌ Profile: Error loading favorite pets:', error);
+            console.error('Profile: Error loading favorite pets:', error);
             setFavoritePets([]);
         }
     }
-
-    // Остальные функции без изменений...
     const forceRefreshFavorites = async () => {
         console.log('🔄 Profile: Force refreshing favorites...');
         setLoading(true);
         try {
             await loadFavoritePets();
-            console.log('✅ Profile: Favorites force refreshed');
+            console.log(' Profile: Favorites force refreshed');
         } catch (error) {
-            console.error('❌ Profile: Error force refreshing favorites:', error);
+            console.error(' Profile: Error force refreshing favorites:', error);
         } finally {
             setLoading(false);
         }
@@ -185,7 +175,7 @@ const Profile = () => {
         const currentUser = userData || user;
         
         if (!currentUser) {
-            console.log('📸 Profile: No user data available');
+            console.log(' Profile: No user data available');
             return null;
         }
 
@@ -253,22 +243,22 @@ const Profile = () => {
     }
 
     const refreshProfile = async () => {
-        console.log('🔄 Profile: Manual refresh requested');
+        console.log(' Profile: Manual refresh requested');
         setLoading(true);
         
         try {
             await loadUserDataFromServer();
             await loadFavoritePets();
-            console.log('✅ Profile: Manual refresh completed');
+            console.log('Profile: Manual refresh completed');
         } catch (error) {
-            console.error('❌ Profile: Manual refresh failed:', error);
+            console.error('Profile: Manual refresh failed:', error);
         } finally {
             setLoading(false);
         }
     }
 
     const handleEditProfile = () => {
-        console.log('📝 Profile: Navigating to edit profile');
+        console.log('Profile: Navigating to edit profile');
         navigate('/личная-информация');
     }
 
@@ -342,10 +332,7 @@ const Profile = () => {
                         </section>
                     </main>
 
-                    {/* Боковая панель - информация о волонтере */}
                     <aside className="lg:w-[340px] flex flex-col gap-6">
-                        
-                        {/* Фотография профиля */}
                         <div className="relative bg-green-90 rounded-custom overflow-hidden">
                             <div className="relative h-64">
                                 {volunteerInfo.image ? (
@@ -355,7 +342,7 @@ const Profile = () => {
                                             alt="Фото профиля"
                                             src={volunteerInfo.image}
                                             onError={(e) => {
-                                                console.error('❌ Profile: Image failed to load:', volunteerInfo.image);
+                                                console.error('Profile: Image failed to load:', volunteerInfo.image);
                                                 e.target.style.display = 'none';
                                                 const container = e.target.parentElement;
                                                 if (container) {
@@ -366,14 +353,12 @@ const Profile = () => {
                                                 }
                                             }}
                                             onLoad={() => {
-                                                console.log('✅ Profile: Image loaded successfully:', volunteerInfo.image);
+                                                console.log('Profile: Image loaded successfully:', volunteerInfo.image);
                                             }}
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/50"></div>
                                     </>
                                 ) : null}
-                                
-                                {/* Заглушка */}
                                 <div 
                                     className={`fallback-avatar w-full h-full bg-green-80 flex items-center justify-center ${
                                         volunteerInfo.image ? 'hidden' : 'flex'
@@ -382,7 +367,6 @@ const Profile = () => {
                                     <span className="text-6xl"></span>
                                 </div>
                                 
-                                {/* Информация поверх фото */}
                                 <div className="absolute bottom-6 left-6 right-6">
                                     <h2 className="font-sf-rounded font-bold text-green-98 text-2xl md:text-3xl">
                                         {volunteerInfo.name}
@@ -396,7 +380,6 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        {/* Личная информация */}
                         <div className="bg-green-95 rounded-custom p-6">
                             <h3 className="font-sf-rounded font-bold text-green-20 text-lg mb-4">
                                 Личная информация
@@ -432,7 +415,6 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        {/* О себе */}
                         <div className="bg-green-90 rounded-custom p-6">
                             <h3 className="font-sf-rounded font-bold text-green-20 text-lg mb-4">
                                 О себе
@@ -442,7 +424,6 @@ const Profile = () => {
                             </p>
                         </div>
 
-                        {/* Кнопка редактирования */}
                         <div className="text-center">
                             <button
                                 onClick={handleEditProfile}

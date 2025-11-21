@@ -10,19 +10,18 @@ const Login = () => {
   const { login, isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
-  // Если пользователь уже аутентифицирован, перенаправляем
+  
   useEffect(() => {
     if (isAuthenticated) {
       const profileComplete = localStorage.getItem('profileComplete');
-      console.log('✅ Login: User already authenticated, redirecting...');
+      console.log('Login: User already authenticated, redirecting...');
       navigate(profileComplete === 'true' ? '/профиль' : '/личная-информация');
     }
   }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    // Валидация полей
+  
     if (!email.trim() || !password.trim()) {
       setError('Пожалуйста, заполните все поля');
       return;
@@ -35,17 +34,16 @@ const Login = () => {
       console.log('🔄 Login: Starting submission...')
       
       const result = await login(email, password)
-      console.log('🔍 Login: Auth context result:', result)
+      console.log('Login: Auth context result:', result)
       
       if (result.success) {
-        console.log('✅ Login: Successful, redirect will happen via useEffect');
-        // Навигация произойдет автоматически через useEffect выше
+        console.log('Login: Successful, redirect will happen via useEffect');
       } else {
-        console.error('❌ Login: Failed with error:', result.error)
+        console.error(' Login: Failed with error:', result.error)
         setError(result.error)
       }
     } catch (error) {
-      console.error('❌ Login: Unexpected error:', error)
+      console.error(' Login: Unexpected error:', error)
       setError('Произошла непредвиденная ошибка при входе')
     } finally {
       setLoading(false)

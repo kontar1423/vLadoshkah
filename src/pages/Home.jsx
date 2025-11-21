@@ -12,7 +12,7 @@ import { shelterService } from '../services/shelterService';
 import PetCarousel from '../components/PetCarousel';
 import ShelterCarousel from '../components/ShelterCarousel';
 import LetterByLetter from '../components/ArcLetterByLetter';
-import SheltersMap from '../components/SheltersMap'; // Добавляем импорт карты
+import SheltersMap from '../components/SheltersMap'; 
 
 const Home = () => {
 
@@ -24,8 +24,7 @@ const Home = () => {
   const [shelterIndex, setShelterIndex] = useState(0);
   const [showText, setShowText] = useState(false); 
 
-// --- Фильтрация по округам ---
-const [selectedDistrict, setSelectedDistrict] = useState('all'); // 'all' или код округа
+const [selectedDistrict, setSelectedDistrict] = useState('all'); 
 
 const getUniqueDistricts = (shelters) => {
   const districts = shelters
@@ -269,7 +268,6 @@ const getDistrictName = (regionCode) => {
         )}
       </section>
 
-      {/* ОБНОВЛЕННАЯ СЕКЦИЯ КАРТЫ */}
       <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12 relative z-10">
         <div className="text-center mb-8">
           <h2 className="font-sf-rounded font-bold text-green-30 text-3xl md:text-4xl mb-4">
@@ -316,8 +314,7 @@ const getDistrictName = (regionCode) => {
             )}
           </div>
         </div>
-        
-        {/* Статистика под картой */}
+      
         <div className="mt-6 flex justify-center">
           <div className="bg-green-40 rounded-custom-small px-4 py-2 text-center">
             <div className="font-sf-rounded font-bold text-green-95 text-lg">

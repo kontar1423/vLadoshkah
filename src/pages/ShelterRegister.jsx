@@ -51,7 +51,6 @@ const ShelterRegister = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        // Здесь будет логика регистрации приюта
         console.log('Данные приюта:', formData)
         console.log('Фотографии:', photos)
         navigate('/админ-профиль')
@@ -72,7 +71,6 @@ const ShelterRegister = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Основные поля формы */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {formFields.map((field, index) => (
                     <div 
@@ -97,7 +95,6 @@ const ShelterRegister = () => {
                     ))}
                 </div>
 
-                {/* Поля пароля */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {passwordFields.map((field, index) => (
                     <div 
@@ -133,7 +130,6 @@ const ShelterRegister = () => {
                 </form>
             </div>
 
-            {/* Правая часть - загрузка фото (1/3 ширины) */}
             <div className="lg:w-1/3">
                 <div className="bg-green-95 rounded-custom p-6 h-full">
                 <h3 className="text-green-30 font-sf-rounded font-bold text-xl mb-4">
@@ -143,9 +139,7 @@ const ShelterRegister = () => {
                     Добавьте фотографии вашего приюта (минимум 1 фото)
                 </p>
 
-                {/* Область загрузки фото */}
                 <div className="space-y-4">
-                    {/* Кнопка загрузки */}
                     <label className="block w-full px-4 py-6 bg-green-98 border-2 border-dashed border-green-40 rounded-custom-small text-center cursor-pointer hover:border-green-50 transition-colors">
                     <input
                         type="file"
@@ -167,7 +161,6 @@ const ShelterRegister = () => {
                     </div>
                     </label>
 
-                    {/* Список загруженных фото */}
                     {photos.length > 0 && (
                     <div className="space-y-3">
                         <h4 className="text-green-30 font-inter font-medium text-sm">
@@ -194,7 +187,6 @@ const ShelterRegister = () => {
                     </div>
                     )}
 
-                    {/* Валидация минимального количества фото */}
                     {photos.length === 0 && (
                     <p className="text-green-30 font-inter text-xs text-center">
                         * Необходимо загрузить минимум 1 фотографию
@@ -202,7 +194,6 @@ const ShelterRegister = () => {
                     )}
                 </div>
 
-                {/* Информационный блок */}
                 <div className="mt-6 p-4 bg-green-90 rounded-custom-small">
                     <h4 className="text-green-30 font-inter font-medium text-sm mb-2">
                     Рекомендации по фото:

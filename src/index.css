@@ -122,8 +122,6 @@
   }
 }
 
-/* Leaflet CSS fixes */
-/* Leaflet CSS fixes */
 .leaflet-container {
   background: #f8faf9;
   font-family: 'Inter', sans-serif;
@@ -171,7 +169,6 @@
   background: none !important;
 }
 
-/* Кастомные стили для контейнера карты */
 .leaflet-container-custom {
   font-family: 'Inter', sans-serif;
   position: relative;
@@ -191,7 +188,6 @@
   color: #f8faf9 !important;
 }
 
-/* Обеспечиваем правильное позиционирование для всех страниц */
 .min-h-screen {
   position: relative;
   z-index: 1;
@@ -202,7 +198,6 @@
   z-index: 1;
 }
 
-/* Для хедера и футера */
 header {
   position: relative;
   z-index: 1000 !important;

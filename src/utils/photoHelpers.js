@@ -1,4 +1,4 @@
-// Хелпер для работы с фотографиями
+
 export const getPhotoUrl = (photo) => {
     if (!photo) return null;
     
@@ -9,11 +9,9 @@ export const getPhotoUrl = (photo) => {
         if (photo.url.startsWith('http')) {
             return photo.url;
         }
-        // Проверяем, является ли URL относительным путем к API
         if (photo.url.startsWith('/api/photos/file/')) {
             return `${API_BASE_URL}${photo.url}`;
         }
-        // Или это путь к MinIO
         return `${UPLOADS_BASE_URL}${photo.url.startsWith('/') ? '' : '/'}${photo.url}`;
     }
     

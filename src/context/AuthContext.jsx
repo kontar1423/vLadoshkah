@@ -67,7 +67,6 @@ export const AuthProvider = ({ children }) => {
       if (result.success && result.user) {
         setUser(result.user)
         setIsAuthenticated(true)
-        // После регистрации профиль, скорее всего, неполный
         setProfileCompleteFlag(result.user)
         return { success: true, user: result.user }
       }

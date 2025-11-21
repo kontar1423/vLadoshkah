@@ -11,7 +11,6 @@ const GiveAnimal = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Загрузка приютов с бекенда
   useEffect(() => {
     loadAcceptingShelters();
   }, []);
@@ -21,15 +20,12 @@ const GiveAnimal = () => {
       setLoading(true);
       setError('');
       
-      // Загружаем все приюты
       const allShelters = await shelterService.getAllShelters();
       
-      // Фильтруем только те приюты, которые принимают животных (can_adopt: true)
       const acceptingSheltersData = allShelters.filter(shelter => 
         shelter.can_adopt === true
       );
 
-      // В функции loadAcceptingShelters замените форматирование данных:
       const formattedShelters = acceptingSheltersData.map(shelter => ({
         id: shelter.id,
         name: shelter.name,
@@ -44,7 +40,7 @@ const GiveAnimal = () => {
         capacity: shelter.capacity,
         status: shelter.status,
         photos: shelter.photos || [],
-        photoUrl: shelter.photoUrl, // ДОБАВЬТЕ ЭТУ СТРОКУ
+        photoUrl: shelter.photoUrl, 
         district: getDistrictFromRegion(shelter.region),
         acceptsFromOwners: shelter.can_adopt
       }));
@@ -59,7 +55,7 @@ const GiveAnimal = () => {
     }
   };
 
-  // Функция для получения названия округа по коду региона
+  
   const getDistrictFromRegion = (region) => {
     const districtMap = {
       'cao': 'Центральный',
@@ -97,11 +93,9 @@ const GiveAnimal = () => {
   return (
     <div className="min-h-screen bg-green-95">
       <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-10">
-        {/* Красивый блок с текстом */}
         <div className="relative w-full max-w-[1260px] mx-auto mb-20">
           <div className="bg-green-90 rounded-custom p-8 md:p-12 relative overflow-hidden">
             
-            {/* Декоративные элементы - шарики в разных местах и оттенках */}
             <div className="absolute top-4 left-8 w-20 h-20 bg-green-70 rounded-full opacity-60"></div>
             <div className="absolute top-12 right-16 w-16 h-16 bg-green-60 rounded-full opacity-40"></div>
             <div className="absolute bottom-8 left-20 w-12 h-12 bg-green-80 rounded-full opacity-50"></div>
@@ -112,7 +106,6 @@ const GiveAnimal = () => {
             <div className="relative z-10">
               <div className="flex flex-col lg:flex-row items-center gap-8">
                 
-                {/* Левая часть - заголовок с лапкой */}
                 <div className="lg:w-2/5 text-center lg:text-left">
                   <div className="flex items-center gap-4 justify-center lg:justify-start mb-6">
                     <img 
@@ -126,7 +119,6 @@ const GiveAnimal = () => {
                   </div>
                 </div>
 
-                {/* Правая часть - текст с белым фоном */}
                 <div className="lg:w-3/5">
                   <div className="bg-green-95 rounded-custom p-6 md:p-8 transform rotate-1 shadow-lg">
                     <div className="transform -rotate-1">
@@ -136,7 +128,6 @@ const GiveAnimal = () => {
                     </div>
                   </div>
 
-                  {/* Статистика */}
                   <div className="flex flex-wrap justify-center lg:justify-end gap-6 mt-8">
                     <div className="text-center">
                       <div className="font-sf-rounded font-bold text-green-30 text-2xl md:text-3xl">
@@ -156,14 +147,11 @@ const GiveAnimal = () => {
           </div>
         </div>
 
-        {/* Блок с маленькой кнопкой-стрелкой и собакой */}
+        
         <div className="relative w-full max-w-[1260px] mx-auto mb-10">
           <div className="flex flex-col items-center">
-            
-            {/* Собака и кнопка-стрелка */}
             <div className="relative mb-2 z-10">
               <div className="flex flex-col items-center gap-1">
-                {/* Собака */}
                 <div className="animate-bounce">
                   <img 
                     src={miniPes} 
@@ -187,7 +175,6 @@ const GiveAnimal = () => {
           </div>
         </div>
 
-        {/* Сетка карточек приютов */}
         <section id="shelters-section" className="w-full max-w-[1260px] mx-auto">
           {acceptingShelters.length > 0 ? (
             <div className="space-y-8 mb-16">
@@ -231,7 +218,6 @@ const GiveAnimal = () => {
           )}
         </section>
 
-        {/* Информационный блок о процессе */}
         <div className="max-w-[1260px] mx-auto mb-16">
           <div className="bg-green-90 rounded-custom p-8 md:p-12">
             <h2 className="font-sf-rounded font-bold text-green-30 text-2xl md:text-3xl text-center mb-12">

@@ -6,7 +6,7 @@ import PetCard from '../components/PetCard';
 import FiltersP from '../components/Filters_priut.jsx';
 import { shelterService } from '../services/shelterService';
 import { animalService } from '../services/animalService';
-import SheltersMap from '../components/SheltersMap'; // Добавляем импорт карты
+import SheltersMap from '../components/SheltersMap';
 
 const ShelterProfile = () => {
   const { id } = useParams();
@@ -41,7 +41,6 @@ const ShelterProfile = () => {
     districtId: ""
   });
 
-  // Функция для получения читаемого названия фильтра
   const getFilterDisplayName = (filterKey, filterValue) => {
     const filterLabels = {
       type: {
@@ -71,14 +70,12 @@ const ShelterProfile = () => {
     return filterLabels[filterKey]?.[filterValue] || filterValue;
   };
 
-  // Функция для склонения слова "год"
   const getAgeWord = (age) => {
     if (age % 10 === 1 && age % 100 !== 11) return 'год';
     if ([2, 3, 4].includes(age % 10) && ![12, 13, 14].includes(age % 100)) return 'года';
     return 'лет';
   };
 
-  // Функция для форматирования отображения фильтров
   const formatActiveFilters = () => {
     const filterEntries = Object.entries(activeFilters).filter(([_, value]) => 
       value !== '' && value !== undefined && value !== null
@@ -86,7 +83,6 @@ const ShelterProfile = () => {
 
     if (filterEntries.length === 0) return null;
 
-    // Обрабатываем возраст отдельно
     const ageFilters = {};
     const otherFilters = {};
 
@@ -100,7 +96,6 @@ const ShelterProfile = () => {
 
     const displayFilters = [];
 
-    // Объединяем возрастные фильтры
     if (ageFilters.age_min !== undefined && ageFilters.age_max !== undefined) {
       displayFilters.push(`Возраст: ${ageFilters.age_min}-${ageFilters.age_max} ${getAgeWord(ageFilters.age_max)}`);
     } else if (ageFilters.age_min !== undefined) {
@@ -109,7 +104,6 @@ const ShelterProfile = () => {
       displayFilters.push(`Возраст: до ${ageFilters.age_max} ${getAgeWord(ageFilters.age_max)}`);
     }
 
-    // Добавляем остальные фильтры
     Object.entries(otherFilters).forEach(([key, value]) => {
       displayFilters.push(getFilterDisplayName(key, value));
     });
@@ -128,11 +122,9 @@ const ShelterProfile = () => {
       
       console.log('Загрузка данных приюта с ID:', id);
       
-      // Загружаем данные приюта
       const shelter = await shelterService.getShelterById(id);
       console.log('Данные приюта:', shelter);
       
-      // Загружаем животных приюта
       let animals = [];
       try {
         animals = await animalService.getAnimalsByShelter(id);
@@ -142,7 +134,6 @@ const ShelterProfile = () => {
         animals = [];
       }
 
-      // Обновляем данные приюта
       setShelterData({
         id: shelter.id,
         name: shelter.name || "Приют",
@@ -162,7 +153,6 @@ const ShelterProfile = () => {
         districtId: shelter.region
       });
 
-      // Форматируем животных для PetCard
       const formattedPets = Array.isArray(animals) ? animals.map(animal => {
         console.log('Обрабатываем животное:', animal);
         
@@ -198,14 +188,12 @@ const ShelterProfile = () => {
     }
   };
 
-  // Обработчик применения фильтров
   const handleApplyFilters = (filters) => {
     console.log("Applied filters:", filters);
     setActiveFilters(filters);
     
     let filtered = [...allPets];
 
-    // Фильтрация по типу животного
     if (filters.type && filters.type !== '') {
       filtered = filtered.filter(pet => {
         if (filters.type === 'dog') return pet.type === 'dog';
@@ -214,17 +202,14 @@ const ShelterProfile = () => {
       });
     }
 
-    // Фильтрация по полу
     if (filters.gender && filters.gender !== '') {
       filtered = filtered.filter(pet => pet.gender === filters.gender);
     }
 
-    // Фильтрация по размеру
     if (filters.animal_size && filters.animal_size !== '') {
       filtered = filtered.filter(pet => pet.animal_size === filters.animal_size);
     }
 
-    // Фильтрация по возрасту
     if (filters.age_min !== undefined) {
       filtered = filtered.filter(pet => pet.age >= filters.age_min);
     }
@@ -232,7 +217,6 @@ const ShelterProfile = () => {
       filtered = filtered.filter(pet => pet.age <= filters.age_max);
     }
 
-    // Фильтрация по здоровью
     if (filters.health && filters.health !== '') {
       filtered = filtered.filter(pet => pet.health === filters.health);
     }
@@ -242,18 +226,15 @@ const ShelterProfile = () => {
     setCurrentPage(1);
   };
 
-  // Поиск по имени животного
   useEffect(() => {
     let filtered = [...allPets];
     
-    // Фильтрация по поиску
     if (searchTerm.trim() !== "") {
       filtered = filtered.filter(pet => 
         pet.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
-    // Применяем активные фильтры
     if (Object.keys(activeFilters).length > 0) {
       filtered = applyFilters(filtered, activeFilters);
     }
@@ -263,7 +244,6 @@ const ShelterProfile = () => {
     setCurrentPage(1);
   }, [searchTerm, allPets, activeFilters]);
 
-  // Вспомогательная функция для применения фильтров
   const applyFilters = (pets, filters) => {
     if (!filters || Object.keys(filters).length === 0) return pets;
 
@@ -300,7 +280,6 @@ const ShelterProfile = () => {
     return filtered;
   };
 
-  // Сброс фильтров
   const handleResetFilters = () => {
     setActiveFilters({});
     setSearchTerm("");
@@ -405,7 +384,6 @@ const ShelterProfile = () => {
       />
 
       <div className="max-w-container mx-auto px-4 space-y-8">
-        {/* Основная информация о приюте */}
         <article className="relative w-full max-w-[1260px] min-h-[400px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row">
           
           {shelterData.acceptsAnimalsFromOwners && (
@@ -416,7 +394,6 @@ const ShelterProfile = () => {
             </div>
           )}
 
-          {/* Блок с фотографией приюта */}
           <div className="relative w-full md:w-[350px] h-[180px] md:h-full flex-shrink-0">
             <img 
               src={shelterData.photoUrl || PriutPhoto} 
@@ -428,7 +405,7 @@ const ShelterProfile = () => {
                 if (fallback) fallback.style.display = 'flex';
               }}
             />
-            {/* Fallback для фото приюта в профиле */}
+            
             <div 
               id={`shelter-profile-fallback-${shelterData.id}`}
               className={`w-full h-full bg-gradient-to-br from-green-70 to-green-60 items-center justify-center flex-col p-4 text-center ${shelterData.photoUrl ? 'hidden' : 'flex'}`}
@@ -497,7 +474,6 @@ const ShelterProfile = () => {
           </div>
         </article>
 
-        {/* СЕКЦИЯ С ЖИВОТНЫМИ ПРИЮТА */}
         <section className="bg-green-95 rounded-custom p-6 w-full max-w-[1160px] mx-auto">
           <div className="flex flex-col lg:flex-row justify-between items-center gap-6 w-full">
             <div className="w-full lg:w-auto text-center lg:text-left">
@@ -505,7 +481,6 @@ const ShelterProfile = () => {
                 <strong className="text-green-30">{animalCount}</strong> питомцев
               </span>
               
-              {/* Отображение активных фильтров */}
               {activeFilterLabels && activeFilterLabels.length > 0 && (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <div className="bg-green-80 rounded-custom-small px-3 py-1 inline-block">
@@ -523,7 +498,6 @@ const ShelterProfile = () => {
                       </span>
                       <button
                         onClick={() => {
-                          // Удаляем конкретный фильтр
                           const filterKey = Object.keys(activeFilters).find(key => {
                             const value = activeFilters[key];
                             if (key === 'age_min' || key === 'age_max') {
@@ -581,7 +555,6 @@ const ShelterProfile = () => {
           </div>
         </section>
 
-        {/* Кнопка фильтров */}
         <div className="flex items-start gap-2.5 p-[15px] relative bg-green-90 rounded-custom w-full max-w-[1260px] mx-auto">
           <button
             onClick={() => setShowFilters(true)}
@@ -603,7 +576,6 @@ const ShelterProfile = () => {
           </button>
         </div>
 
-        {/* КАРТОЧКИ ЖИВОТНЫХ */}
         <section className="w-full max-w-[1260px] mx-auto">
           {allPets.length > 0 ? (
             <>

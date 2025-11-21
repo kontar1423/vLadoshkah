@@ -230,7 +230,7 @@
                 onClick={() => handleDistrictClick('zelao')}
                 />
 
-                {/* Новомосковский округ (большой юго-запад) */}
+                
                 <path
                 id="nao"
                 d="M200,340 Q230,370 260,400 Q240,450 200,480 Q160,520 120,550 Q100,500 130,460 Q150,420 180,380 Z"
@@ -241,7 +241,7 @@
                 onClick={() => handleDistrictClick('nao')}
                 />
 
-                {/* Троицкий округ (юг) */}
+                
                 <path
                 id="tinao"
                 d="M120,550 Q160,580 200,600 Q180,650 140,680 Q100,660 80,620 Q90,580 110,560 Z"
@@ -252,7 +252,7 @@
                 onClick={() => handleDistrictClick('tinao')}
                 />
 
-                {/* Подписи округов */}
+                
                 <text x="470" y="380" textAnchor="middle" className="text-sm font-inter pointer-events-none fill-green-30 font-bold">ЦАО</text>
                 <text x="500" y="230" textAnchor="middle" className="text-sm font-inter pointer-events-none fill-green-30 font-bold">САО</text>
                 <text x="630" y="270" textAnchor="middle" className="text-sm font-inter pointer-events-none fill-green-30 font-bold">СВАО</text>
@@ -266,18 +266,12 @@
                 <text x="160" y="450" textAnchor="middle" className="text-xs font-inter pointer-events-none fill-green-30 font-bold">Новомосковский</text>
                 <text x="140" y="620" textAnchor="middle" className="text-xs font-inter pointer-events-none fill-green-30 font-bold">Троицкий</text>
 
-                {/* Москва-река */}
-                <path
-                d="M200,300 Q300,320 400,330 Q500,340 600,350 Q650,360 700,370 Q720,390 700,410 Q650,420 600,430 Q500,440 400,450 Q300,460 250,470"
-                fill="none"
-                stroke="#4A90E2"
-                strokeWidth="4"
-                strokeDasharray="none"
-                />
+                
+                
             </svg>
             </div>
 
-            {/* Легенда карты */}
+            
             <div className="w-full">
             <h3 className="font-sf-rounded font-bold text-green-30 text-lg mb-3">
                 Округа Москвы ({selectedDistricts.length} выбрано)
@@ -308,7 +302,7 @@
             </div>
             </div>
 
-            {/* Кнопки действий */}
+            
             <div className="flex gap-3 self-stretch justify-end pt-4 border-t border-green-80 w-full">
             <button
                 type="button"
