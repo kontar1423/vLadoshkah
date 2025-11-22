@@ -1,0 +1,9 @@
+{
+  "dev": {
+    "user": "postgres",
+    "password": "1234",
+    "host": "localhost",
+    "database": "volunteer_db",
+    "port": 5432
+  }
+}
