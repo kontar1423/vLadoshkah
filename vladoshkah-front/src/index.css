@@ -7,6 +7,16 @@
   body {
     @apply bg-green-95 font-inter;
   }
+
+  header {
+    position: relative;
+    z-index: 100;
+  }
+
+  footer {
+    position: relative;
+    z-index: 100;
+  }
 }
 
 @layer components {
@@ -198,12 +208,48 @@
   z-index: 1;
 }
 
-header {
-  position: relative;
-  z-index: 1000 !important;
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-footer {
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
   position: relative;
-  z-index: 1000 !important;
+  z-index: 10000;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.fixed {
+  position: fixed;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.relative {
+  position: relative;
+}
+
+.modal-open header,
+.modal-open footer {
+  z-index: 100 !important;
 }

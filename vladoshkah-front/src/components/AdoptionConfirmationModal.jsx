@@ -1,13 +1,35 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import GodPes from '../assets/images/godpes.png';
 
-
 const AdoptionConfirmationModal = ({ isOpen, onClose, onConfirm, petName, isLoading }) => {
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-green-95 rounded-custom p-6 max-w-md w-full animate-fade-up">
+    return ReactDOM.createPortal(
+        <>
+            {/* Overlay */}
+            <div 
+                className="fixed inset-0 bg-black bg-opacity-50 z-[9998]"
+                onClick={onClose}
+            />
+            
+            {/* Modal Content */}
+            <div 
+                className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999] bg-green-95 rounded-custom p-6 max-w-md w-full animate-fade-up"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="text-center">
                     <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
                         <img 
@@ -49,7 +71,8 @@ const AdoptionConfirmationModal = ({ isOpen, onClose, onConfirm, petName, isLoad
                     </div>
                 </div>
             </div>
-        </div>
+        </>,
+        document.body
     );
 };
 

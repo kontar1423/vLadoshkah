@@ -32,8 +32,8 @@
             const angleDeg = -arcDegrees / 2 + progress * arcDegrees;
             const angleRad = (angleDeg * Math.PI) / 180;
 
-            const x = 50 + 58 * Math.sin(angleRad); 
-            const y = 36 - 35 * Math.cos(angleRad); 
+            const x = 50 + 52 * Math.sin(angleRad); 
+            const y = 33 - 32 * Math.cos(angleRad); 
 
             return (
             <span

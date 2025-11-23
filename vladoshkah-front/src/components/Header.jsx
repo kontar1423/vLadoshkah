@@ -21,7 +21,6 @@ export const Header = () => {
     { id: 4, label: "Отдать животное", path: "/отдать-животное" },
   ];
 
-
   const handleRefreshUser = async () => {
     try {
       await refreshUser();
@@ -31,7 +30,6 @@ export const Header = () => {
     }
   };
 
-  
   useEffect(() => {
     if (isAuthenticated) {
       handleRefreshUser();
@@ -70,7 +68,6 @@ export const Header = () => {
     setIsMenuOpen(false);
     setIsUserMenuOpen(false);
   };
-
 
   const getUserDisplayName = () => {
     console.log('Header: Current user data:', user);
@@ -538,23 +535,10 @@ export const Header = () => {
         </div>
       </header>
 
-      {isHelpModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-green-90 rounded-custom shadow-2xl">
-            <button
-              onClick={closeHelpModal}
-              className="absolute top-4 right-4 z-10 w-10 h-10 bg-green-80 text-green-30 rounded-full flex items-center justify-center hover:bg-green-70 transition-colors shadow-lg"
-              aria-label="Закрыть"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            
-            <HelpSection />
-          </div>
-        </div>
-      )}
+      <HelpSection 
+        isOpen={isHelpModalOpen} 
+        onClose={closeHelpModal} 
+      />
     </>
   );
 };

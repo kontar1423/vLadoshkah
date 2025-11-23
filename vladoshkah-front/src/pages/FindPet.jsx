@@ -355,32 +355,34 @@ const FindPet = () => {
       )}
 
       <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px]">
-        <section className="relative w-full h-screen rounded-custom overflow-hidden bg-gradient-to-r mb-32">
-          <div className="absolute top-0 right-0 w-[500px] h-full flex items-center justify-end">
+        <section className="relative w-full min-h-screen rounded-custom overflow-hidden bg-gradient-to-l mb-32">
+          <div className="absolute top-0 right-0 w-full md:w-[500px] h-1/2 md:h-full flex items-center justify-center md:justify-end pt-20 md:pt-0">
             <img
-              className="h-4/5 w-auto object-contain max-w-full"
-              alt="Cute puppy looking for a home"
+              className="h-3/4 md:h-4/5 w-auto object-contain max-w-[90%] md:max-w-full"
+              alt="Cute puppy"
               src={Pes}
             />
           </div>
           
-          <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-center gap-6 md:gap-9 pl-6 md:pl-[81px] pr-6">
-            <h1 className="w-full md:w-[555px] font-sf-rounded font-bold text-green-40 text-3xl md:text-6xl leading-tight">
+          <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-center gap-6 md:gap-9 px-6 md:pl-[81px] md:pr-6 pt-32 md:pt-0">
+            <h1 className="w-full md:w-[555px] font-sf-rounded font-bold text-green-40 text-2xl sm:text-3xl md:text-6xl leading-tight text-center md:text-left">
               НАЙДИ СВОЕГО ЛУЧШЕГО ДРУГА!
             </h1>
             
-            <button
-              onClick={scrollToPets}
-              className="all-[unset] box-border inline-flex w-12 h-12 md:w-20 md:h-12 relative items-center justify-center bg-green-40 rounded-full cursor-pointer transition-colors hover:bg-green-50"
-              aria-label="Перейти к питомцам"
-              type="button"
-            >
-              <img 
-                src={ButtonIcon} 
-                alt="Найти сейчас" 
-                className="w-4 h-4 md:w-6 md:h-6"
-              />
-            </button>
+            <div className="flex justify-center md:justify-start">
+              <button
+                onClick={scrollToPets}
+                className="all-[unset] box-border inline-flex w-12 h-12 md:w-20 md:h-12 relative items-center justify-center bg-green-40 rounded-full cursor-pointer transition-colors hover:bg-green-50"
+                aria-label="Перейти к питомцам"
+                type="button"
+              >
+                <img 
+                  src={ButtonIcon} 
+                  alt="Найти сейчас" 
+                  className="w-4 h-4 md:w-6 md:h-6"
+                />
+              </button>
+            </div>
           </div>
         </section>
 
@@ -544,7 +546,7 @@ const FindPet = () => {
           <div className="mb-6">
             <div className="bg-green-90 rounded-custom-small px-6 py-3 inline-block">
               <span className="font-inter font-medium text-green-30">
-                {loading ? 'Загрузка...' : `Найдено ${filteredPets.length} питомцев ${searchTerm && `по запросу "${searchTerm}"`}`}
+                {`Найдено ${filteredPets.length} питомцев ${searchTerm && `по запросу "${searchTerm}"`}`}
               </span>
             </div>
           </div>

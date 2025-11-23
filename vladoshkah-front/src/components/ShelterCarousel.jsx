@@ -82,13 +82,13 @@
                 zIndex = 30;
             } else if (isLeft) {
                 translateX = `calc(-50% - ${CARD_WIDTH + GAP}px)`;
-                scale = 0.9;
-                opacity = 0.8;
+                scale = 0.87;
+                opacity = 1;
                 zIndex = 20;
             } else if (isRight) {
                 translateX = `calc(-50% + ${CARD_WIDTH + GAP}px)`;
-                scale = 0.9;
-                opacity = 0.8;
+                scale = 0.87;
+                opacity = 1;
                 zIndex = 20;
             }
 
