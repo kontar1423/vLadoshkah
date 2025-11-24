@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ReactDOM from 'react-dom';
 import { shelterService } from '../services/shelterService';
 
 export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) => {
@@ -8,7 +9,7 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
         animal_size: "Любой",
         health: "Любое",
         age_min: 0,
-        age_max: 20,
+        age_max: 30,
         shelter_id: "Любой",
     });
 
@@ -17,6 +18,7 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
 
     useEffect(() => {
         if (isOpen) {
+            document.body.style.overflow = 'hidden';
             loadShelters();
             if (initialFilters && Object.keys(initialFilters).length > 0) {
                 const updatedFilters = {
@@ -25,7 +27,7 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                     animal_size: "Любой",
                     health: "Любое",
                     age_min: 0,
-                    age_max: 20,
+                    age_max: 30,
                     shelter_id: "Любой",
                 };
 
@@ -59,11 +61,17 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                     animal_size: "Любой",
                     health: "Любое",
                     age_min: 0,
-                    age_max: 20,
+                    age_max: 30,
                     shelter_id: "Любой",
                 });
             }
+        } else {
+            document.body.style.overflow = 'unset';
         }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
     }, [isOpen, initialFilters]);
 
     const loadShelters = async () => {
@@ -86,7 +94,11 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
             options: [
                 { value: "Все", label: "Все" },
                 { value: "dog", label: "Собаки" },
-                { value: "cat", label: "Кошки" }
+                { value: "cat", label: "Кошки" },
+                { value: "bird", label: "Птицы" },
+                { value: "rodent", label: "Грызуны" },
+                { value: "fish", label: "Рыбы" },
+                { value: "reptile", label: "Рептилии" }
             ],
             fullWidth: true,
         },
@@ -151,14 +163,16 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
         const numValue = parseInt(value);
         setFilters(prev => {
             if (type === 'min') {
+                const newMin = Math.min(numValue, prev.age_max);
                 return { 
                     ...prev, 
-                    age_min: Math.min(numValue, prev.age_max) 
+                    age_min: newMin
                 };
             } else {
+                const newMax = Math.max(numValue, prev.age_min);
                 return { 
                     ...prev, 
-                    age_max: Math.max(numValue, prev.age_min) 
+                    age_max: newMax
                 };
             }
         });
@@ -171,7 +185,7 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
             animal_size: "Любой",
             health: "Любое",
             age_min: 0,
-            age_max: 20,
+            age_max: 30,
             shelter_id: "Любой",
         });
         if (onReset) {
@@ -208,12 +222,19 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
 
     if (!isOpen) return null;
 
-    const minPosition = (filters.age_min / 20) * 100;
-    const maxPosition = (filters.age_max / 20) * 100;
+    const minPosition = (filters.age_min / 30) * 100;
+    const maxPosition = (filters.age_max / 30) * 100;
 
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-green-95 rounded-[40px] w-full max-w-2xl flex flex-col items-start gap-6 p-8 relative max-h-[90vh] overflow-y-auto">
+    return ReactDOM.createPortal(
+        <>
+            <div 
+                className="fixed inset-0 bg-black bg-opacity-50 z-[9998]"
+                onClick={handleClose}
+            />
+            <div 
+                className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999] bg-green-95 rounded-[40px] w-full max-w-2xl flex flex-col items-start gap-6 p-8 max-h-[90vh] overflow-y-auto animate-fade-up"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <header className="flex items-center justify-between self-stretch w-full">
                     <h1 className="text-4xl font-sf-rounded font-bold text-green-30">Фильтры</h1>
                     <button 
@@ -348,14 +369,14 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                                     className="absolute h-2 bg-green-50 rounded-full"
                                     style={{
                                         left: `${minPosition}%`,
-                                        right: `${100 - maxPosition}%`
+                                        width: `${maxPosition - minPosition}%`
                                     }}
                                 ></div>
                                 
                                 <input
                                     type="range"
                                     min="0"
-                                    max="20"
+                                    max="30"
                                     value={filters.age_min}
                                     onChange={(e) => handleAgeChange('min', e.target.value)}
                                     className="absolute w-full h-2 opacity-0 cursor-pointer z-10"
@@ -363,25 +384,73 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                                 <input
                                     type="range"
                                     min="0"
-                                    max="20"
+                                    max="30"
                                     value={filters.age_max}
                                     onChange={(e) => handleAgeChange('max', e.target.value)}
                                     className="absolute w-full h-2 opacity-0 cursor-pointer z-10"
                                 />
                                 
                                 <div 
-                                    className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 shadow-lg pointer-events-none"
+                                    className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 shadow-lg cursor-pointer z-20 hover:scale-110 transition-transform"
                                     style={{ left: `${minPosition}%` }}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault();
+                                        const slider = e.currentTarget;
+                                        const startX = e.clientX;
+                                        const startLeft = minPosition;
+                                        const sliderWidth = slider.parentElement.offsetWidth;
+
+                                        const handleMouseMove = (moveEvent) => {
+                                            const deltaX = moveEvent.clientX - startX;
+                                            const deltaPercent = (deltaX / sliderWidth) * 100;
+                                            let newPosition = startLeft + deltaPercent;
+                                            newPosition = Math.max(0, Math.min(newPosition, maxPosition));
+                                            const newValue = Math.round((newPosition / 100) * 30);
+                                            handleAgeChange('min', newValue);
+                                        };
+
+                                        const handleMouseUp = () => {
+                                            document.removeEventListener('mousemove', handleMouseMove);
+                                            document.removeEventListener('mouseup', handleMouseUp);
+                                        };
+
+                                        document.addEventListener('mousemove', handleMouseMove);
+                                        document.addEventListener('mouseup', handleMouseUp);
+                                    }}
                                 ></div>
                                 <div 
-                                    className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 shadow-lg pointer-events-none"
+                                    className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 shadow-lg cursor-pointer z-20 hover:scale-110 transition-transform"
                                     style={{ left: `${maxPosition}%` }}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault();
+                                        const slider = e.currentTarget;
+                                        const startX = e.clientX;
+                                        const startLeft = maxPosition;
+                                        const sliderWidth = slider.parentElement.offsetWidth;
+
+                                        const handleMouseMove = (moveEvent) => {
+                                            const deltaX = moveEvent.clientX - startX;
+                                            const deltaPercent = (deltaX / sliderWidth) * 100;
+                                            let newPosition = startLeft + deltaPercent;
+                                            newPosition = Math.max(minPosition, Math.min(newPosition, 100));
+                                            const newValue = Math.round((newPosition / 100) * 30);
+                                            handleAgeChange('max', newValue);
+                                        };
+
+                                        const handleMouseUp = () => {
+                                            document.removeEventListener('mousemove', handleMouseMove);
+                                            document.removeEventListener('mouseup', handleMouseUp);
+                                        };
+
+                                        document.addEventListener('mousemove', handleMouseMove);
+                                        document.addEventListener('mouseup', handleMouseUp);
+                                    }}
                                 ></div>
                             </div>
                             
                             <div className="flex justify-between text-sm text-green-40 mt-6">
                                 <span>0 лет</span>
-                                <span>20 лет</span>
+                                <span>30 лет</span>
                             </div>
                         </div>
                     </div>
@@ -391,7 +460,7 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                     <button
                         type="button"
                         onClick={handleReset}
-                        className="px-6 py-3 bg-green-80 rounded-[20px] text-green-40 hover:bg-green-70 font-medium transition-colors"
+                        className="px-6 py-3 bg-green-80 rounded-[20px] text-green-20 hover:bg-green-70 font-medium transition-colors"
                     >
                         Сбросить
                     </button>
@@ -404,7 +473,8 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                     </button>
                 </div>
             </div>
-        </div>
+        </>,
+        document.body
     );
 };
 

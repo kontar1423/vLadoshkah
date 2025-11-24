@@ -13,7 +13,7 @@
     });
 
     const createCustomIcon = (isHighlighted = false) => {
-    const size = isHighlighted ? 40 : 35;
+    const size = isHighlighted ? 50 : 35;
     return L.divIcon({
         html: `
         <div style="
@@ -185,15 +185,11 @@
                 >
                 <Popup>
                     <div className="p-3 min-w-[250px]">
-                    <h3 className={`font-sf-rounded font-bold text-lg mb-2 ${
-                        isHighlighted ? 'text-green-40' : 'text-green-30'
+                    <h3 className={`font-sf-rounded font-bold text-lg mb-1 ${
+                        isHighlighted ? 'text-green-40' : 'text-green-40'
                     }`}>
                         {shelter.name}
-                        {isHighlighted && (
-                        <span className="ml-2 text-xs bg-green-40 text-green-90 px-2 py-1 rounded-full">
-                            Найден
-                        </span>
-                        )}
+                        
                     </h3>
                     
                     {shelter.address && (
@@ -209,7 +205,7 @@
                     )}
                     
                     {shelter.district && (
-                        <p className="font-inter text-green-40 text-sm mb-3">
+                        <p className="font-inter text-green-40 text-sm mb-1">
                         <strong>Округ:</strong> {shelter.district}
                         </p>
                     )}
@@ -220,7 +216,7 @@
                         e.stopPropagation();
                         window.location.href = `/приют/${shelter.id}`;
                         }}
-                        className="w-full px-3 py-2 bg-green-30 text-green-90 rounded-custom-small text-sm hover:bg-green-40 transition-colors"
+                        className="w-full px-3 py-2 bg-green-40 text-green-98 rounded-custom-small text-sm hover:bg-green-40 transition-colors"
                     >
                         Подробнее
                     </button>

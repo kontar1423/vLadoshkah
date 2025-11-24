@@ -2,13 +2,36 @@ import api from './api';
 
 export const shelterService = {
     async getAllShelters() {
-        const response = await api.get('/shelters');
-        return response.data.map(shelter => normalizeShelterData(shelter));
+        try {
+            const response = await api.get('/shelters');
+            return response.data.map(shelter => normalizeShelterData(shelter));
+        } catch (error) {
+            console.error('Error fetching shelters:', error);
+            throw error;
+        }
     },
 
     async getShelterById(id) {
-        const response = await api.get(`/shelters/${id}`);
-        return normalizeShelterData(response.data);
+        try {
+            const response = await api.get(`/shelters/${id}`);
+            return normalizeShelterData(response.data);
+        } catch (error) {
+            console.error(`Error fetching shelter ${id}:`, error);
+            throw error;
+        }
+    },
+
+    async voteForShelter(shelterId, vote) {
+        try {
+            const response = await api.post('/shelters/vote', {
+                shelter_id: shelterId,
+                vote: vote
+            });
+            return response.data;
+        } catch (error) {
+            console.error(`Error voting for shelter ${shelterId}:`, error);
+            throw error;
+        }
     }
 };
 
@@ -19,8 +42,6 @@ const normalizeShelterData = (shelterData) => {
 
     const getPhotoUrl = (photo) => {
         if (!photo) return null;
-        
-        console.log('Processing shelter photo:', photo);
         
         if (typeof photo === 'string') {
             if (photo.startsWith('http')) return photo;
@@ -48,15 +69,14 @@ const normalizeShelterData = (shelterData) => {
         photoUrl = getPhotoUrl(shelterData.photo);
     }
 
-    console.log('Shelter photo URL:', photoUrl);
-
     return {
-    ...shelterData,
-    photoUrl: photoUrl,
-    districtId: shelterData.region,
-    photos: shelterData.photos || [],
-    rating: shelterData.rating || 0,
-    district: shelterData.district || 'Москва',
-    description: shelterData.description || 'Описание приюта'
+        ...shelterData,
+        photoUrl: photoUrl,
+        districtId: shelterData.region,
+        photos: shelterData.photos || [],
+        rating: shelterData.rating || 0,
+        total_ratings: shelterData.total_ratings || 0,
+        district: shelterData.district || 'Москва',
+        description: shelterData.description || 'Описание приюта'
     };
 };

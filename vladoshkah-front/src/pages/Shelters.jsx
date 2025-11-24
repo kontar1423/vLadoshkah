@@ -35,10 +35,10 @@ const Shelters = () => {
         return;
       }
 
-    const formattedShelters = sheltersData.map(shelter => ({
+      const formattedShelters = sheltersData.map(shelter => ({
         id: shelter.id,
         name: shelter.name,
-        rating: 4.5,
+        rating: shelter.rating || 0, // Используем рейтинг из бэкенда
         description: shelter.description,
         animalsCount: 0,
         address: shelter.address,
@@ -52,7 +52,7 @@ const Shelters = () => {
         photoUrl: shelter.photoUrl || null,
         district: getDistrictName(shelter.region),
         districtId: shelter.region
-    }));
+      }));
 
       setShelters(formattedShelters);
       setFilteredShelters(formattedShelters);

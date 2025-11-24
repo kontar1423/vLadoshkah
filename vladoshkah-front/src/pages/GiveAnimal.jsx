@@ -29,7 +29,7 @@ const GiveAnimal = () => {
       const formattedShelters = acceptingSheltersData.map(shelter => ({
         id: shelter.id,
         name: shelter.name,
-        rating: 4.5,
+        rating: shelter.rating || 0, // Используем рейтинг из бэкенда
         description: shelter.description,
         animalsCount: 0,
         address: shelter.address,

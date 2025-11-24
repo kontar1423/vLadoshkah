@@ -5,10 +5,17 @@ import PriutPhoto from '../assets/images/priut.jpg';
 const ShelterCard = ({ shelterData, onShowMap }) => {
     const { id, name, rating, description, photoUrl } = shelterData;
 
-    const renderStars = (rating) => {
+    // Функция для безопасного преобразования в число
+    const safeNumber = (value, defaultValue = 0) => {
+        const num = parseFloat(value);
+        return isNaN(num) ? defaultValue : num;
+    };
+
+    const StaticStars = ({ rating }) => {
+        const safeRating = safeNumber(rating, 0);
         const stars = [];
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 >= 0.5;
+        const fullStars = Math.floor(safeRating);
+        const hasHalfStar = safeRating % 1 >= 0.5;
 
         for (let i = 0; i < 5; i++) {
             if (i < fullStars) {
@@ -19,15 +26,16 @@ const ShelterCard = ({ shelterData, onShowMap }) => {
                 );
             } else if (i === fullStars && hasHalfStar) {
                 stars.push(
-                    <svg key={i} className="w-5 h-5 md:w-6 md:h-6 text-green-30 fill-current" viewBox="0 0 24 24">
-                        <defs>
-                            <linearGradient id="half-star">
-                                <stop offset="50%" stopColor="currentColor"/>
-                                <stop offset="50%" stopColor="#D1D5DB"/>
-                            </linearGradient>
-                        </defs>
-                        <path fill="url(#half-star)" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
+                    <div key={i} className="relative">
+                        <svg className="w-5 h-5 md:w-6 md:h-6 text-green-80 fill-current" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        <div className="absolute top-0 left-0 overflow-hidden" style={{ width: '50%' }}>
+                            <svg className="w-5 h-5 md:w-6 md:h-6 text-green-30 fill-current" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                    </div>
                 );
             } else {
                 stars.push(
@@ -72,10 +80,10 @@ const ShelterCard = ({ shelterData, onShowMap }) => {
 
                         <div className="flex items-center gap-2">
                             <div className="flex">
-                                {renderStars(rating)}
+                                <StaticStars rating={rating} />
                             </div>
                             <span className="font-inter font-medium text-green-30 text-sm">
-                                {rating}
+                                {safeNumber(rating).toFixed(1)}
                             </span>
                         </div>
                     </header>

@@ -456,7 +456,7 @@ const FindPet = () => {
                         className="w-full px-4 py-3 bg-green-95 border-2 border-green-40 rounded-custom font-inter text-green-40 placeholder-green-40 focus:outline-none focus:border-green-40 pr-12"
                         disabled={loading}
                       />
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 animate-bounce">
+                      <div className="absolute left-30 top-1/2 transform -translate-y-1/2 animate-bounce">
                         <img 
                           src={miniPes} 
                           alt="Собака" 

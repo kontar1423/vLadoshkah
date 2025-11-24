@@ -1,16 +1,29 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import PriutPhoto from '../assets/images/priut.jpg';
 import PrilegPhoto from '../assets/images/prileg.png';
 import PetCard from '../components/PetCard';
-import FiltersP from '../components/Filters_priut.jsx';
+import FiltersP from '../components/Filters_priut';
 import { shelterService } from '../services/shelterService';
 import { animalService } from '../services/animalService';
 import SheltersMap from '../components/SheltersMap';
+import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 const ShelterProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  // Проверка ID
+  if (!id || isNaN(Number(id))) {
+    return (
+      <div className="min-h-screen bg-green-95 flex items-center justify-center">
+        <div className="text-red-500 text-lg">Неверный ID приюта</div>
+      </div>
+    );
+  }
+
   const [animalCount, setAnimalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [allPets, setAllPets] = useState([]);
@@ -21,11 +34,14 @@ const ShelterProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeFilters, setActiveFilters] = useState({});
+  const [userRating, setUserRating] = useState(null);
+  const [ratingStats, setRatingStats] = useState({ average: 0, totalRatings: 0 });
+  const [isRatingLoading, setIsRatingLoading] = useState(false);
 
   const [shelterData, setShelterData] = useState({
     id: null,
     name: "",
-    rating: 4.5,
+    rating: 0,
     description: "",
     contacts: {
       phone: "",
@@ -41,11 +57,16 @@ const ShelterProfile = () => {
     districtId: ""
   });
 
+  // Получение человекочитаемого названия фильтра
   const getFilterDisplayName = (filterKey, filterValue) => {
     const filterLabels = {
       type: {
         dog: 'Собаки',
-        cat: 'Кошки'
+        cat: 'Кошки',
+        bird: 'Птицы',
+        rodent: 'Грызуны',
+        fish: 'Рыбы',
+        reptile: 'Рептилии'
       },
       gender: {
         male: 'Мальчики',
@@ -63,9 +84,8 @@ const ShelterProfile = () => {
       }
     };
 
-    if (filterKey === 'age_min' || filterKey === 'age_max') {
-      return `${filterValue} ${getAgeWord(filterValue)}`;
-    }
+    if (filterKey === 'age_min') return `От ${filterValue} ${getAgeWord(filterValue)}`;
+    if (filterKey === 'age_max') return `До ${filterValue} ${getAgeWord(filterValue)}`;
 
     return filterLabels[filterKey]?.[filterValue] || filterValue;
   };
@@ -76,68 +96,94 @@ const ShelterProfile = () => {
     return 'лет';
   };
 
-  const formatActiveFilters = () => {
-    const filterEntries = Object.entries(activeFilters).filter(([_, value]) => 
-      value !== '' && value !== undefined && value !== null
-    );
+  // Применение фильтров
+  const applyFilters = useCallback((pets, filters) => {
+    if (!filters || Object.keys(filters).length === 0) return pets;
 
-    if (filterEntries.length === 0) return null;
-
-    const ageFilters = {};
-    const otherFilters = {};
-
-    filterEntries.forEach(([key, value]) => {
-      if (key === 'age_min' || key === 'age_max') {
-        ageFilters[key] = value;
-      } else {
-        otherFilters[key] = value;
-      }
+    return pets.filter(pet => {
+      // Тип животного
+      if (filters.type && filters.type !== 'Все' && pet.type !== filters.type) return false;
+      
+      // Пол
+      if (filters.gender && filters.gender !== 'Любой' && pet.gender !== filters.gender) return false;
+      
+      // Размер
+      if (filters.animal_size && filters.animal_size !== 'Любой' && pet.animal_size !== filters.animal_size) return false;
+      
+      // Здоровье
+      if (filters.health && filters.health !== 'Любое' && pet.health !== filters.health) return false;
+      
+      // Возраст
+      if (filters.age_min !== undefined && pet.age < filters.age_min) return false;
+      if (filters.age_max !== undefined && pet.age > filters.age_max) return false;
+      
+      return true;
     });
+  }, []);
 
-    const displayFilters = [];
-
-    if (ageFilters.age_min !== undefined && ageFilters.age_max !== undefined) {
-      displayFilters.push(`Возраст: ${ageFilters.age_min}-${ageFilters.age_max} ${getAgeWord(ageFilters.age_max)}`);
-    } else if (ageFilters.age_min !== undefined) {
-      displayFilters.push(`Возраст: от ${ageFilters.age_min} ${getAgeWord(ageFilters.age_min)}`);
-    } else if (ageFilters.age_max !== undefined) {
-      displayFilters.push(`Возраст: до ${ageFilters.age_max} ${getAgeWord(ageFilters.age_max)}`);
-    }
-
-    Object.entries(otherFilters).forEach(([key, value]) => {
-      displayFilters.push(getFilterDisplayName(key, value));
-    });
-
-    return displayFilters;
+  // Обработчики фильтров
+  const handleApplyFilters = (filters) => {
+    setActiveFilters(filters);
+    setShowFilters(false);
   };
 
-  useEffect(() => {
-    loadShelterData();
-  }, [id]);
+  const handleResetFilters = () => {
+    setActiveFilters({});
+    setSearchTerm("");
+  };
 
-  const loadShelterData = async () => {
+  // Навигация
+  const goToApplication = () => {
+    navigate('/Anketa_give', { state: { shelterId: id, shelterName: shelterData.name } });
+  };
+
+  const scrollToMap = () => {
+    const mapSection = document.getElementById('shelter-map');
+    if (mapSection) mapSection.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Функция для безопасного преобразования в число
+  const safeNumber = (value, defaultValue = 0) => {
+    const num = parseFloat(value);
+    return isNaN(num) ? defaultValue : num;
+  };
+
+  // Загрузка данных приюта
+  const loadShelterData = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
       
-      console.log('Загрузка данных приюта с ID:', id);
-      
-      const shelter = await shelterService.getShelterById(id);
-      console.log('Данные приюта:', shelter);
-      
+      const [shelterRes, animalsRes] = await Promise.allSettled([
+        shelterService.getShelterById(id),
+        animalService.getAnimalsByShelter(id)
+      ]);
+
+      if (shelterRes.status === 'rejected') throw shelterRes.reason;
+      const shelter = shelterRes.value;
+
       let animals = [];
-      try {
-        animals = await animalService.getAnimalsByShelter(id);
-        console.log('Животные приюта:', animals);
-      } catch (animalError) {
-        console.error('Ошибка загрузки животных:', animalError);
-        animals = [];
+      if (animalsRes.status === 'fulfilled') {
+        animals = animalsRes.value;
+      } else {
+        console.error('Ошибка загрузки животных:', animalsRes.reason);
+      }
+
+      // Используем рейтинг из данных приюта
+      const avgRating = safeNumber(shelter.rating, 0);
+      const totalRatings = safeNumber(shelter.total_ratings, 0);
+
+      // Загрузка оценки пользователя из localStorage
+      let userVote = null;
+      if (isAuthenticated) {
+        const userRatings = JSON.parse(localStorage.getItem('userShelterRatings') || '{}');
+        userVote = userRatings[id] || null;
       }
 
       setShelterData({
         id: shelter.id,
         name: shelter.name || "Приют",
-        rating: 4.5,
+        rating: avgRating,
         description: shelter.description || "Описание приюта",
         contacts: {
           phone: shelter.phone || "Телефон не указан",
@@ -145,87 +191,50 @@ const ShelterProfile = () => {
           whatsapp: shelter.whatsapp || "",
           email: shelter.email || ""
         },
-        acceptsAnimalsFromOwners: shelter.can_adopt || false,
+        acceptsAnimalsFromOwners: shelter.can_adopt || shelter.accepts_animals || false,
         photoUrl: shelter.photoUrl || null,
         photos: shelter.photos || [],
-        address: shelter.address,
+        address: shelter.address || "",
         district: shelter.district || 'Москва',
-        districtId: shelter.region
+        districtId: shelter.region || shelter.districtId || ""
       });
 
-      const formattedPets = Array.isArray(animals) ? animals.map(animal => {
-        console.log('Обрабатываем животное:', animal);
-        
-        return {
-          id: animal.id,
-          name: animal.name || "Без имени",
-          age: animal.age || 0,
-          gender: animal.gender || "unknown",
-          type: animal.type || "unknown",
-          photos: animal.photos || [],
-          personality: animal.personality || "",
-          color: animal.color || "",
-          animal_size: animal.animal_size || "medium",
-          health: animal.health || "healthy",
-          shelter_name: shelter.name
-        };
-      }) : [];
+      setRatingStats({ 
+        average: avgRating, 
+        totalRatings: totalRatings 
+      });
+      setUserRating(userVote);
 
-      console.log('Форматированные животные:', formattedPets);
-      
+      const formattedPets = Array.isArray(animals) ? animals.map(animal => ({
+        id: animal.id,
+        name: animal.name || "Без имени",
+        age: animal.age || 0,
+        gender: animal.gender || "unknown",
+        type: animal.type || "unknown",
+        photos: animal.photos || [],
+        personality: animal.personality || "",
+        color: animal.color || "",
+        animal_size: animal.animal_size || "medium",
+        health: animal.health || "healthy",
+        shelter_name: shelter.name
+      })) : [];
+
       setAllPets(formattedPets);
       setFilteredPets(formattedPets);
       setAnimalCount(formattedPets.length);
-
     } catch (err) {
       console.error('Ошибка загрузки данных приюта:', err);
       setError('Не удалось загрузить данные приюта');
-      setAllPets([]);
-      setFilteredPets([]);
-      setAnimalCount(0);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, isAuthenticated]);
 
-  const handleApplyFilters = (filters) => {
-    console.log("Applied filters:", filters);
-    setActiveFilters(filters);
-    
-    let filtered = [...allPets];
+  useEffect(() => {
+    loadShelterData();
+  }, [loadShelterData]);
 
-    if (filters.type && filters.type !== '') {
-      filtered = filtered.filter(pet => {
-        if (filters.type === 'dog') return pet.type === 'dog';
-        if (filters.type === 'cat') return pet.type === 'cat';
-        return true;
-      });
-    }
-
-    if (filters.gender && filters.gender !== '') {
-      filtered = filtered.filter(pet => pet.gender === filters.gender);
-    }
-
-    if (filters.animal_size && filters.animal_size !== '') {
-      filtered = filtered.filter(pet => pet.animal_size === filters.animal_size);
-    }
-
-    if (filters.age_min !== undefined) {
-      filtered = filtered.filter(pet => pet.age >= filters.age_min);
-    }
-    if (filters.age_max !== undefined) {
-      filtered = filtered.filter(pet => pet.age <= filters.age_max);
-    }
-
-    if (filters.health && filters.health !== '') {
-      filtered = filtered.filter(pet => pet.health === filters.health);
-    }
-
-    setFilteredPets(filtered);
-    setAnimalCount(filtered.length);
-    setCurrentPage(1);
-  };
-
+  // Поиск и фильтрация
   useEffect(() => {
     let filtered = [...allPets];
     
@@ -242,111 +251,155 @@ const ShelterProfile = () => {
     setFilteredPets(filtered);
     setAnimalCount(filtered.length);
     setCurrentPage(1);
-  }, [searchTerm, allPets, activeFilters]);
+  }, [searchTerm, allPets, activeFilters, applyFilters]);
 
-  const applyFilters = (pets, filters) => {
-    if (!filters || Object.keys(filters).length === 0) return pets;
+  // Отправка оценки через правильный эндпоинт
+  const handleRateShelter = async (rating) => {
+    if (!isAuthenticated) {
+      navigate('/войти');
+      return;
+    }
 
-    let filtered = [...pets];
+    setIsRatingLoading(true);
+    try {
+      const response = await api.post('/shelters/vote', {
+        shelter_id: Number(id),
+        vote: rating
+      });
 
-    if (filters.type && filters.type !== '') {
-      if (filters.type === 'dog') {
-        filtered = filtered.filter(pet => pet.type === 'dog');
-      } else if (filters.type === 'cat') {
-        filtered = filtered.filter(pet => pet.type === 'cat');
+      console.log('Response from vote API:', response.data);
+
+      // Сохраняем оценку пользователя в localStorage
+      const userRatings = JSON.parse(localStorage.getItem('userShelterRatings') || '{}');
+      
+      // Определяем, это новая оценка или изменение существующей
+      const isNewRating = userRatings[id] === undefined;
+      userRatings[id] = rating;
+      localStorage.setItem('userShelterRatings', JSON.stringify(userRatings));
+
+      // Обновляем данные согласно ответу API
+      const newRating = safeNumber(response.data.rating, ratingStats.average);
+      
+      // Правильно обновляем количество оценок
+      // Если это новая оценка - увеличиваем счетчик, если изменение - оставляем прежним
+      const newTotalRatings = isNewRating 
+        ? ratingStats.totalRatings + 1 
+        : ratingStats.totalRatings;
+
+      setUserRating(rating);
+      setRatingStats({
+        average: newRating,
+        totalRatings: newTotalRatings
+      });
+
+      // Обновляем данные приюта
+      setShelterData(prev => ({
+        ...prev,
+        rating: newRating
+      }));
+
+    } catch (error) {
+      console.error('Ошибка при оценке приюта:', error);
+      if (error.response?.status === 409) {
+        // Если пользователь уже оценивал, все равно обновляем оценку
+        const response = await api.post('/shelters/vote', {
+          shelter_id: Number(id),
+          vote: rating
+        });
+
+        // Сохраняем оценку пользователя в localStorage
+        const userRatings = JSON.parse(localStorage.getItem('userShelterRatings') || '{}');
+        userRatings[id] = rating;
+        localStorage.setItem('userShelterRatings', JSON.stringify(userRatings));
+
+        // Обновляем данные
+        const newRating = safeNumber(response.data.rating, ratingStats.average);
+        
+        setUserRating(rating);
+        setRatingStats({
+          average: newRating,
+          totalRatings: ratingStats.totalRatings // Количество оценок не меняется при изменении
+        });
+
+        setShelterData(prev => ({
+          ...prev,
+          rating: newRating
+        }));
+      } else {
+        alert('Не удалось отправить оценку. Попробуйте позже.');
       }
-    }
-
-    if (filters.gender && filters.gender !== '') {
-      filtered = filtered.filter(pet => pet.gender === filters.gender);
-    }
-
-    if (filters.animal_size && filters.animal_size !== '') {
-      filtered = filtered.filter(pet => pet.animal_size === filters.animal_size);
-    }
-
-    if (filters.health && filters.health !== '') {
-      filtered = filtered.filter(pet => pet.health === filters.health);
-    }
-
-    if (filters.age_min !== undefined) {
-      filtered = filtered.filter(pet => pet.age >= filters.age_min);
-    }
-
-    if (filters.age_max !== undefined) {
-      filtered = filtered.filter(pet => pet.age <= filters.age_max);
-    }
-
-    return filtered;
-  };
-
-  const handleResetFilters = () => {
-    setActiveFilters({});
-    setSearchTerm("");
-    setFilteredPets(allPets);
-    setAnimalCount(allPets.length);
-    setCurrentPage(1);
-  };
-
-  const goToApplication = () => {
-    navigate('/Anketa_give', { state: { shelterId: id, shelterName: shelterData.name } });
-  };
-
-  const scrollToMap = () => {
-    const mapSection = document.getElementById('shelter-map');
-    if (mapSection) {
-      mapSection.scrollIntoView({ behavior: 'smooth' });
+    } finally {
+      setIsRatingLoading(false);
     }
   };
 
-  const indexOfLastPet = currentPage * petsPerPage;
-  const indexOfFirstPet = indexOfLastPet - petsPerPage;
-  const currentPets = filteredPets.slice(indexOfFirstPet, indexOfLastPet);
-  const totalPages = Math.ceil(filteredPets.length / petsPerPage);
+  // Компонент звезд для оценки
+  const RatingStars = ({ currentRating, onRate, disabled = false, size = "medium" }) => {
+    const [hoverRating, setHoverRating] = useState(0);
+    
+    const starSize = size === "large" ? "w-8 h-8 md:w-9 md:h-9" : "w-6 h-6 md:w-7 md:h-7";
 
-  const nextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
+    return (
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            onClick={() => !disabled && onRate(star)}
+            onMouseEnter={() => !disabled && setHoverRating(star)}
+            onMouseLeave={() => !disabled && setHoverRating(0)}
+            disabled={disabled || isRatingLoading}
+            className={`transition-transform duration-200 ${
+              !disabled && !isRatingLoading ? 'hover:scale-110 cursor-pointer' : 'cursor-default'
+            } ${isRatingLoading ? 'opacity-50' : ''}`}
+            aria-label={`Оценить на ${star} звезд`}
+          >
+            <svg 
+              className={`${starSize} ${
+                star <= (hoverRating || currentRating) 
+                  ? 'text-green-40 fill-current' 
+                  : 'text-green-80 fill-current'
+              }`} 
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </button>
+        ))}
+      </div>
+    );
   };
 
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const goToPage = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
-  const renderStars = (rating) => {
+  // Статические звезды для отображения рейтинга
+  const StaticStars = ({ rating, size = "medium" }) => {
+    const safeRating = safeNumber(rating, 0);
     const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
+    const fullStars = Math.floor(safeRating);
+    const hasHalfStar = safeRating % 1 >= 0.5;
+    const starSize = size === "large" ? "w-6 h-6 md:w-7 md:h-7" : "w-5 h-5 md:w-6 md:h-6";
 
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
         stars.push(
-          <svg key={i} className="w-5 h-5 md:w-6 md:h-6 text-green-30 fill-current" viewBox="0 0 24 24">
+          <svg key={i} className={`${starSize} text-green-30 fill-current`} viewBox="0 0 24 24">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
           </svg>
         );
       } else if (i === fullStars && hasHalfStar) {
         stars.push(
-          <svg key={i} className="w-5 h-5 md:w-6 md:h-6 text-green-30 fill-current" viewBox="0 0 24 24">
-            <defs>
-              <linearGradient id={`half-star-${i}`}>
-                <stop offset="50%" stopColor="currentColor"/>
-                <stop offset="50%" stopColor="#D1D5DB"/>
-              </linearGradient>
-            </defs>
-            <path fill={`url(#half-star-${i})`} d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
+          <div key={i} className="relative">
+            <svg className={`${starSize} text-green-80 fill-current`} viewBox="0 0 24 24">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            <div className="absolute top-0 left-0 overflow-hidden" style={{ width: '50%' }}>
+              <svg className={`${starSize} text-green-30 fill-current`} viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+          </div>
         );
       } else {
         stars.push(
-          <svg key={i} className="w-5 h-5 md:w-6 md:h-6 text-green-80 fill-current" viewBox="0 0 24 24">
+          <svg key={i} className={`${starSize} text-green-80 fill-current`} viewBox="0 0 24 24">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
           </svg>
         );
@@ -355,7 +408,16 @@ const ShelterProfile = () => {
     return stars;
   };
 
-  const activeFilterLabels = formatActiveFilters();
+  // Пагинация
+  const indexOfLastPet = currentPage * petsPerPage;
+  const indexOfFirstPet = indexOfLastPet - petsPerPage;
+  const currentPets = filteredPets.slice(indexOfFirstPet, indexOfLastPet);
+  const totalPages = Math.ceil(filteredPets.length / petsPerPage);
+
+  // Визуализация активных фильтров
+  const activeFilterLabels = Object.entries(activeFilters)
+    .filter(([_, value]) => value !== '' && value !== undefined && value !== null)
+    .map(([key, value]) => getFilterDisplayName(key, value));
 
   if (loading) {
     return (
@@ -384,16 +446,8 @@ const ShelterProfile = () => {
       />
 
       <div className="max-w-container mx-auto px-4 space-y-8">
-        <article className="relative w-full max-w-[1260px] min-h-[400px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row">
-          
-          {shelterData.acceptsAnimalsFromOwners && (
-            <div className="absolute top-4 right-6 z-20 bg-green-90 bg-opacity-90 border-2 border-green-30 rounded-custom-small px-4 py-2 backdrop-blur-sm">
-              <span className="font-inter font-medium text-green-30 text-sm">
-                Поддерживает возможность отдать питомца
-              </span>
-            </div>
-          )}
-
+        {/* Карточка приюта */}
+        <div className="relative w-full max-w-[1260px] min-h-[400px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row">
           <div className="relative w-full md:w-[350px] h-[180px] md:h-full flex-shrink-0">
             <img 
               src={shelterData.photoUrl || PriutPhoto} 
@@ -416,19 +470,27 @@ const ShelterProfile = () => {
             <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-green-90 to-transparent hidden md:block"></div>
           </div>
 
-          <div className="flex-1 flex flex-col items-start justify-between p-4 md:p-6 md:pl-6 md:pr-6">
-            <div className="w-full">
-              <header className="inline-flex flex-col items-start relative mb-3 md:mb-4 w-full">
+          <div className="flex-1 flex flex-col p-4 md:p-6 md:pl-6 md:pr-6 relative">
+            {shelterData.acceptsAnimalsFromOwners && (
+              <div className="absolute top-4 right-4 bg-green-90 bg-opacity-90 border-2 border-green-30 rounded-custom-small px-3 py-2 backdrop-blur-sm max-w-[200px]">
+                <span className="font-inter font-medium text-green-30 text-xs sm:text-sm leading-tight">
+                  Поддерживает возможность отдать питомца
+                </span>
+              </div>
+            )}
+
+            <div className="w-full flex-1">
+              <header className="inline-flex flex-col items-start relative mb-3 md:mb-4 w-full pr-[220px] sm:pr-[240px] md:pr-[260px]">
                 <h1 className="w-fit font-sf-rounded font-bold text-2xl md:text-4xl text-green-30 mb-2">
                   {shelterData.name}
                 </h1>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mb-4">
                   <div className="flex">
-                    {renderStars(shelterData.rating)}
+                    <StaticStars rating={ratingStats.average} />
                   </div>
                   <span className="font-inter font-medium text-green-30 text-sm">
-                    {shelterData.rating}
+                    {safeNumber(ratingStats.average).toFixed(1)} ({ratingStats.totalRatings} оценок)
                   </span>
                 </div>
               </header>
@@ -461,76 +523,84 @@ const ShelterProfile = () => {
               </div>
             </div>
 
-            <button
-              className="all-[unset] box-border flex h-11 items-center justify-center gap-2 px-6 py-3 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer w-full mt-4"
-              type="button"
-              aria-label={`Показать приют ${shelterData.name} на карте`}
-              onClick={scrollToMap}
-            >
-              <span className="relative w-fit font-inter font-medium text-green-20 text-base">
-                Показать на карте
-              </span>
-            </button>
+            <div className="w-full mt-auto pt-4">
+              <button
+                className="all-[unset] box-border flex h-11 items-center justify-center gap-2 px-6 py-3 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer w-full"
+                onClick={scrollToMap}
+              >
+                <span className="relative w-fit font-inter font-medium text-green-20 text-base">
+                  Показать на карте
+                </span>
+              </button>
+            </div>
           </div>
-        </article>
+        </div>
 
+        {/* БЛОК ОЦЕНКИ ПРИЮТА */}
+        <div className="w-full max-w-[1260px] mx-auto">
+          <div className="bg-green-90 rounded-custom p-6 border-2 border-green-70">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+              <div className="flex-1">
+                <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-4">
+                  Оцените приют
+                </h3>
+                
+                {userRating ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex">
+                        <StaticStars rating={userRating} size="large" />
+                      </div>
+                      <span className="font-inter font-semibold text-green-30">
+                        Ваша оценка: {userRating}
+                      </span>
+                    </div>
+                    <p className="font-inter text-green-40 text-sm">
+                      Спасибо за вашу оценку! Вы можете изменить её в любой момент.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <span className="font-inter text-green-30 text-sm">Изменить оценку:</span>
+                      <RatingStars 
+                        currentRating={userRating} 
+                        onRate={handleRateShelter}
+                        size="medium"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <RatingStars 
+                        currentRating={0} 
+                        onRate={handleRateShelter}
+                        disabled={!isAuthenticated}
+                        size="large"
+                      />
+                      {!isAuthenticated && (
+                        <span className="font-inter text-green-40 text-sm">
+                          Войдите, чтобы оценить приют
+                        </span>
+                      )}
+                    </div>
+                    {isAuthenticated && (
+                      <p className="font-inter text-green-40 text-sm">
+                        Нажмите, чтобы оценить приют 
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Остальной код остается без изменений */}
         <section className="bg-green-95 rounded-custom p-6 w-full max-w-[1160px] mx-auto">
           <div className="flex flex-col lg:flex-row justify-between items-center gap-6 w-full">
             <div className="w-full lg:w-auto text-center lg:text-left">
               <span className="font-sf-rounded font-bold text-green-30 text-2xl md:text-4xl">
                 <strong className="text-green-30">{animalCount}</strong> питомцев
               </span>
-              
-              {activeFilterLabels && activeFilterLabels.length > 0 && (
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <div className="bg-green-80 rounded-custom-small px-3 py-1 inline-block">
-                    <span className="font-inter text-green-30 text-sm font-medium">
-                      Активные фильтры:
-                    </span>
-                  </div>
-                  {activeFilterLabels.map((filterLabel, index) => (
-                    <div 
-                      key={index}
-                      className="bg-green-70 rounded-custom-small px-3 py-1 flex items-center gap-2"
-                    >
-                      <span className="font-inter text-green-20 text-sm">
-                        {filterLabel}
-                      </span>
-                      <button
-                        onClick={() => {
-                          const filterKey = Object.keys(activeFilters).find(key => {
-                            const value = activeFilters[key];
-                            if (key === 'age_min' || key === 'age_max') {
-                              return filterLabel.includes(getFilterDisplayName(key, value));
-                            }
-                            return getFilterDisplayName(key, value) === filterLabel;
-                          });
-                          
-                          if (filterKey) {
-                            const newFilters = { ...activeFilters };
-                            delete newFilters[filterKey];
-                            setActiveFilters(newFilters);
-                            handleApplyFilters(newFilters);
-                          }
-                        }}
-                        className="text-green-40 hover:text-green-30 transition-colors"
-                        aria-label={`Удалить фильтр ${filterLabel}`}
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    onClick={handleResetFilters}
-                    className="text-green-60 hover:text-green-40 transition-colors font-inter text-sm underline"
-                    aria-label="Сбросить все фильтры"
-                  >
-                    Сбросить все
-                  </button>
-                </div>
-              )}
             </div>
 
             <div className="w-full lg:w-auto">
@@ -555,12 +625,11 @@ const ShelterProfile = () => {
           </div>
         </section>
 
-        <div className="flex items-start gap-2.5 p-[15px] relative bg-green-90 rounded-custom w-full max-w-[1260px] mx-auto">
+        {/* Кнопка фильтров и активные фильтры */}
+        <div className="flex flex-wrap items-center gap-2.5 p-[15px] relative bg-green-90 rounded-custom w-full max-w-[1260px] mx-auto">
           <button
             onClick={() => setShowFilters(true)}
             className="inline-flex items-center justify-center gap-2.5 px-4 py-2 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer"
-            type="button"
-            aria-label="Фильтры"
           >
             <svg 
               className="relative w-6 h-6 aspect-[1] text-green-20"
@@ -574,17 +643,32 @@ const ShelterProfile = () => {
               Фильтры
             </span>
           </button>
+
+          {/* Активные фильтры рядом с кнопкой */}
+          {activeFilterLabels.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {activeFilterLabels.map((label, index) => (
+                <div key={index} className="bg-green-70 rounded-custom-small px-3 py-1 flex items-center gap-2">
+                  <span className="font-inter text-green-20 text-sm">{label}</span>
+                </div>
+              ))}
+              <button
+                onClick={handleResetFilters}
+                className="text-green-60 hover:text-green-40 transition-colors font-inter text-sm underline"
+              >
+                Сбросить
+              </button>
+            </div>
+          )}
         </div>
 
+        {/* Список питомцев */}
         <section className="w-full max-w-[1260px] mx-auto">
           {allPets.length > 0 ? (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {currentPets.map((pet) => (
-                  <PetCard 
-                    key={pet.id}
-                    petData={pet}
-                  />
+                  <PetCard key={pet.id} petData={pet} />
                 ))}
               </div>
 
@@ -598,14 +682,13 @@ const ShelterProfile = () => {
 
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={prevPage}
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                       className={`flex items-center justify-center w-10 h-10 rounded-custom-small ${
                         currentPage === 1 
                           ? 'bg-green-80 text-green-60 cursor-not-allowed' 
                           : 'bg-green-70 text-green-20 hover:bg-green-60 cursor-pointer'
                       } transition-colors`}
-                      aria-label="Предыдущая страница"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -613,32 +696,37 @@ const ShelterProfile = () => {
                     </button>
 
                     <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <button
-                          key={page}
-                          onClick={() => goToPage(page)}
-                          className={`w-10 h-10 rounded-custom-small font-inter font-medium transition-colors ${
-                            page === currentPage
-                              ? 'bg-green-70 text-green-20'
-                              : 'bg-green-90 text-green-30 hover:bg-green-80'
-                          }`}
-                          aria-label={`Перейти на страницу ${page}`}
-                          aria-current={page === currentPage ? 'page' : undefined}
-                        >
-                          {page}
-                        </button>
-                      ))}
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const page = currentPage <= 3 
+                          ? i + 1 
+                          : currentPage >= totalPages - 2 
+                            ? totalPages - 4 + i 
+                            : currentPage - 2 + i;
+                        if (page < 1 || page > totalPages) return null;
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`w-10 h-10 rounded-custom-small font-inter font-medium transition-colors ${
+                              page === currentPage
+                                ? 'bg-green-70 text-green-20'
+                                : 'bg-green-90 text-green-30 hover:bg-green-80'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      })}
                     </div>
 
                     <button
-                      onClick={nextPage}
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
                       className={`flex items-center justify-center w-10 h-10 rounded-custom-small ${
                         currentPage === totalPages 
                           ? 'bg-green-80 text-green-60 cursor-not-allowed' 
                           : 'bg-green-70 text-green-20 hover:bg-green-60 cursor-pointer'
                       } transition-colors`}
-                      aria-label="Следующая страница"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -684,19 +772,14 @@ const ShelterProfile = () => {
                   Питомцы не найдены
                 </h3>
                 <p className="font-inter text-green-20 mb-4">
-                  {Object.keys(activeFilters).length > 0 || searchTerm 
-                    ? 'По вашим фильтрам питомцы не найдены. Попробуйте изменить параметры поиска.'
-                    : 'В этом приюте пока нет животных для усыновления'
-                  }
+                  По вашим фильтрам питомцы не найдены. Попробуйте изменить параметры поиска.
                 </p>
-                {(Object.keys(activeFilters).length > 0 || searchTerm) && (
-                  <button
-                    onClick={handleResetFilters}
-                    className="px-4 py-2 bg-green-70 text-green-20 rounded-custom-small hover:bg-green-60 transition-colors"
-                  >
-                    Сбросить фильтры
-                  </button>
-                )}
+                <button
+                  onClick={handleResetFilters}
+                  className="px-4 py-2 bg-green-70 text-green-20 rounded-custom-small hover:bg-green-60 transition-colors"
+                >
+                  Сбросить фильтры
+                </button>
               </div>
             </div>
           )}
@@ -716,13 +799,16 @@ const ShelterProfile = () => {
 
           <div className="w-full bg-green-90 border-2 border-green-40 rounded-custom overflow-hidden relative z-10">
             <div className="w-full h-[400px] md:h-[500px] relative z-10">
-              <SheltersMap 
-                shelters={[shelterData]}
-              />
+              {shelterData.address ? (
+                <SheltersMap shelters={[shelterData]} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-green-85">
+                  <p className="font-inter text-green-30 text-lg">Адрес приюта не указан</p>
+                </div>
+              )}
             </div>
           </div>
         </section>
-
 
         {shelterData.acceptsAnimalsFromOwners && (
           <section className="w-full max-w-[1260px] mx-auto mt-12">
@@ -732,6 +818,7 @@ const ShelterProfile = () => {
                   <img 
                     src={PrilegPhoto} 
                     alt="Спит" 
+                    className="max-w-full h-auto"
                   />
                 </div>
                 
@@ -743,8 +830,6 @@ const ShelterProfile = () => {
                   <button
                     onClick={goToApplication}
                     className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-transparent border-2 border-green-40 text-green-40 rounded-custom-small hover:bg-green-40 hover:text-green-95 transition-all duration-300 font-inter font-medium"
-                    type="button"
-                    aria-label="Перейти к заполнению заявки"
                   >
                     <span>Заполнить заявку</span>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

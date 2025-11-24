@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ReactDOM from 'react-dom';
 
 export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) => {
     const [filters, setFilters] = useState({
@@ -7,11 +8,12 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
         animal_size: "Любой",
         health: "Любое",
         age_min: 0,
-        age_max: 20,
+        age_max: 30,
     });
 
     useEffect(() => {
         if (isOpen) {
+            document.body.style.overflow = 'hidden';
             if (initialFilters && Object.keys(initialFilters).length > 0) {
                 const updatedFilters = {
                     type: "Все",
@@ -19,12 +21,16 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                     animal_size: "Любой",
                     health: "Любое",
                     age_min: 0,
-                    age_max: 25,
+                    age_max: 30,
                 };
 
                 if (initialFilters.type) {
                     updatedFilters.type = initialFilters.type === 'dog' ? 'Собаки' : 
-                                        initialFilters.type === 'cat' ? 'Кошки' : 'Все';
+                                        initialFilters.type === 'cat' ? 'Кошки' : 
+                                        initialFilters.type === 'bird' ? 'Птицы' :
+                                        initialFilters.type === 'rodent' ? 'Грызуны' :
+                                        initialFilters.type === 'fish' ? 'Рыбы' :
+                                        initialFilters.type === 'reptile' ? 'Рептилии' : 'Все';
                 }
                 if (initialFilters.gender) {
                     updatedFilters.gender = initialFilters.gender === 'male' ? 'Мальчик' : 
@@ -55,10 +61,16 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                     animal_size: "Любой",
                     health: "Любое",
                     age_min: 0,
-                    age_max: 20,
+                    age_max: 30,
                 });
             }
+        } else {
+            document.body.style.overflow = 'unset';
         }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
     }, [isOpen, initialFilters]);
 
     const filterFields = [
@@ -66,7 +78,7 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
             id: "type",
             label: "Кого вы ищете",
             value: filters.type,
-            options: ["Все", "Собаки", "Кошки"],
+            options: ["Все", "Собаки", "Кошки", "Птицы", "Грызуны", "Рыбы", "Рептилии"],
             fullWidth: true,
         },
         {
@@ -100,18 +112,21 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
     };
 
     const handleAgeChange = (type, value) => {
-        setFilters((prev) => {
-            const newAgeMin = type === 'min' ? parseInt(value) : prev.age_min;
-            const newAgeMax = type === 'max' ? parseInt(value) : prev.age_max;
-            
-            if (type === 'min' && newAgeMin > prev.age_max) {
-                return { ...prev, age_min: prev.age_max, age_max: newAgeMin };
+        const numValue = parseInt(value);
+        setFilters(prev => {
+            if (type === 'min') {
+                const newMin = Math.min(numValue, prev.age_max);
+                return { 
+                    ...prev, 
+                    age_min: newMin
+                };
+            } else {
+                const newMax = Math.max(numValue, prev.age_min);
+                return { 
+                    ...prev, 
+                    age_max: newMax
+                };
             }
-            if (type === 'max' && newAgeMax < prev.age_min) {
-                return { ...prev, age_min: newAgeMax, age_max: prev.age_min };
-            }
-            
-            return { ...prev, [type === 'min' ? 'age_min' : 'age_max']: parseInt(value) };
         });
     };
 
@@ -122,7 +137,7 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
             animal_size: "Любой",
             health: "Любое",
             age_min: 0,
-            age_max: 20,
+            age_max: 30,
         });
         if (onReset) {
             onReset();
@@ -132,7 +147,12 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
     const handleSubmit = () => {
         console.log("Filters applied:", filters);
         const apiFilters = {
-            type: filters.type === "Собаки" ? "dog" : filters.type === "Кошки" ? "cat" : "",
+            type: filters.type === "Собаки" ? "dog" : 
+                filters.type === "Кошки" ? "cat" : 
+                filters.type === "Птицы" ? "bird" :
+                filters.type === "Грызуны" ? "rodent" :
+                filters.type === "Рыбы" ? "fish" :
+                filters.type === "Рептилии" ? "reptile" : "",
             gender: filters.gender === "Мальчик" ? "male" : filters.gender === "Девочка" ? "female" : "",
             animal_size: filters.animal_size === "Маленький" ? "small" : 
                         filters.animal_size === "Средний" ? "medium" : 
@@ -160,9 +180,19 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
 
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-green-95 rounded-[40px] w-full max-w-2xl flex flex-col items-start gap-6 p-8 relative max-h-[90vh] overflow-y-auto">
+    const minPosition = (filters.age_min / 30) * 100;
+    const maxPosition = (filters.age_max / 30) * 100;
+
+    return ReactDOM.createPortal(
+        <>
+            <div 
+                className="fixed inset-0 bg-black bg-opacity-50 z-[9998]"
+                onClick={handleClose}
+            />
+            <div 
+                className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999] bg-green-95 rounded-[40px] w-full max-w-2xl flex flex-col items-start gap-6 p-8 max-h-[90vh] overflow-y-auto animate-fade-up"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <header className="flex items-center justify-between self-stretch w-full">
                     <h1 className="text-4xl font-sf-rounded font-bold text-green-30">Фильтры</h1>
                     <button 
@@ -275,56 +305,105 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                         return null;
                     })}
 
-                    <div className="self-stretch w-full flex flex-col gap-1">
+                    <div className="self-stretch w-full flex flex-col gap-4">
                         <label className="text-base font-medium text-green-40">
                             Возраст питомца: {filters.age_min} - {filters.age_max} лет
                         </label>
-                        <div className="relative pt-8">
+                        
+                        <div className="relative py-4">
                             <div className="relative h-2 bg-green-80 rounded-full">
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="20"
-                                    value={filters.age_min}
-                                    onChange={(e) => handleAgeChange('min', e.target.value)}
-                                    className="absolute w-full h-2 opacity-0 cursor-pointer z-20"
-                                />
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="20"
-                                    value={filters.age_max}
-                                    onChange={(e) => handleAgeChange('max', e.target.value)}
-                                    className="absolute w-full h-2 opacity-0 cursor-pointer z-20"
-                                />
                                 <div 
                                     className="absolute h-2 bg-green-50 rounded-full"
                                     style={{
-                                        left: `${(filters.age_min / 20) * 100}%`,
-                                        right: `${100 - (filters.age_max / 20) * 100}%`
+                                        left: `${minPosition}%`,
+                                        width: `${maxPosition - minPosition}%`
                                     }}
                                 ></div>
                                 
-                                <div 
-                                    className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 cursor-pointer z-10"
-                                    style={{ left: `${(filters.age_min / 20) * 100}%` }}
-                                ></div>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="30"
+                                    value={filters.age_min}
+                                    onChange={(e) => handleAgeChange('min', e.target.value)}
+                                    className="absolute w-full h-2 opacity-0 cursor-pointer z-10"
+                                />
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="30"
+                                    value={filters.age_max}
+                                    onChange={(e) => handleAgeChange('max', e.target.value)}
+                                    className="absolute w-full h-2 opacity-0 cursor-pointer z-10"
+                                />
                                 
                                 <div 
-                                    className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 cursor-pointer z-10"
-                                    style={{ left: `${(filters.age_max / 20) * 100}%` }}
+                                    className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 shadow-lg cursor-pointer z-20 hover:scale-110 transition-transform"
+                                    style={{ left: `${minPosition}%` }}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault();
+                                        const slider = e.currentTarget;
+                                        const startX = e.clientX;
+                                        const startLeft = minPosition;
+                                        const sliderWidth = slider.parentElement.offsetWidth;
+
+                                        const handleMouseMove = (moveEvent) => {
+                                            const deltaX = moveEvent.clientX - startX;
+                                            const deltaPercent = (deltaX / sliderWidth) * 100;
+                                            let newPosition = startLeft + deltaPercent;
+                                            newPosition = Math.max(0, Math.min(newPosition, maxPosition));
+                                            const newValue = Math.round((newPosition / 100) * 30);
+                                            handleAgeChange('min', newValue);
+                                        };
+
+                                        const handleMouseUp = () => {
+                                            document.removeEventListener('mousemove', handleMouseMove);
+                                            document.removeEventListener('mouseup', handleMouseUp);
+                                        };
+
+                                        document.addEventListener('mousemove', handleMouseMove);
+                                        document.addEventListener('mouseup', handleMouseUp);
+                                    }}
+                                ></div>
+                                <div 
+                                    className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 shadow-lg cursor-pointer z-20 hover:scale-110 transition-transform"
+                                    style={{ left: `${maxPosition}%` }}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault();
+                                        const slider = e.currentTarget;
+                                        const startX = e.clientX;
+                                        const startLeft = maxPosition;
+                                        const sliderWidth = slider.parentElement.offsetWidth;
+
+                                        const handleMouseMove = (moveEvent) => {
+                                            const deltaX = moveEvent.clientX - startX;
+                                            const deltaPercent = (deltaX / sliderWidth) * 100;
+                                            let newPosition = startLeft + deltaPercent;
+                                            newPosition = Math.max(minPosition, Math.min(newPosition, 100));
+                                            const newValue = Math.round((newPosition / 100) * 30);
+                                            handleAgeChange('max', newValue);
+                                        };
+
+                                        const handleMouseUp = () => {
+                                            document.removeEventListener('mousemove', handleMouseMove);
+                                            document.removeEventListener('mouseup', handleMouseUp);
+                                        };
+
+                                        document.addEventListener('mousemove', handleMouseMove);
+                                        document.addEventListener('mouseup', handleMouseUp);
+                                    }}
                                 ></div>
                             </div>
                             
-                            <div className="flex justify-between text-sm text-green-40 mt-2">
-                                <span>0</span>
-                                <span>20</span>
+                            <div className="flex justify-between text-sm text-green-40 mt-6">
+                                <span>0 лет</span>
+                                <span>30 лет</span>
                             </div>
                         </div>
                     </div>
                 </form>
 
-                <div className="flex gap-3 self-stretch justify-end">
+                <div className="flex gap-3 self-stretch justify-end pt-4">
                     <button
                         type="button"
                         onClick={handleReset}
@@ -341,7 +420,8 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                     </button>
                 </div>
             </div>
-        </div>
+        </>,
+        document.body
     );
 };
 
