@@ -98,7 +98,7 @@ const AddPetToShelter = () => {
             
             // Добавляем данные питомца
             Object.keys(formData).forEach(key => {
-                if (formData[key]) {
+                if (formData[key] !== '' && formData[key] !== null && formData[key] !== undefined) {
                     formDataToSend.append(key, formData[key]);
                 }
             });
@@ -228,6 +228,22 @@ const AddPetToShelter = () => {
                                     <option value="male">Мужской</option>
                                     <option value="female">Женский</option>
                                 </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                    Возраст (лет) *
+                                </label>
+                                <input
+                                    type="number"
+                                    name="age"
+                                    value={formData.age}
+                                    onChange={handleChange}
+                                    min="0"
+                                    max="30"
+                                    required
+                                    className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-40 placeholder-green-40 focus:border-green-50 focus:outline-none"
+                                />
                             </div>
                         </div>
                     </div>

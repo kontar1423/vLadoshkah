@@ -137,7 +137,7 @@ services:
       - RATE_LIMIT_AUTH_WINDOW_SECONDS=${RATE_LIMIT_AUTH_WINDOW_SECONDS:-300}
       - RATE_LIMIT_AUTH_MAX_REQUESTS=${RATE_LIMIT_AUTH_MAX_REQUESTS:-10}
     volumes:
-      - ./logs:/usr/src/app/logs
+      - logs_data:/usr/src/app/logs
     depends_on:
       db:
         condition: service_healthy
@@ -190,6 +190,7 @@ volumes:
   kafka_data:
   zookeeper_data:
   zookeeper_log:
+  logs_data:
 networks:
   app-network:
     driver: bridge

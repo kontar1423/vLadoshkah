@@ -39,5 +39,19 @@ export const animalService = {
             console.error('Error fetching animals by shelter:', error);
             throw error;
         }
+    },
+
+    async createAnimal(animalData) {
+        try {
+            const response = await api.post('/animals', animalData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error creating animal:', error);
+            throw error;
+        }
     }
 };

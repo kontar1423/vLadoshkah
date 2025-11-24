@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Profile from './Profile';
 import AdminProfile from './AdminProfile';
+import { isShelterAdminRole } from '../utils/roleUtils';
 
 const ProfileSelector = () => {
     const { user, refreshUser } = useAuth();
@@ -38,8 +39,8 @@ const ProfileSelector = () => {
         );
     }
 
-    // Показываем AdminProfile если пользователь shelter_admin или admin
-    const showAdminProfile = user?.role === 'shelter_admin' || user?.role === 'admin';
+    // Показываем AdminProfile если пользователь shelter_admin/admin_shelter или admin
+    const showAdminProfile = isShelterAdminRole(user?.role) || user?.role === 'admin';
     
     console.log('🎯 ProfileSelector: Роль пользователя:', user?.role);
     console.log('🎯 ProfileSelector: Показываем:', showAdminProfile ? 'AdminProfile' : 'Profile');

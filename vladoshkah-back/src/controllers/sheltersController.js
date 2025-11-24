@@ -38,7 +38,18 @@ async function getById(req, res) {
 // Создать приют
 async function create(req, res) {
   try {
-    const shelter = await sheltersService.createShelter(req.body, null, req.user);
+    // Поддерживаем одно фото (photo) и несколько (photos)
+    const files = req.files || {};
+    const mergedPhotos = [
+      ...(files.photo || []),
+      ...(files.photos || []),
+    ];
+
+    const shelter = await sheltersService.createShelter(
+      req.body,
+      mergedPhotos.length ? mergedPhotos : null,
+      req.user
+    );
     res.status(201).json(shelter);
   } catch (err) {
     const log = req.log || logger;
@@ -97,8 +108,8 @@ async function vote(req, res) {
       vote
     });
 
-    res.status(201).json({
-      message: 'Vote recorded',
+    res.status(result.updated ? 200 : 201).json({
+      message: result.updated ? 'Vote updated' : 'Vote recorded',
       rating: result.rating,
       vote: result.vote
     });
@@ -108,11 +119,6 @@ async function vote(req, res) {
 
     if (err.status) {
       return res.status(err.status).json({ error: err.message });
-    }
-
-    // Обрабатываем уникальное ограничение на случай гонки
-    if (err.code === '23505') {
-      return res.status(409).json({ error: 'User has already voted for this shelter' });
     }
 
     res.status(500).json({ error: 'Database error' });

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { shelterService } from '../services/shelterService'
 import { userService } from '../services/userService'
 import { useAuth } from '../context/AuthContext'
+import { isShelterAdminRole } from '../utils/roleUtils'
 
 const ShelterRegister = () => {
     const navigate = useNavigate()
@@ -85,6 +86,12 @@ const ShelterRegister = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+
+        if (!isShelterAdminRole(user?.role) && user?.role !== 'admin') {
+            alert('Регистрация приюта доступна только администраторам приютов');
+            navigate('/профиль');
+            return;
+        }
         
         // Базовая валидация
         if (!formData.name.trim()) {
@@ -112,14 +119,10 @@ const ShelterRegister = () => {
             const shelterResponse = await shelterService.createShelter(formDataToSend);
             console.log('✅ Приют создан:', shelterResponse);
             
-            // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда обновляем пользователя с shelter_id
             console.log('🔄 Обновляем данные пользователя с shelter_id...');
-            const updateData = {
-                role: 'shelter_admin',
-                shelter_id: shelterResponse.id  // Добавляем shelter_id
-            };
-            
-            await userService.updateUser(updateData);
+            await userService.updateUser({
+                shelter_id: shelterResponse.id
+            });
             
             // Обновляем контекст аутентификации
             if (refreshUser) {

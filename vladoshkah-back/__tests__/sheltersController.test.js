@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import sheltersController from '../src/controllers/sheltersController.js';
 import sheltersService from '../src/services/sheltersService.js';
+import votesService from '../src/services/VotesService.js';
 
 describe('sheltersController', () => {
   let req, res;
@@ -210,6 +211,80 @@ describe('sheltersController', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: 'DB error' });
+    });
+  });
+
+  describe('vote', () => {
+    test('возвращает 401 если пользователь не авторизован', async () => {
+      req.user = null;
+      req.body = { shelter_id: 1, vote: 4 };
+
+      await sheltersController.vote(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Authentication required' });
+    });
+
+    test('создает новый голос и возвращает 201', async () => {
+      req.user = { userId: 2, role: 'user' };
+      req.body = { shelter_id: 5, vote: 4 };
+      jest.spyOn(votesService, 'createVote').mockResolvedValue({
+        updated: false,
+        rating: 3.5,
+        vote: { id: 10, shelter_id: 5, user_id: 2, vote: 4 },
+        shelter: { id: 5, rating: 3.5 }
+      });
+
+      await sheltersController.vote(req, res);
+
+      expect(votesService.createVote).toHaveBeenCalledWith({
+        userId: 2,
+        shelterId: 5,
+        vote: 4
+      });
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Vote recorded',
+        rating: 3.5,
+        vote: { id: 10, shelter_id: 5, user_id: 2, vote: 4 }
+      });
+    });
+
+    test('обновляет существующий голос и возвращает 200', async () => {
+      req.user = { userId: 3, role: 'user' };
+      req.body = { shelter_id: 7, vote: 5 };
+      jest.spyOn(votesService, 'createVote').mockResolvedValue({
+        updated: true,
+        rating: 4.2,
+        vote: { id: 11, shelter_id: 7, user_id: 3, vote: 5 },
+        shelter: { id: 7, rating: 4.2 }
+      });
+
+      await sheltersController.vote(req, res);
+
+      expect(votesService.createVote).toHaveBeenCalledWith({
+        userId: 3,
+        shelterId: 7,
+        vote: 5
+      });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Vote updated',
+        rating: 4.2,
+        vote: { id: 11, shelter_id: 7, user_id: 3, vote: 5 }
+      });
+    });
+
+    test('прокидывает статус и сообщение ошибки сервиса', async () => {
+      req.user = { userId: 4, role: 'user' };
+      req.body = { shelter_id: 2, vote: 1 };
+      const err = Object.assign(new Error('Shelter not found'), { status: 404 });
+      jest.spyOn(votesService, 'createVote').mockRejectedValue(err);
+
+      await sheltersController.vote(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Shelter not found' });
     });
   });
 });

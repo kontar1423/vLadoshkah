@@ -5,6 +5,7 @@ import { animalService } from '../services/animalService'
 import { shelterService } from '../services/shelterService'
 import { useAuth } from '../context/AuthContext'
 import { getPhotoUrl } from '../utils/photoHelpers' 
+import { isShelterAdminRole } from '../utils/roleUtils'
 
 const Profile = () => {
     const [favoritePets, setFavoritePets] = useState([])
@@ -12,7 +13,7 @@ const Profile = () => {
     const [shelterInfo, setShelterInfo] = useState(null)
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState('favorites')
-    const { user, refreshUser } = useAuth()
+    const { user, updateUser } = useAuth()
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -25,9 +26,9 @@ const Profile = () => {
             console.log('🔄 Profile: Загружаем данные профиля...');
             
             await loadFavoritePets();
+            const canManageShelter = isShelterAdminRole(user?.role) || user?.role === 'admin'
             
-            // Если пользователь shelter_admin, загружаем данные приюта
-            if (user?.role === 'shelter_admin' || user?.role === 'admin') {
+            if (canManageShelter) {
                 await loadShelterData();
             }
             
@@ -41,24 +42,36 @@ const Profile = () => {
     const loadShelterData = async () => {
         try {
             console.log('🔄 Profile: Загружаем данные приюта...');
-            
-            // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: проверяем shelter_id у пользователя
-            if (!user?.shelter_id) {
-                console.log('ℹ️ Profile: У пользователя нет приюта');
-                setShelterInfo(null);
-                setShelterPets([]);
-                return;
+            let shelterId = user?.shelter_id;
+            let shelter = null;
+
+            if (shelterId) {
+                console.log('ℹ️ Profile: Ищем приют по shelter_id пользователя');
+                shelter = await shelterService.getShelterById(shelterId);
             }
 
-            // Загружаем информацию о приюте по shelter_id пользователя
-            const shelter = await shelterService.getShelterById(user.shelter_id);
-            
-            if (shelter) {
+            if (!shelter && user?.id) {
+                console.log('ℹ️ Profile: Ищем приют по admin_id, так как shelter_id отсутствует');
+                const shelterByAdmin = await shelterService.getShelterByAdminId(user.id);
+
+                if (shelterByAdmin) {
+                    shelter = shelterByAdmin;
+                    shelterId = shelterByAdmin.id;
+
+                    if (!user?.shelter_id && updateUser) {
+                        updateUser({ shelter_id: shelterByAdmin.id });
+                    }
+                }
+            }
+
+            if (shelter && shelterId) {
                 console.log('✅ Profile: Приют найден:', shelter);
                 setShelterInfo(shelter);
-                await loadShelterPets(user.shelter_id);
+                await loadShelterPets(shelterId);
+                // Если у пользователя есть приют — сразу показываем вкладку питомцев приюта
+                setActiveTab('shelter');
             } else {
-                console.log('❌ Profile: Приют не найден по ID:', user.shelter_id);
+                console.log('ℹ️ Profile: Приют для пользователя не найден');
                 setShelterInfo(null);
                 setShelterPets([]);
             }
@@ -138,14 +151,15 @@ const Profile = () => {
     }
 
     // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Правильная логика отображения блоков
+    const canManageShelter = isShelterAdminRole(user?.role) || user?.role === 'admin';
+
     const shouldShowShelterRegistration = 
-        (user?.role === 'shelter_admin' || user?.role === 'admin') && 
-        !user?.shelter_id;
+        canManageShelter && 
+        !shelterInfo;
 
     const shouldShowShelterManagement = 
-        (user?.role === 'shelter_admin' || user?.role === 'admin') && 
-        user?.shelter_id && 
-        shelterInfo;
+        canManageShelter && 
+        Boolean(shelterInfo);
 
     const renderPetsGrid = () => {
         const pets = activeTab === 'favorites' ? favoritePets : shelterPets;
@@ -214,8 +228,8 @@ const Profile = () => {
     // Определяем статус пользователя
     const getUserStatus = () => {
         if (user?.role === 'admin') return 'Администратор системы';
-        if (user?.role === 'shelter_admin') {
-            return user?.shelter_id ? 'Администратор приюта' : 'Администратор приюта (приют не зарегистрирован)';
+        if (isShelterAdminRole(user?.role)) {
+            return shelterInfo ? 'Администратор приюта' : 'Администратор приюта (приют не зарегистрирован)';
         }
         return 'Подтвержденный волонтер';
     };
@@ -227,7 +241,7 @@ const Profile = () => {
                 <div className="flex flex-col lg:flex-row gap-8">
                     
                     <main className="flex-1">
-                        {/* Блок регистрации приюта - показывается только shelter_admin без shelter_id */}
+                        {/* Блок регистрации приюта - показывается только администраторам приюта без созданного приюта */}
                         {shouldShowShelterRegistration && (
                             <section className="bg-green-90 rounded-custom p-8 mb-8 border-2 border-green-80">
                                 <div className="text-center">

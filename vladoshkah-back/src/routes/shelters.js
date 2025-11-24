@@ -36,7 +36,17 @@ router.post('/vote', authenticateToken, validate(shelterVoteSchema), sheltersCon
 router.get('/:id', validate(shelterIdSchema, 'params'), sheltersController.getById);
 
 // POST /api/shelters - создать новый приют (только админ сайта)
-router.post('/', authenticateToken, authorize('admin', 'shelter_admin'), upload.single('photo'), validate(createShelterSchema), sheltersController.create);
+router.post(
+  '/',
+  authenticateToken,
+  authorize('admin', 'shelter_admin'),
+  upload.fields([
+    { name: 'photo', maxCount: 1 },   // совместимость со старым полем
+    { name: 'photos', maxCount: 10 }, // новое поле для нескольких фото
+  ]),
+  validate(createShelterSchema),
+  sheltersController.create
+);
 
 // PUT /api/shelters/:id - обновить приют (админ сайта или админ своего приюта)
 router.put('/:id', authenticateToken, authorize('admin', 'shelter_admin'), validate(shelterIdSchema, 'params'), validate(updateShelterSchema), sheltersController.update);

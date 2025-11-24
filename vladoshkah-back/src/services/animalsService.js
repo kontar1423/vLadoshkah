@@ -199,9 +199,15 @@ async function getAnimalsByShelterId(shelterId) {
 }
 
 // Создать животное (с поддержкой фото)
-async function createAnimal(animalData, photoFile = null, currentUser = null) {
+async function createAnimal(animalData, photoFiles = [], currentUser = null) {
   try {
-    logger.info({ hasPhoto: !!photoFile }, 'Service: creating animal');
+    const photosArray = Array.isArray(photoFiles)
+      ? photoFiles.filter(Boolean)
+      : photoFiles
+        ? [photoFiles]
+        : [];
+
+    logger.info({ photosCount: photosArray.length }, 'Service: creating animal');
 
     if (currentUser?.role === 'shelter_admin') {
       const shelterId = Number(animalData.shelter_id);
@@ -227,13 +233,17 @@ async function createAnimal(animalData, photoFile = null, currentUser = null) {
       redisClient.delete(CACHE_KEYS.ANIMAL_BY_ID(animal.id))
     ]);
     // 2. Если есть фото - загружаем через photosService
-    if (photoFile) {
-      await photosService.uploadPhoto(
-        photoFile, 
-        'animal', 
-        animal.id
+    if (photosArray.length > 0) {
+      await Promise.all(
+        photosArray.map(photoFile =>
+          photosService.uploadPhoto(
+            photoFile, 
+            'animal', 
+            animal.id
+          )
+        )
       );
-      logger.info({ animalId: animal.id }, 'Service: photo uploaded for animal');
+      logger.info({ animalId: animal.id, photosCount: photosArray.length }, 'Service: photos uploaded for animal');
     }
     
     // 3. Инвалидируем кэш

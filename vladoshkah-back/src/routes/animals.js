@@ -51,7 +51,17 @@ router.get('/search/:term', animalsController.getAnimalsWithFilters);
 router.get('/:id', validate(animalIdSchema, 'params'), animalsController.getById);
 
 // POST /api/animals - создать новое животное (только админ сайта или админ приюта)
-router.post('/', authenticateToken, authorize('admin', 'shelter_admin'), upload.single('photo'), validate(createAnimalSchema), animalsController.create);
+router.post(
+  '/',
+  authenticateToken,
+  authorize('admin', 'shelter_admin'),
+  upload.fields([
+    { name: 'photo', maxCount: 1 },
+    { name: 'photos', maxCount: 5 },
+  ]),
+  validate(createAnimalSchema),
+  animalsController.create
+);
 
 // PUT /api/animals/:id - обновить животное (только админ сайта или админ приюта)
 router.put('/:id', authenticateToken, authorize('admin', 'shelter_admin'), validate(animalIdSchema, 'params'), validate(updateAnimalSchema), animalsController.update);

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { authService } from '../services/authService'
+import { normalizeUserRole } from '../utils/roleUtils'
 
 const AuthContext = createContext(null)
 
@@ -17,7 +18,7 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => authService.getCurrentUser())
+  const [user, setUser] = useState(() => normalizeUserRole(authService.getCurrentUser()))
   const [isAuthenticated, setIsAuthenticated] = useState(() => authService.isAuthenticated())
   const [loading, setLoading] = useState(true)
 
@@ -37,13 +38,13 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      const freshUser = await authService.getCurrentUserFromServer()
+      const freshUser = normalizeUserRole(await authService.getCurrentUserFromServer())
       setUser(freshUser)
       setIsAuthenticated(true)
       setProfileCompleteFlag(freshUser)
       localStorage.setItem('user', JSON.stringify(freshUser))
     } catch (error) {
-      const cachedUser = authService.getCurrentUser()
+      const cachedUser = normalizeUserRole(authService.getCurrentUser())
       if (cachedUser) {
         setUser(cachedUser)
         setIsAuthenticated(true)
@@ -65,10 +66,11 @@ export const AuthProvider = ({ children }) => {
       const result = await authService.register(userData)
 
       if (result.success && result.user) {
-        setUser(result.user)
+        const normalizedUser = normalizeUserRole(result.user)
+        setUser(normalizedUser)
         setIsAuthenticated(true)
-        setProfileCompleteFlag(result.user)
-        return { success: true, user: result.user }
+        setProfileCompleteFlag(normalizedUser)
+        return { success: true, user: normalizedUser }
       }
 
       return { success: false, error: result.error || 'Ошибка регистрации' }
@@ -86,9 +88,10 @@ export const AuthProvider = ({ children }) => {
       const result = await authService.login({ email, password })
 
       if (result.success && result.user) {
-        setUser(result.user)
+        const normalizedUser = normalizeUserRole(result.user)
+        setUser(normalizedUser)
         setIsAuthenticated(true)
-        setProfileCompleteFlag(result.user)
+        setProfileCompleteFlag(normalizedUser)
         return { success: true }
       }
 
@@ -111,7 +114,7 @@ export const AuthProvider = ({ children }) => {
   const updateUser = (updatedUser) => {
     if (!updatedUser) return
 
-    const nextUser = { ...(user || {}), ...updatedUser }
+    const nextUser = normalizeUserRole({ ...(user || {}), ...updatedUser })
     setUser(nextUser)
     setProfileCompleteFlag(nextUser)
     localStorage.setItem('user', JSON.stringify(nextUser))
@@ -119,7 +122,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshUser = async () => {
     try {
-      const freshUser = await authService.getCurrentUserFromServer()
+      const freshUser = normalizeUserRole(await authService.getCurrentUserFromServer())
       setUser(freshUser)
       setIsAuthenticated(true)
       setProfileCompleteFlag(freshUser)

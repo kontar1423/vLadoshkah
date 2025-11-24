@@ -7,10 +7,11 @@ import { animalService } from '../services/animalService';
 import { userService } from '../services/userService';
 import PetCard from '../components/PetCard';
 import { getPhotoUrl } from '../utils/photoHelpers';
+import { isShelterAdminRole } from '../utils/roleUtils';
 
 const AdminProfile = () => {
     const navigate = useNavigate();
-    const { user, refreshUser } = useAuth();
+    const { user, refreshUser, updateUser } = useAuth();
 
     const [shelterInfo, setShelterInfo] = useState(null);
     const [shelterPets, setShelterPets] = useState([]);
@@ -36,7 +37,7 @@ const AdminProfile = () => {
                 console.log('AdminProfile: Fresh user data:', freshUser);
                 
                 // Проверяем роль
-                if (!freshUser || (freshUser.role !== 'shelter_admin' && freshUser.role !== 'admin')) {
+                if (!freshUser || (!isShelterAdminRole(freshUser.role) && freshUser.role !== 'admin')) {
                     console.log('AdminProfile: User is not admin, redirecting to profile');
                     navigate('/профиль');
                     return;
@@ -118,11 +119,28 @@ const AdminProfile = () => {
             if (currentUser?.shelter_id) {
                 await loadShelterInfo(currentUser.shelter_id);
                 await loadShelterPets(currentUser.shelter_id);
-            } else {
-                console.log('AdminProfile: No shelter_id found for user');
-                setShelterInfo(null);
-                setShelterPets([]);
+                return;
             }
+
+            if (currentUser?.id) {
+                console.log('AdminProfile: Trying to resolve shelter by admin_id...');
+                const shelterByAdmin = await shelterService.getShelterByAdminId(currentUser.id);
+
+                if (shelterByAdmin?.id) {
+                    console.log('AdminProfile: Shelter found by admin_id:', shelterByAdmin.id);
+                    setShelterInfo(shelterByAdmin);
+                    await loadShelterPets(shelterByAdmin.id);
+
+                    if (!currentUser.shelter_id && updateUser) {
+                        updateUser({ shelter_id: shelterByAdmin.id });
+                    }
+                    return;
+                }
+            }
+
+            console.log('AdminProfile: No shelter found for user');
+            setShelterInfo(null);
+            setShelterPets([]);
             
         } catch (error) {
             console.error('AdminProfile: Error loading admin data:', error);
@@ -149,6 +167,10 @@ const AdminProfile = () => {
             const pets = await animalService.getAnimalsByShelter(shelterId);
             setShelterPets(pets || []);
             console.log('AdminProfile: Shelter pets loaded:', pets?.length || 0);
+            // Если есть приют — по умолчанию открываем вкладку «Питомцы приюта», чтобы их было видно
+            if (pets?.length >= 0) {
+                setActiveTab('shelter');
+            }
         } catch (error) {
             console.error('AdminProfile: Error loading shelter pets:', error);
             setShelterPets([]);

@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useForceScroll } from '../hooks/useForceScroll'
 import HelpSection from './HelpSection'
+import { isShelterAdminRole, normalizeRole } from '../utils/roleUtils'
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -89,7 +90,8 @@ export const Header = () => {
       'admin': 'Администратор',
       'shelter_admin': 'Админ приюта'
     };
-    return roleMap[user?.role] || 'Пользователь';
+    const normalizedRole = normalizeRole(user?.role);
+    return roleMap[normalizedRole] || 'Пользователь';
   };
 
   const getProfilePhoto = () => {
@@ -100,7 +102,7 @@ export const Header = () => {
   };
 
   // Проверяем, является ли пользователь админом (любого типа)
-  const isAdmin = user?.role === 'admin' || user?.role === 'shelter_admin';
+  const isAdmin = user?.role === 'admin' || isShelterAdminRole(user?.role);
   
   useEffect(() => {
     const handleClickOutside = (event) => {

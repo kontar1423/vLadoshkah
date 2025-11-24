@@ -6,13 +6,32 @@ async function create({ user_id, shelter_id, vote }) {
     const result = await query(
       `INSERT INTO votes (user_id, shelter_id, vote)
        VALUES ($1, $2, $3)
+       ON CONFLICT (user_id, shelter_id)
+       DO UPDATE SET vote = EXCLUDED.vote
        RETURNING *`,
       [user_id, shelter_id, vote]
     );
-    info({ vote: result.rows[0] }, 'DAO: created service vote');
+    info({ vote: result.rows[0] }, 'DAO: upserted service vote');
     return result.rows[0];
   } catch (err) {
     error(err, 'DAO: error creating service vote');
+    throw err;
+  }
+}
+
+async function update({ id, vote }) {
+  try {
+    const result = await query(
+      `UPDATE votes
+       SET vote = $1
+       WHERE id = $2
+       RETURNING *`,
+      [vote, id]
+    );
+    info({ id, vote: result.rows[0] }, 'DAO: updated service vote');
+    return result.rows[0];
+  } catch (err) {
+    error(err, 'DAO: error updating service vote');
     throw err;
   }
 }
@@ -47,6 +66,7 @@ async function getAllByShelterId(shelter_id) {
 
 export default {
   create,
+  update,
   getByUserAndShelter,
   getAllByShelterId,
 };

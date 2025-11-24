@@ -83,18 +83,23 @@ async function getAllByShelterId(req, res) {
 async function create(req, res) {
   try {
     const animalData = req.body;
-    const photoFile = req.file; // Фото из multer
-    
+    const files = req.files || {};
+    const photoFiles = [
+      ...(files.photos || []),
+      ...(files.photo || [])
+    ];
+
     const log = req.log || logger;
-    log.info({ hasPhoto: !!photoFile }, 'Controller: creating animal');
+    log.info({ photosCount: photoFiles.length }, 'Controller: creating animal');
     
-    const newAnimal = await animalsService.createAnimal(animalData, photoFile, req.user);
+    const newAnimal = await animalsService.createAnimal(animalData, photoFiles, req.user);
     
     res.status(201).json({
       success: true,
       animal: newAnimal,
-      hasPhoto: !!photoFile,
-      message: photoFile ? 'Animal created with photo' : 'Animal created successfully'
+      hasPhoto: photoFiles.length > 0,
+      photosUploaded: photoFiles.length,
+      message: photoFiles.length > 0 ? 'Animal created with photos' : 'Animal created successfully'
     });
   } catch (err) {
     const log = req.log || logger;

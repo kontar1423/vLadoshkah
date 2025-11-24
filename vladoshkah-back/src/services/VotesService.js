@@ -30,22 +30,24 @@ async function createVote({ userId, shelterId, vote }) {
   }
 
   const existingVote = await serviceVotesDao.getByUserAndShelter(userId, shelterId);
-  if (existingVote) {
-    const error = new Error('User has already voted for this shelter');
-    error.status = 409;
-    throw error;
-  }
 
-  const createdVote = await serviceVotesDao.create({
-    user_id: userId,
-    shelter_id: shelterId,
-    vote,
-  });
+  const isVoteUpdate = Boolean(existingVote);
+  const createdVote = isVoteUpdate
+    ? await serviceVotesDao.update({ id: existingVote.id, vote })
+    : await serviceVotesDao.create({
+        user_id: userId,
+        shelter_id: shelterId,
+        vote,
+      });
 
   // Пересчитываем рейтинг приюта
   const votes = await getAllVotesOfShelter(shelterId);
   const rating = calculateAverageVote(votes);
-  const updatedShelter = await sheltersDao.updateRating(shelterId, rating);
+  const totalRatings = votes.length;
+  const updatedShelter = await sheltersDao.updateRating(
+    shelterId,
+    isVoteUpdate ? { rating } : { rating, totalRatings }
+  );
 
   // Инвалидируем кэш приютов
   await Promise.all([
@@ -53,12 +55,16 @@ async function createVote({ userId, shelterId, vote }) {
     redisClient.delete(SHELTER_CACHE_KEYS.BY_ID(shelterId)),
   ]);
 
-  logger.info({ shelterId, rating }, 'Service: updated shelter rating after vote');
+  logger.info(
+    { shelterId, rating, totalRatings, updatedExistingVote: isVoteUpdate },
+    'Service: updated shelter rating after vote'
+  );
 
   return {
     vote: createdVote,
     rating,
     shelter: updatedShelter,
+    updated: isVoteUpdate,
   };
 }
 

@@ -22,6 +22,11 @@ export const createShelterSchema = Joi.object({
       'string.email': 'Email должен быть в правильном формате',
       'string.max': 'Email не должен превышать 255 символов'
     }),
+  inn: Joi.string().pattern(/^[0-9]{10}([0-9]{2})?$/).optional().allow(null, '')
+    .messages({
+      'string.pattern.base': 'ИНН должен содержать 10 или 12 цифр',
+      'string.base': 'ИНН должен быть строкой'
+    }),
   website: Joi.string().uri().max(255).optional().allow(null, '')
     .messages({
       'string.uri': 'Веб-сайт должен быть валидным URL',
@@ -81,6 +86,11 @@ export const updateShelterSchema = Joi.object({
     .messages({
       'string.email': 'Email должен быть в правильном формате',
       'string.max': 'Email не должен превышать 255 символов'
+    }),
+  inn: Joi.string().pattern(/^[0-9]{10}([0-9]{2})?$/).optional().allow(null, '')
+    .messages({
+      'string.pattern.base': 'ИНН должен содержать 10 или 12 цифр',
+      'string.base': 'ИНН должен быть строкой'
     }),
   website: Joi.string().uri().max(255).optional().allow(null, '')
     .messages({

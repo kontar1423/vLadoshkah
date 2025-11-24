@@ -42,14 +42,14 @@ async function getByAdminId(adminId) {
   }
 }
 
-async function create({ name, address, phone, email, website, description, capacity, working_hours, can_adopt, admin_id, region }) {
+async function create({ name, address, phone, email, website, description, capacity, working_hours, can_adopt, admin_id, region, inn }) {
   try {
     const result = await query(
       `INSERT INTO shelters (
-        name, address, phone, email, website, description, capacity, working_hours, can_adopt, admin_id, region
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+        name, address, phone, email, website, description, capacity, working_hours, can_adopt, admin_id, region, inn
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
       RETURNING *`,
-      [name, address, phone, email, website, description, capacity, working_hours, can_adopt !== undefined ? can_adopt : null, admin_id || null, region || null]
+      [name, address, phone, email, website, description, capacity, working_hours, can_adopt !== undefined ? can_adopt : null, admin_id || null, region || null, inn || null]
     );
     info({ shelter: result.rows[0] }, 'DAO: created shelter');
     return result.rows[0];
@@ -59,7 +59,7 @@ async function create({ name, address, phone, email, website, description, capac
   }
 }
 
-async function update(id, { name, address, phone, email, website, description, capacity, working_hours, can_adopt, admin_id, status, region}) {
+async function update(id, { name, address, phone, email, website, description, capacity, working_hours, can_adopt, admin_id, status, region, inn }) {
   try {
     const currentShelter = await getById(id);
     if (!currentShelter) {
@@ -78,10 +78,11 @@ async function update(id, { name, address, phone, email, website, description, c
       admin_id: admin_id !== undefined ? admin_id : currentShelter.admin_id,
       status: status !== undefined ? status : currentShelter.status,
       region: region !== undefined ? region : currentShelter.region,
+      inn: inn !== undefined ? inn : currentShelter.inn,
     };
     const result = await query(
-      `UPDATE shelters SET name = $1, address = $2, phone = $3, email = $4, website = $5, description = $6, capacity = $7, working_hours = $8, can_adopt = $9, admin_id = $10, status = $11, region = $12, updated_at = CURRENT_TIMESTAMP WHERE id = $13 RETURNING *`,
-      [updatedData.name, updatedData.address, updatedData.phone, updatedData.email, updatedData.website, updatedData.description, updatedData.capacity, updatedData.working_hours, updatedData.can_adopt, updatedData.admin_id, updatedData.status, updatedData.region, id]
+      `UPDATE shelters SET name = $1, address = $2, phone = $3, email = $4, website = $5, description = $6, capacity = $7, working_hours = $8, can_adopt = $9, admin_id = $10, status = $11, region = $12, inn = $13, updated_at = CURRENT_TIMESTAMP WHERE id = $14 RETURNING *`,
+      [updatedData.name, updatedData.address, updatedData.phone, updatedData.email, updatedData.website, updatedData.description, updatedData.capacity, updatedData.working_hours, updatedData.can_adopt, updatedData.admin_id, updatedData.status, updatedData.region, updatedData.inn, id]
     );
     info({ shelter: result.rows[0] }, 'DAO: updated shelter');
     return result.rows[0] || null;
@@ -102,16 +103,35 @@ async function remove(id) {
   }
 }
 
-async function updateRating(id, rating) {
+async function updateRating(id, ratingOrOptions) {
   try {
+    const { rating, totalRatings } =
+      typeof ratingOrOptions === 'object' && ratingOrOptions !== null
+        ? { rating: ratingOrOptions.rating, totalRatings: ratingOrOptions.totalRatings }
+        : { rating: ratingOrOptions };
+
+    if (rating === undefined) {
+      throw new Error('rating is required to update shelter metrics');
+    }
+
+    const params = [rating];
+    const setClauses = [`rating = $1`];
+
+    if (totalRatings !== undefined) {
+      setClauses.push(`total_ratings = $${params.length + 1}`);
+      params.push(totalRatings);
+    }
+
+    setClauses.push('updated_at = CURRENT_TIMESTAMP');
+
     const result = await query(
       `UPDATE shelters 
-       SET rating = $1, updated_at = CURRENT_TIMESTAMP 
-       WHERE id = $2 
+       SET ${setClauses.join(', ')} 
+       WHERE id = $${params.length + 1} 
        RETURNING *`,
-      [rating, id]
+      [...params, id]
     );
-    info({ id, rating }, 'DAO: updated shelter rating');
+    info({ id, rating, totalRatings }, 'DAO: updated shelter rating metrics');
     return result.rows[0] || null;
   } catch (err) {
     error(err, 'DAO: error updating shelter rating');
