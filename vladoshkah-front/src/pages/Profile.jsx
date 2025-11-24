@@ -1,145 +1,111 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PetCard from '../components/PetCard'
 import { animalService } from '../services/animalService'
-import { userService } from '../services/userService'
-import { favoriteService } from '../services/favoriteService'
+import { shelterService } from '../services/shelterService'
 import { useAuth } from '../context/AuthContext'
 import { getPhotoUrl } from '../utils/photoHelpers' 
 
 const Profile = () => {
     const [favoritePets, setFavoritePets] = useState([])
+    const [shelterPets, setShelterPets] = useState([])
+    const [shelterInfo, setShelterInfo] = useState(null)
     const [loading, setLoading] = useState(true)
-    const [userData, setUserData] = useState(null)
+    const [activeTab, setActiveTab] = useState('favorites')
     const { user, refreshUser } = useAuth()
     const navigate = useNavigate()
-    const lastUserIdRef = useRef(null)
-
-    const getFavoriteStorageKey = () => {
-        const currentUser = userData || user;
-        return currentUser ? `favoritePets_${currentUser.id}` : 'favoritePets_anonymous';
-    };
 
     useEffect(() => {
-        console.log('Profile: Component mounted or user updated');
-        console.log('Profile: Current user from context:', user);
-        
-        if (!user?.id) return;
+        loadProfileData();
+    }, [user]);
 
-        if (lastUserIdRef.current === user.id) return;
-        lastUserIdRef.current = user.id;
-
-        checkAccessAndLoadData();
-    }, [user?.id])
-
-    useEffect(() => {
-        const handleStorageChange = (event) => {
-            const storageKey = getFavoriteStorageKey();
-            if (event.key === storageKey || !event.key) {
-                console.log('🔄 Profile: Storage changed for current user, reloading favorites...');
-                loadFavoritePets();
-            }
-        };
-
-        const handleCustomFavoritesUpdate = (event) => {
-            const eventUserId = event.detail?.userId;
-            const currentUserId = (userData || user)?.id;
-            
-            if (!eventUserId || eventUserId === currentUserId) {
-                console.log('🔄 Profile: Custom favorites update, reloading...');
-                loadFavoritePets();
-            }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        window.addEventListener('favoritesUpdated', handleCustomFavoritesUpdate);
-
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-            window.removeEventListener('favoritesUpdated', handleCustomFavoritesUpdate);
-        };
-    }, [user?.id, userData?.id]); 
-
-    const checkAccessAndLoadData = async () => {
+    const loadProfileData = async () => {
         try {
             setLoading(true);
+            console.log('🔄 Profile: Загружаем данные профиля...');
             
-            const token = localStorage.getItem('accessToken');
-            const profileComplete = localStorage.getItem('profileComplete');
-            
-            console.log('Profile: Access check - Token:', !!token, 'ProfileComplete:', profileComplete);
-            
-            if (!token) {
-                navigate('/регистрация');
-                return;
-            }
-
-            if (profileComplete !== 'true') {
-                navigate('/личная-информация');
-                return;
-            }
-
-            console.log('Profile: Access granted - loading data...');
-            await loadUserDataFromServer();
             await loadFavoritePets();
             
+            // Если пользователь shelter_admin, загружаем данные приюта
+            if (user?.role === 'shelter_admin' || user?.role === 'admin') {
+                await loadShelterData();
+            }
+            
         } catch (error) {
-            console.error('Profile: Error in checkAccessAndLoadData:', error);
+            console.error('❌ Profile: Ошибка загрузки данных:', error);
         } finally {
             setLoading(false);
         }
     }
 
-    const loadUserDataFromServer = async () => {
+    const loadShelterData = async () => {
         try {
-            console.log('Profile: Loading fresh user data from server...');
+            console.log('🔄 Profile: Загружаем данные приюта...');
             
-            const serverUserData = refreshUser
-                ? await refreshUser()
-                : await userService.getCurrentUser();
-            console.log('Profile: User data loaded from server:', serverUserData);
-            
-            setUserData(serverUserData);
-            localStorage.setItem('user', JSON.stringify(serverUserData));
-            
-        } catch (error) {
-            console.error('Profile: Error loading user data from server:', error);
-            if (user) {
-                console.log('Profile: Using context data as fallback');
-                setUserData(user);
+            // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: проверяем shelter_id у пользователя
+            if (!user?.shelter_id) {
+                console.log('ℹ️ Profile: У пользователя нет приюта');
+                setShelterInfo(null);
+                setShelterPets([]);
+                return;
             }
+
+            // Загружаем информацию о приюте по shelter_id пользователя
+            const shelter = await shelterService.getShelterById(user.shelter_id);
+            
+            if (shelter) {
+                console.log('✅ Profile: Приют найден:', shelter);
+                setShelterInfo(shelter);
+                await loadShelterPets(user.shelter_id);
+            } else {
+                console.log('❌ Profile: Приют не найден по ID:', user.shelter_id);
+                setShelterInfo(null);
+                setShelterPets([]);
+            }
+        } catch (error) {
+            console.error('❌ Profile: Ошибка загрузки приюта:', error);
+            setShelterInfo(null);
+            setShelterPets([]);
+        }
+    }
+
+    const loadShelterPets = async (shelterId) => {
+        try {
+            console.log('🔄 Profile: Загружаем питомцев приюта...');
+            const pets = await shelterService.getShelterAnimals(shelterId);
+            setShelterPets(pets || []);
+            console.log('✅ Profile: Питомцы приюта загружены:', pets?.length || 0);
+        } catch (error) {
+            console.error('❌ Profile: Ошибка загрузки питомцев:', error);
+            setShelterPets([]);
         }
     }
 
     const loadFavoritePets = async () => {
         try {
-            console.log('Profile: Loading favorite pets...');
+            console.log('🔄 Profile: Загружаем избранных питомцев...');
             
-            const currentUser = userData || user;
-            if (!currentUser?.id) {
-                console.log('Profile: No user ID available');
+            if (!user?.id) {
+                console.log('❌ Profile: Нет ID пользователя');
                 setFavoritePets([]);
                 return;
             }
             
-            const storageKey = getFavoriteStorageKey();
+            const storageKey = `favoritePets_${user.id}`;
             const favoriteIds = JSON.parse(localStorage.getItem(storageKey) || '[]');
             const uniqueFavoriteIds = [...new Set(favoriteIds)];
-            
-            console.log('📋 Profile: Favorite pets IDs for user', currentUser.id, ':', uniqueFavoriteIds);
             
             if (uniqueFavoriteIds.length === 0) {
                 setFavoritePets([]);
                 return;
             }
+
             const petPromises = uniqueFavoriteIds.map(async (petId) => {
                 try {
-                    console.log(`Profile: Loading pet ${petId}...`);
                     const pet = await animalService.getAnimalById(petId);
-                    console.log(`Profile: Pet ${petId} loaded:`, pet?.name);
                     return pet;
                 } catch (error) {
-                    console.error(`Profile: Error loading pet ${petId}:`, error);
+                    console.error(`❌ Profile: Ошибка загрузки питомца ${petId}:`, error);
                     return null;
                 }
             });
@@ -147,138 +113,212 @@ const Profile = () => {
             const results = await Promise.all(petPromises);
             const validPets = results.filter(pet => pet !== null && pet.id);
             
-            console.log(`Profile: Loaded ${validPets.length} favorite pets for user ${currentUser.id}:`, 
-                validPets.map(pet => ({ id: pet.id, name: pet.name }))
-            );
-            
             setFavoritePets(validPets);
             
         } catch (error) {
-            console.error('Profile: Error loading favorite pets:', error);
+            console.error('❌ Profile: Ошибка загрузки избранных питомцев:', error);
             setFavoritePets([]);
         }
     }
-    const forceRefreshFavorites = async () => {
-        console.log('🔄 Profile: Force refreshing favorites...');
-        setLoading(true);
-        try {
-            await loadFavoritePets();
-            console.log(' Profile: Favorites force refreshed');
-        } catch (error) {
-            console.error(' Profile: Error force refreshing favorites:', error);
-        } finally {
-            setLoading(false);
+
+    const handleAddPet = () => {
+        if (shelterInfo) {
+            navigate('/добавить-питомца');
+        } else {
+            alert('Сначала зарегистрируйте приют');
         }
     }
 
-    const getProfilePhotoUrl = () => {
-        const currentUser = userData || user;
+    const handleRegisterShelter = () => {
+        navigate('/регистрация-приюта');
+    }
+
+    const handleEditProfile = () => {
+        navigate('/личная-информация');
+    }
+
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Правильная логика отображения блоков
+    const shouldShowShelterRegistration = 
+        (user?.role === 'shelter_admin' || user?.role === 'admin') && 
+        !user?.shelter_id;
+
+    const shouldShowShelterManagement = 
+        (user?.role === 'shelter_admin' || user?.role === 'admin') && 
+        user?.shelter_id && 
+        shelterInfo;
+
+    const renderPetsGrid = () => {
+        const pets = activeTab === 'favorites' ? favoritePets : shelterPets;
         
-        if (!currentUser) {
-            console.log(' Profile: No user data available');
-            return null;
+        if (pets.length === 0) {
+            return (
+                <div className="text-center py-12 w-full">
+                    <div className="bg-green-90 rounded-custom p-8 max-w-md mx-auto">
+                        <svg className="w-16 h-16 text-green-60 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={
+                                activeTab === 'favorites' 
+                                    ? "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                    : "M12 4v16m8-8H4"
+                            } />
+                        </svg>
+                        <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-2">
+                            {activeTab === 'favorites' ? 'Нет избранных питомцев' : 'Нет питомцев в приюте'}
+                        </h3>
+                        <p className="font-inter text-green-20 mb-4">
+                            {activeTab === 'favorites' 
+                                ? 'Добавляйте питомцев в избранное, нажимая на сердечко на карточках животных'
+                                : 'Добавьте первого питомца в ваш приют'
+                            }
+                        </p>
+                        <button
+                            onClick={activeTab === 'favorites' ? () => navigate('/найти-питомца') : handleAddPet}
+                            className="px-6 py-2 bg-green-50 text-green-100 font-sf-rounded font-semibold rounded-custom-small hover:bg-green-60 transition-all duration-200"
+                        >
+                            {activeTab === 'favorites' ? 'Найти питомцев' : 'Добавить питомца'}
+                        </button>
+                    </div>
+                </div>
+            );
         }
 
-        if (currentUser.photoUrl) {
-            const processedUrl = getPhotoUrl({ url: currentUser.photoUrl });
-            return processedUrl;
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                {pets.map((pet) => (
+                    <PetCard 
+                        key={pet.id}
+                        petData={pet}
+                        initialFavorite={activeTab === 'favorites'}
+                        showShelterInfo={activeTab !== 'shelter'}
+                    />
+                ))}
+            </div>
+        );
+    }
+
+    const getProfilePhotoUrl = () => {
+        if (!user) return null;
+
+        if (user.photoUrl) {
+            return getPhotoUrl({ url: user.photoUrl });
         }
 
-        if (currentUser.photos && currentUser.photos.length > 0) {
-            const processedUrl = getPhotoUrl(currentUser.photos[0]);
-            return processedUrl;
+        if (user.photos && user.photos.length > 0) {
+            return getPhotoUrl(user.photos[0]);
         }
 
         return null;
     }
 
-    const getVolunteerInfo = () => {
-        const currentUser = userData || user;
-        
-        if (!currentUser) {
-            return {
-                name: "Пользователь",
-                status: "Подтвержденный волонтер",
-                phone: "Не указан",
-                email: "Email не указан",
-                gender: "Не указан",
-                bio: "Заполните информацию о себе",
-                image: null
-            };
-        }
-        
-        let displayName = "Пользователь";
-        if (currentUser.firstname && currentUser.lastname) {
-            displayName = `${currentUser.firstname} ${currentUser.lastname}`;
-        } else if (currentUser.firstname) {
-            displayName = currentUser.firstname;
-        } else if (currentUser.lastname) {
-            displayName = currentUser.lastname;
-        } else if (currentUser.email) {
-            displayName = currentUser.email.split('@')[0];
-        }
-        
-        let displayGender = "Не указан";
-        if (currentUser.gender === 'male') {
-            displayGender = 'Мужской';
-        } else if (currentUser.gender === 'female') {
-            displayGender = 'Женский';
-        } else if (currentUser.gender === 'other') {
-            displayGender = 'Другое';
-        }
-        
-        const displayBio = currentUser.personalInfo || currentUser.bio || "Расскажите о себе в личной информации";
-        
-        const profileImage = getProfilePhotoUrl();
-        
-        return {
-            name: displayName,
-            status: "Подтвержденный волонтер",
-            phone: currentUser.phone || "Не указан",
-            email: currentUser.email || "Email не указан",
-            gender: displayGender,
-            bio: displayBio,
-            image: profileImage
-        };
-    }
+    const profileImage = getProfilePhotoUrl();
 
-    const refreshProfile = async () => {
-        console.log(' Profile: Manual refresh requested');
-        setLoading(true);
-        
-        try {
-            await loadUserDataFromServer();
-            await loadFavoritePets();
-            console.log('Profile: Manual refresh completed');
-        } catch (error) {
-            console.error('Profile: Manual refresh failed:', error);
-        } finally {
-            setLoading(false);
+    // Определяем статус пользователя
+    const getUserStatus = () => {
+        if (user?.role === 'admin') return 'Администратор системы';
+        if (user?.role === 'shelter_admin') {
+            return user?.shelter_id ? 'Администратор приюта' : 'Администратор приюта (приют не зарегистрирован)';
         }
-    }
-
-    const handleEditProfile = () => {
-        console.log('Profile: Navigating to edit profile');
-        navigate('/личная-информация');
-    }
-
-    const volunteerInfo = getVolunteerInfo();
+        return 'Подтвержденный волонтер';
+    };
 
     return (
         <div className="min-h-screen bg-green-95">
-            <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-10">
+            <div className="max-w-container mx-auto px-4 md:px-8 lg:px-16 py-10">
                 
                 <div className="flex flex-col lg:flex-row gap-8">
                     
                     <main className="flex-1">
-                        <section className="flex flex-col items-center gap-6 relative">
-                            <header className="flex items-center gap-6 relative self-stretch w-full">
-                                <h1 className="w-fit mt-[-1.00px] font-sf-rounded font-bold text-green-20 text-2xl md:text-3xl">
-                                    Мои питомцы
-                                </h1>
-                                <div className="flex gap-2">
-
+                        {/* Блок регистрации приюта - показывается только shelter_admin без shelter_id */}
+                        {shouldShowShelterRegistration && (
+                            <section className="bg-green-90 rounded-custom p-8 mb-8 border-2 border-green-80">
+                                <div className="text-center">
+                                    <div className="w-20 h-20 bg-green-80 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg className="w-10 h-10 text-green-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                    </div>
+                                    <h2 className="font-sf-rounded font-bold text-green-30 text-2xl mb-4">
+                                        Зарегистрируйте приют
+                                    </h2>
+                                    <p className="font-inter text-green-40 text-base mb-6 max-w-md mx-auto">
+                                        Внесите корректные данные о приюте, чьим представителем вы являетесь
+                                    </p>
+                                    <button
+                                        onClick={handleRegisterShelter}
+                                        className="px-8 py-4 bg-green-70 text-green-100 font-sf-rounded font-semibold text-lg rounded-custom-small hover:bg-green-60 transition-colors shadow-lg"
+                                    >
+                                        Зарегистрировать приют
+                                    </button>
                                 </div>
+                            </section>
+                        )}
+
+                        {/* Блок управления приютом - показывается если есть shelter_id и информация о приюте */}
+                        {shouldShowShelterManagement && (
+                            <section className="bg-green-90 rounded-custom p-6 mb-8 border-2 border-green-50">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h2 className="font-sf-rounded font-bold text-green-30 text-2xl mb-2">
+                                            Ваш приют: {shelterInfo.name}
+                                        </h2>
+                                        {shelterInfo.address && (
+                                            <p className="font-inter text-green-40 text-sm mt-1">
+                                                Адрес: {shelterInfo.address}
+                                            </p>
+                                        )}
+                                        {shelterInfo.rating && (
+                                            <p className="font-inter text-green-40 text-sm mt-1">
+                                                Рейтинг: {shelterInfo.rating} ★ ({shelterInfo.total_ratings} оценок)
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={handleAddPet}
+                                            className="px-6 py-3 bg-green-50 text-green-100 font-sf-rounded font-semibold text-base rounded-custom-small hover:bg-green-60 cursor-pointer transition-colors"
+                                        >
+                                            + Добавить питомца
+                                        </button>
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
+                        <section className="flex flex-col items-center gap-6">
+                            <header className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-4">
+                                    <h1 className="font-sf-rounded font-bold text-green-20 text-2xl md:text-3xl">
+                                        {shouldShowShelterManagement && activeTab === 'shelter' ? 'Питомцы приюта' : 'Избранные питомцы'}
+                                    </h1>
+                                    <span className="px-3 py-1 bg-green-50 text-green-100 font-sf-rounded font-medium text-sm rounded-full">
+                                        {shouldShowShelterManagement && activeTab === 'shelter' ? shelterPets.length : favoritePets.length}
+                                    </span>
+                                </div>
+                                
+                                {/* Переключение табов - показывается только если есть приют */}
+                                {shouldShowShelterManagement && (
+                                    <div className="flex border border-green-80 rounded-custom-small overflow-hidden">
+                                        <button
+                                            onClick={() => setActiveTab('favorites')}
+                                            className={`px-4 py-2 font-sf-rounded font-medium text-sm transition-colors ${
+                                                activeTab === 'favorites' 
+                                                    ? 'bg-green-50 text-green-100' 
+                                                    : 'bg-green-90 text-green-40 hover:bg-green-80'
+                                            }`}
+                                        >
+                                            Избранные
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('shelter')}
+                                            className={`px-4 py-2 font-sf-rounded font-medium text-sm transition-colors ${
+                                                activeTab === 'shelter' 
+                                                    ? 'bg-green-50 text-green-100' 
+                                                    : 'bg-green-90 text-green-40 hover:bg-green-80'
+                                            }`}
+                                        >
+                                            Питомцы приюта
+                                        </button>
+                                    </div>
+                                )}
                             </header>
 
                             {loading ? (
@@ -289,91 +329,39 @@ const Profile = () => {
                                     </p>
                                 </div>
                             ) : (
-                                <>
-                                    {favoritePets.length > 0 ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-                                            {favoritePets.map((pet) => (
-                                                <PetCard 
-                                                    key={pet.id}
-                                                    petData={pet}
-                                                    initialFavorite={true}
-                                                    onFavoriteChange={forceRefreshFavorites} 
-                                                />
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-12 w-full">
-                                            <div className="bg-green-90 rounded-custom p-8 max-w-md mx-auto">
-                                                <svg 
-                                                    className="w-16 h-16 text-green-60 mx-auto mb-4"
-                                                    fill="none" 
-                                                    stroke="currentColor" 
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                                </svg>
-                                                <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-2">
-                                                    Нет избранных питомцев
-                                                </h3>
-                                                <p className="font-inter text-green-20 mb-4">
-                                                    Добавляйте питомцев в избранное, нажимая на сердечко на карточках животных
-                                                </p>
-                                                <button
-                                                    onClick={() => navigate('/найти-питомца')}
-                                                    className="px-6 py-2 bg-green-50 text-green-100 font-sf-rounded font-semibold rounded-custom-small hover:bg-green-60 transition-all duration-200"
-                                                >
-                                                    Найти питомцев
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
+                                renderPetsGrid()
                             )}
                         </section>
                     </main>
 
-                    <aside className="lg:w-[340px] flex flex-col gap-6">
+                    <aside className="lg:w-80 flex flex-col gap-6">
                         <div className="relative bg-green-90 rounded-custom overflow-hidden">
                             <div className="relative h-64">
-                                {volunteerInfo.image ? (
+                                {profileImage ? (
                                     <>
                                         <img
                                             className="w-full h-full object-cover"
                                             alt="Фото профиля"
-                                            src={volunteerInfo.image}
-                                            onError={(e) => {
-                                                console.error('Profile: Image failed to load:', volunteerInfo.image);
-                                                e.target.style.display = 'none';
-                                                const container = e.target.parentElement;
-                                                if (container) {
-                                                    const fallback = container.querySelector('.fallback-avatar');
-                                                    if (fallback) {
-                                                        fallback.style.display = 'flex';
-                                                    }
-                                                }
-                                            }}
-                                            onLoad={() => {
-                                                console.log('Profile: Image loaded successfully:', volunteerInfo.image);
-                                            }}
+                                            src={profileImage}
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/50"></div>
                                     </>
-                                ) : null}
-                                <div 
-                                    className={`fallback-avatar w-full h-full bg-green-80 flex items-center justify-center ${
-                                        volunteerInfo.image ? 'hidden' : 'flex'
-                                    }`}
-                                >
-                                    <span className="text-6xl"></span>
-                                </div>
+                                ) : (
+                                    <div className="w-full h-full bg-green-80 flex items-center justify-center">
+                                        <span className="text-6xl">👤</span>
+                                    </div>
+                                )}
                                 
                                 <div className="absolute bottom-6 left-6 right-6">
                                     <h2 className="font-sf-rounded font-bold text-green-98 text-2xl md:text-3xl">
-                                        {volunteerInfo.name}
+                                        {user?.firstname && user?.lastname 
+                                            ? `${user.firstname} ${user.lastname}`
+                                            : user?.email?.split('@')[0] || 'Пользователь'
+                                        }
                                     </h2>
                                     <div className="inline-flex items-center justify-center gap-2.5 px-4 py-2 bg-green-90/30 rounded-custom-small mt-2">
-                                        <span className="relative w-fit font-sf-rounded font-medium text-green-98 text-sm">
-                                            {volunteerInfo.status}
+                                        <span className="font-sf-rounded font-medium text-green-98 text-sm">
+                                            {getUserStatus()}
                                         </span>
                                     </div>
                                 </div>
@@ -386,42 +374,24 @@ const Profile = () => {
                             </h3>
                             
                             <div className="space-y-3">
-                                <div className="flex flex-col gap-1">
+                                <div>
                                     <span className="text-green-40 font-inter font-medium text-sm">Телефон</span>
-                                    <div className="px-4 py-3 bg-green-98 rounded-custom-small border-2 border-green-30">
+                                    <div className="px-4 py-3 bg-green-98 rounded-custom-small border-2 border-green-30 mt-1">
                                         <span className="font-inter font-regular text-green-20 text-base">
-                                            {volunteerInfo.phone}
+                                            {user?.phone || "Не указан"}
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col gap-1">
+                                <div>
                                     <span className="text-green-40 font-inter font-medium text-sm">Email</span>
-                                    <div className="px-4 py-3 bg-green-98 rounded-custom-small border-2 border-green-30">
+                                    <div className="px-4 py-3 bg-green-98 rounded-custom-small border-2 border-green-30 mt-1">
                                         <span className="font-inter font-regular text-green-20 text-base">
-                                            {volunteerInfo.email}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-green-40 font-inter font-medium text-sm">Пол</span>
-                                    <div className="px-4 py-3 bg-green-98 rounded-custom-small border-2 border-green-30">
-                                        <span className="font-inter font-regular text-green-20 text-base">
-                                            {volunteerInfo.gender}
+                                            {user?.email || "Email не указан"}
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="bg-green-90 rounded-custom p-6">
-                            <h3 className="font-sf-rounded font-bold text-green-20 text-lg mb-4">
-                                О себе
-                            </h3>
-                            <p className="font-inter font-regular text-green-20 text-base leading-relaxed">
-                                {volunteerInfo.bio}
-                            </p>
                         </div>
 
                         <div className="text-center">

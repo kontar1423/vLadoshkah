@@ -21,6 +21,44 @@ export const shelterService = {
         }
     },
 
+    async createShelter(shelterData) {
+        try {
+            const response = await api.post('/shelters', shelterData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error creating shelter:', error);
+            throw error;
+        }
+    },
+
+    async updateShelter(shelterId, shelterData) {
+        try {
+            const response = await api.put(`/shelters/${shelterId}`, shelterData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error(`Error updating shelter ${shelterId}:`, error);
+            throw error;
+        }
+    },
+
+    async deleteShelter(shelterId) {
+        try {
+            const response = await api.delete(`/shelters/${shelterId}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error deleting shelter ${shelterId}:`, error);
+            throw error;
+        }
+    },
+
     async voteForShelter(shelterId, vote) {
         try {
             const response = await api.post('/shelters/vote', {
@@ -30,6 +68,28 @@ export const shelterService = {
             return response.data;
         } catch (error) {
             console.error(`Error voting for shelter ${shelterId}:`, error);
+            throw error;
+        }
+    },
+
+    // Добавляем метод для получения питомцев приюта
+    async getShelterAnimals(shelterId) {
+        try {
+            const response = await api.get(`/animals/shelter/${shelterId}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching shelter ${shelterId} animals:`, error);
+            throw error;
+        }
+    },
+
+    // Метод для получения приюта по admin_id (для текущего пользователя)
+    async getShelterByAdminId(adminId) {
+        try {
+            const response = await api.get(`/shelters?admin_id=${adminId}`);
+            return response.data.length > 0 ? normalizeShelterData(response.data[0]) : null;
+        } catch (error) {
+            console.error(`Error fetching shelter for admin ${adminId}:`, error);
             throw error;
         }
     }
@@ -51,10 +111,6 @@ const normalizeShelterData = (shelterData) => {
         if (photo.url) {
             if (photo.url.startsWith('http')) return photo.url;
             return `${UPLOADS_BASE_URL}${photo.url.startsWith('/') ? '' : '/'}${photo.url}`;
-        }
-        
-        if (photo.object_name) {
-            return `${UPLOADS_BASE_URL}/${photo.object_name}`;
         }
         
         return null;

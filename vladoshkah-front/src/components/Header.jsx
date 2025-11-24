@@ -98,6 +98,9 @@ export const Header = () => {
     }
     return "https://c.animaapp.com/qqBlbLv1/img/person@2x.png";
   };
+
+  // Проверяем, является ли пользователь админом (любого типа)
+  const isAdmin = user?.role === 'admin' || user?.role === 'shelter_admin';
   
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -260,43 +263,48 @@ export const Header = () => {
                   <p className="text-green-30 font-semibold text-sm">{getUserDisplayName()}</p>
                   <p className="text-green-40 text-xs">{getUserRoleDisplay()}</p>
                 </div>
-                <div
-                  onClick={() => {
-                    handleScrollToTop();
-                    if (location.pathname !== '/профиль') {
-                      navigate('/профиль');
-                    }
-                    setIsMenuOpen(false);
-                  }}
-                  className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
-                    location.pathname === '/профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
-                  }`}
-                >
-                  <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
-                    Профиль
-                  </span>
-                </div>
-                {user?.role === 'admin' && (
+                
+                {/* Для админов показываем только одну ссылку - на админский профиль */}
+                {isAdmin ? (
                   <div
                     onClick={() => {
                       handleScrollToTop();
-                      if (location.pathname !== '/админ-профиль') {
-                        navigate('/админ-профиль');
+                      if (location.pathname !== '/профиль') {
+                        navigate('/профиль');
                       }
                       setIsMenuOpen(false);
                     }}
                     className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
-                      location.pathname === '/админ-профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                      location.pathname === '/профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
                     }`}
                   >
                     <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
-                      Админ панель
+                      {user?.role === 'admin' ? 'Админ панель' : 'Админ приюта'}
+                    </span>
+                  </div>
+                ) : (
+                  // Для обычных пользователей показываем ссылку на профиль
+                  <div
+                    onClick={() => {
+                      handleScrollToTop();
+                      if (location.pathname !== '/профиль') {
+                        navigate('/профиль');
+                      }
+                      setIsMenuOpen(false);
+                    }}
+                    className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
+                      location.pathname === '/профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                    }`}
+                  >
+                    <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                      Профиль
                     </span>
                   </div>
                 )}
+                
                 <button
                   onClick={handleLogout}
-                  className="inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 text-red-40"
+                  className="inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:bg-green-90 transition-colors border-b border-green-80 text-green-30"
                 >
                   <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
                     Выйти
@@ -322,7 +330,7 @@ export const Header = () => {
               />
               {isAuthenticated && (
                 <div className="hidden lg:block text-left">
-                  <p className="text-green-20 font-inter font-medium text-sm">
+                  <p className="text-green-30 font-inter font-medium text-sm">
                     {getUserDisplayName()}
                   </p>
                   <p className="text-green-40 font-inter text-xs">
@@ -344,7 +352,7 @@ export const Header = () => {
                         }
                         setIsUserMenuOpen(false);
                       }}
-                      className="block w-full text-left px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer"
+                      className="block w-full text-left px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer"
                     >
                       Войти
                     </div>
@@ -356,7 +364,7 @@ export const Header = () => {
                         }
                         setIsUserMenuOpen(false);
                       }}
-                      className="block w-full text-left px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer"
+                      className="block w-full text-left px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer"
                     >
                       Зарегистрироваться
                     </div>
@@ -366,49 +374,51 @@ export const Header = () => {
                     <div className="px-4 py-3 bg-green-95 border-b border-green-80">
                       <p className="text-green-30 font-semibold text-sm">{getUserDisplayName()}</p>
                       <p className="text-green-40 text-xs">{getUserRoleDisplay()}</p>
-                      <p className="text-green-40 text-xs truncate">{user?.email}</p>
                     </div>
                     
-                    <div
-                      onClick={() => {
-                        handleScrollToTop();
-                        if (location.pathname !== '/профиль') {
-                          navigate('/профиль');
-                        }
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer"
-                    >
-                      <img
-                        className="w-5 h-5 rounded-full object-cover"
-                        alt=""
-                        src={getProfilePhoto()}
-                      />
-                      Профиль
-                    </div>
-                    
-                    {user?.role === 'admin' && (
+                    {/* Для админов показываем только одну ссылку - на админский профиль */}
+                    {isAdmin ? (
                       <div
                         onClick={() => {
                           handleScrollToTop();
-                          if (location.pathname !== '/админ-профиль') {
-                            navigate('/админ-профиль');
+                          if (location.pathname !== '/профиль') {
+                            navigate('/профиль');
                           }
                           setIsUserMenuOpen(false);
                         }}
-                        className="flex items-center gap-3 px-4 py-3 text-green-20 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer"
+                        className="flex items-center gap-3 px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Админ панель
+                        <img
+                          className="w-5 h-5 rounded-full object-cover"
+                          alt=""
+                          src={getProfilePhoto()}
+                        />
+                        {user?.role === 'admin' ? 'Админ панель' : 'Профиль'}
+                      </div>
+                    ) : (
+                      // Для обычных пользователей показываем ссылку на профиль
+                      <div
+                        onClick={() => {
+                          handleScrollToTop();
+                          if (location.pathname !== '/профиль') {
+                            navigate('/профиль');
+                          }
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer"
+                      >
+                        <img
+                          className="w-5 h-5 rounded-full object-cover"
+                          alt=""
+                          src={getProfilePhoto()}
+                        />
+                        Профиль
                       </div>
                     )}
                     
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-3 w-full text-left px-4 py-3 text-red-40 font-inter font-medium hover:bg-red-95 transition-colors border-t border-green-80"
+                      className="flex items-center gap-3 w-full text-left px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -450,7 +460,7 @@ export const Header = () => {
                       key={item.id}
                       onClick={() => handleNavButtonClick(item)}
                       className={`block w-full text-left px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors ${
-                        location.pathname === item.path ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                        location.pathname === item.path ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
                       }`}
                     >
                       {item.label}
@@ -469,7 +479,7 @@ export const Header = () => {
                         setIsUserMenuOpen(false);
                       }}
                       className={`block w-full text-left px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer ${
-                        location.pathname === '/войти' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                        location.pathname === '/войти' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
                       }`}
                     >
                       Войти
@@ -483,7 +493,7 @@ export const Header = () => {
                         setIsUserMenuOpen(false);
                       }}
                       className={`block w-full text-left px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer ${
-                        location.pathname === '/регистрация' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                        location.pathname === '/регистрация' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
                       }`}
                     >
                       Зарегистрироваться
@@ -491,39 +501,43 @@ export const Header = () => {
                   </>
                 ) : (
                   <>
-                    <div
-                      onClick={() => {
-                        handleScrollToTop();
-                        if (location.pathname !== '/профиль') {
-                          navigate('/профиль');
-                        }
-                        setIsUserMenuOpen(false);
-                      }}
-                      className={`block px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer ${
-                        location.pathname === '/профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
-                      }`}
-                    >
-                      Профиль
-                    </div>
-                    {user?.role === 'admin' && (
+                    {/* Для админов показываем только одну ссылку - на админский профиль */}
+                    {isAdmin ? (
                       <div
                         onClick={() => {
                           handleScrollToTop();
-                          if (location.pathname !== '/админ-профиль') {
-                            navigate('/админ-профиль');
+                          if (location.pathname !== '/профиль') {
+                            navigate('/профиль');
                           }
                           setIsUserMenuOpen(false);
                         }}
-                        className={`block px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer ${
-                          location.pathname === '/админ-профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                        className={`block px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer ${
+                          location.pathname === '/профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
                         }`}
                       >
-                        Админ панель
+                        {user?.role === 'admin' ? 'Админ панель' : 'Админ приюта'}
+                      </div>
+                    ) : (
+                      // Для обычных пользователей показываем ссылку на профиль
+                      <div
+                        onClick={() => {
+                          handleScrollToTop();
+                          if (location.pathname !== '/профиль') {
+                            navigate('/профиль');
+                          }
+                          setIsUserMenuOpen(false);
+                        }}
+                        className={`block px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer ${
+                          location.pathname === '/профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                        }`}
+                      >
+                        Профиль
                       </div>
                     )}
+                    
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-4 py-3 text-red-40 font-inter font-medium hover:bg-red-95 transition-colors"
+                      className="block w-full text-left px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-colors"
                     >
                       Выйти
                     </button>

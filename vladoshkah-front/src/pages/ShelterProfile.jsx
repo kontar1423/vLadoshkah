@@ -578,7 +578,7 @@ const ShelterProfile = () => {
                       />
                       {!isAuthenticated && (
                         <span className="font-inter text-green-40 text-sm">
-                          Войдите, чтобы оценить приют
+                          Войдите в аккаунт, чтобы оценить приют
                         </span>
                       )}
                     </div>
