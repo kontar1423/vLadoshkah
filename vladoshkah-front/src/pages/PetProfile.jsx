@@ -211,18 +211,48 @@ const PetProfile = () => {
                     }
                 }
 
-                if (normalizedPet.shelter_id) {
-                    try {
-                        const similar = await animalService.getAnimalsByShelter(normalizedPet.shelter_id);
-                        const filteredSimilar = similar
-                            .filter(pet => pet.id !== parseInt(id) && pet.type === normalizedPet.type)
-                            .slice(0, 2);
-                        
-                        const normalizedSimilar = filteredSimilar.map(normalizePetData);
-                        setSimilarPets(normalizedSimilar);
-                    } catch (similarError) {
-                        console.warn('Error loading similar pets:', similarError);
+                // Загружаем похожих питомцев
+                try {
+                    let similar = [];
+                    
+                    // Сначала пытаемся найти похожих в том же приюте
+                    if (normalizedPet.shelter_id) {
+                        try {
+                            const shelterPets = await animalService.getAnimalsByShelter(normalizedPet.shelter_id);
+                            const filteredByShelter = shelterPets
+                                .filter(pet => pet.id !== parseInt(id) && pet.type === normalizedPet.type);
+                            similar = [...filteredByShelter];
+                        } catch (shelterError) {
+                            console.warn('Error loading pets from shelter:', shelterError);
+                        }
                     }
+                    
+                    // Если не хватает до 3, дополняем питомцами того же типа из других приютов
+                    if (similar.length < 3 && normalizedPet.type) {
+                        try {
+                            const allByType = await animalService.getAnimalsWithFilters({
+                                type: normalizedPet.type
+                            });
+                            
+                            // Исключаем текущего питомца и тех, кто уже в списке
+                            const existingIds = new Set([parseInt(id), ...similar.map(p => p.id)]);
+                            const additional = allByType
+                                .filter(pet => !existingIds.has(pet.id))
+                                .slice(0, 3 - similar.length);
+                            
+                            similar = [...similar, ...additional];
+                        } catch (typeError) {
+                            console.warn('Error loading pets by type:', typeError);
+                        }
+                    }
+                    
+                    // Ограничиваем до 3 питомцев
+                    const finalSimilar = similar.slice(0, 3);
+                    const normalizedSimilar = finalSimilar.map(normalizePetData);
+                    setSimilarPets(normalizedSimilar);
+                } catch (similarError) {
+                    console.warn('Error loading similar pets:', similarError);
+                    setSimilarPets([]);
                 }
             } catch (err) {
                 console.error('Error loading pet data:', err);
@@ -602,7 +632,7 @@ const PetProfile = () => {
                                 </h2>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
                                 {similarPets.map((pet) => (
                                     <PetCard 
                                         key={pet.id}
