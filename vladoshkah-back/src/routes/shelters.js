@@ -3,7 +3,7 @@ import multer from 'multer';
 import sheltersController from "../controllers/sheltersController.js";
 import { authenticateToken, authorize } from '../middleware/auth.js';
 import { validate } from '../middleware/validation.js';
-import { createShelterSchema, updateShelterSchema, shelterIdSchema, shelterVoteSchema } from '../validators/sheltersValidator.js';
+import { createShelterSchema, updateShelterSchema, shelterIdSchema, shelterVoteSchema, shelterAdminIdSchema } from '../validators/sheltersValidator.js';
 
 const router = express.Router();
 
@@ -31,6 +31,9 @@ router.get('/', sheltersController.getAll);
 
 // POST /api/shelters/vote - проголосовать за приют (только авторизованные)
 router.post('/vote', authenticateToken, validate(shelterVoteSchema), sheltersController.vote);
+
+// GET /api/shelters/admin/:adminId - получить приют по shelter_admin_id (публичный)
+router.get('/admin/:adminId', validate(shelterAdminIdSchema, 'params'), sheltersController.getByAdminId);
 
 // GET /api/shelters/:id - получить приют по ID (публичный)
 router.get('/:id', validate(shelterIdSchema, 'params'), sheltersController.getById);

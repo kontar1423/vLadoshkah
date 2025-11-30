@@ -10,6 +10,25 @@ const CACHE_KEYS = {
   SHELTER_BY_ID: (id) => `shelter:${id}`,
 };
 
+function normalizePositiveInt(value) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function normalizeListOptions(limitOrOptions = null) {
+  if (limitOrOptions && typeof limitOrOptions === 'object') {
+    return {
+      limit: normalizePositiveInt(limitOrOptions.limit),
+      adminId: normalizePositiveInt(limitOrOptions.adminId),
+    };
+  }
+
+  return {
+    limit: normalizePositiveInt(limitOrOptions),
+    adminId: null,
+  };
+}
+
 function normalizeShelterPhotos(shelter) {
   if (!shelter) {
     return shelter;
@@ -34,6 +53,22 @@ function normalizeSheltersCollection(shelters) {
   }
 
   return normalizeShelterPhotos(shelters);
+}
+
+function attachPhotosToShelters(shelters, allPhotos) {
+  const normalizedPhotos = normalizePhotos(allPhotos || []);
+  const collection = Array.isArray(shelters) ? shelters : [];
+
+  return collection.map((shelter) =>
+    normalizeShelterPhotos({
+      ...shelter,
+      photos: normalizedPhotos
+        .filter((photo) => photo.entity_id === shelter.id)
+        .map((photo) => ({
+          url: photo.url,
+        })),
+    })
+  );
 }
 
 function ensureShelterAdminAccess(shelter, user) {
@@ -63,7 +98,16 @@ async function getOwnedShelter(id, user) {
   return ensureShelterAdminAccess(shelter, user);
 }
 // Получить все приюты с фото
-async function getAllShelters(limit = null) {
+async function getAllShelters(limitOrOptions = null) {
+  const { limit, adminId } = normalizeListOptions(limitOrOptions);
+
+  if (adminId) {
+    const shelters = await sheltersDao.getByAdminId(adminId);
+    const allPhotos = await photosDao.getByEntityType('shelter');
+    const sliced = limit ? shelters.slice(0, limit) : shelters;
+    return attachPhotosToShelters(sliced, allPhotos);
+  }
+
   if (!limit) {
     const cached = await redisClient.get(CACHE_KEYS.ALL_SHELTERS);
     if (cached) {
@@ -72,16 +116,8 @@ async function getAllShelters(limit = null) {
   }
 
   const shelters = await sheltersDao.getAll(limit ? Number(limit) : null);
-  const allPhotos = normalizePhotos(await photosDao.getByEntityType('shelter'));
-  
-  const sheltersWithPhotos = shelters.map(shelter => normalizeShelterPhotos({
-    ...shelter,
-    photos: allPhotos
-      .filter(photo => photo.entity_id === shelter.id)
-      .map(photo => ({
-        url: photo.url,
-      }))
-  }));
+  const allPhotos = await photosDao.getByEntityType('shelter');
+  const sheltersWithPhotos = attachPhotosToShelters(shelters, allPhotos);
   
   // Кэшируем только полный список
   if (!limit) {
@@ -120,19 +156,43 @@ async function getShelterById(id) {
   return result;
 }
 
+// Получить приют по shelter_admin_id
+async function getShelterByAdminId(adminId) {
+  const normalizedAdminId = normalizePositiveInt(adminId);
+  if (!normalizedAdminId) {
+    const err = new Error('Invalid admin id');
+    err.status = 400;
+    throw err;
+  }
+
+  const shelters = await sheltersDao.getByAdminId(normalizedAdminId);
+  if (!shelters || shelters.length === 0) {
+    return null;
+  }
+
+  const allPhotos = await photosDao.getByEntityType('shelter');
+  const [shelterWithPhotos] = attachPhotosToShelters(shelters, allPhotos);
+  return shelterWithPhotos || null;
+}
+
 // Создать приют с возможностью загрузки фото
 async function createShelter(shelterData, photoFiles = null, currentUser = null) {
-  // Clear the all shelters cache since we're adding a new one
-  await redisClient.delete(CACHE_KEYS.ALL_SHELTERS);
-
   const payload = { ...shelterData };
   // Привязываем приют к shelter_admin
   if (currentUser?.role === 'shelter_admin') {
+    const existingShelters = await sheltersDao.getByAdminId(currentUser.userId);
+    if (existingShelters.length > 0) {
+      const err = new Error('Shelter admin can have only one shelter');
+      err.status = 400;
+      throw err;
+    }
     payload.admin_id = currentUser.userId;
   }
   
   // Создаем приют
   const shelter = await sheltersDao.create(payload);
+  // Clear the all shelters cache since we're adding a new one
+  await redisClient.delete(CACHE_KEYS.ALL_SHELTERS);
   
   // Если есть фото - загружаем их
   if (photoFiles) {
@@ -206,6 +266,7 @@ async function removeShelter(id, currentUser = null) {
 export default { 
   getAllShelters, 
   getShelterById, 
+  getShelterByAdminId,
   createShelter, 
   updateShelter, 
   removeShelter

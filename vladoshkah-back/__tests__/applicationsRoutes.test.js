@@ -19,31 +19,31 @@ describe('Applications routes', () => {
     jest.clearAllMocks();
     
     // Мокаем методы applicationsService
-    jest.spyOn(applicationsService, 'getAll').mockResolvedValue([
+    jest.spyOn(applicationsService, 'getAllTake').mockResolvedValue([
       { id: 1, user_id: 1, shelter_id: 1, animal_id: 1, status: 'pending', description: 'Test 1' },
       { id: 2, user_id: 2, shelter_id: 1, animal_id: 2, status: 'approved', description: 'Test 2' }
     ]);
     
-    jest.spyOn(applicationsService, 'getById').mockImplementation((id) => {
+    jest.spyOn(applicationsService, 'getTakeById').mockImplementation((id) => {
       return Promise.resolve(id === 1 ? 
         { id: 1, user_id: 1, shelter_id: 1, animal_id: 1, status: 'pending', description: 'Test application' } : 
         null
       );
     });
     
-    jest.spyOn(applicationsService, 'create').mockImplementation((data) => {
+    jest.spyOn(applicationsService, 'createTake').mockImplementation((data) => {
       return Promise.resolve({ id: 10, ...data, created_at: new Date(), updated_at: new Date() });
     });
     
-    jest.spyOn(applicationsService, 'update').mockImplementation((id, data) => {
+    jest.spyOn(applicationsService, 'updateTake').mockImplementation((id, data) => {
       return Promise.resolve(id === 1 ? { id, ...data } : null);
     });
     
-    jest.spyOn(applicationsService, 'remove').mockImplementation((id) => {
+    jest.spyOn(applicationsService, 'removeTake').mockImplementation((id) => {
       return Promise.resolve(id === 1 ? { id, user_id: 1, status: 'pending' } : null);
     });
     
-    jest.spyOn(applicationsService, 'countApproved').mockResolvedValue({ count: 5 });
+    jest.spyOn(applicationsService, 'countApprovedTake').mockResolvedValue({ count: 5 });
   });
   
   afterEach(() => {
@@ -59,7 +59,7 @@ describe('Applications routes', () => {
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBe(2);
-      expect(applicationsService.getAll).toHaveBeenCalled();
+      expect(applicationsService.getAllTake).toHaveBeenCalled();
     });
 
     test('возвращает 401 без токена', async () => {
@@ -78,7 +78,7 @@ describe('Applications routes', () => {
       expect(res.status).toBe(200);
       expect(res.body.id).toBe(1);
       expect(res.body.status).toBe('pending');
-      expect(applicationsService.getById).toHaveBeenCalledWith(1);
+      expect(applicationsService.getTakeById).toHaveBeenCalledWith(1);
     });
 
     test('возвращает 401 без токена', async () => {
@@ -88,7 +88,7 @@ describe('Applications routes', () => {
     });
 
     test('возвращает 404 если заявка не найдена', async () => {
-      jest.spyOn(applicationsService, 'getById').mockRejectedValue(new Error('Application not found'));
+      jest.spyOn(applicationsService, 'getTakeById').mockRejectedValue(new Error('Application not found'));
       
       const res = await request(app)
         .get('/api/applications/999')
@@ -123,7 +123,7 @@ describe('Applications routes', () => {
       
       expect(res.status).toBe(201);
       expect(res.body.id).toBe(10);
-      expect(applicationsService.create).toHaveBeenCalled();
+      expect(applicationsService.createTake).toHaveBeenCalled();
     });
 
     test('возвращает 401 без токена', async () => {
@@ -185,7 +185,7 @@ describe('Applications routes', () => {
         .send(updateData);
       
       expect(res.status).toBe(200);
-      expect(applicationsService.update).toHaveBeenCalledWith(1, updateData);
+      expect(applicationsService.updateTake).toHaveBeenCalledWith(1, updateData);
     });
 
     test('возвращает 401 без токена', async () => {
@@ -197,7 +197,7 @@ describe('Applications routes', () => {
     });
 
     test('возвращает 404 если заявка не найдена', async () => {
-      jest.spyOn(applicationsService, 'update').mockRejectedValue(new Error('Application not found'));
+      jest.spyOn(applicationsService, 'updateTake').mockRejectedValue(new Error('Application not found'));
       
       const res = await request(app)
         .put('/api/applications/999')
@@ -233,7 +233,7 @@ describe('Applications routes', () => {
         .set(authHeader(adminToken));
       
       expect(res.status).toBe(200);
-      expect(applicationsService.remove).toHaveBeenCalledWith(1);
+      expect(applicationsService.removeTake).toHaveBeenCalledWith(1);
     });
 
     test('возвращает 401 без токена', async () => {
@@ -243,7 +243,7 @@ describe('Applications routes', () => {
     });
 
     test('возвращает 404 если заявка не найдена', async () => {
-      jest.spyOn(applicationsService, 'remove').mockRejectedValue(new Error('Application not found'));
+      jest.spyOn(applicationsService, 'removeTake').mockRejectedValue(new Error('Application not found'));
       
       const res = await request(app)
         .delete('/api/applications/999')
@@ -269,7 +269,7 @@ describe('Applications routes', () => {
       
       expect(res.status).toBe(200);
       expect(res.body.count).toBe(5);
-      expect(applicationsService.countApproved).toHaveBeenCalled();
+      expect(applicationsService.countApprovedTake).toHaveBeenCalled();
     });
 
     test('доступен без токена (публичная метрика)', async () => {
@@ -277,8 +277,7 @@ describe('Applications routes', () => {
       
       expect(res.status).toBe(200);
       expect(res.body.count).toBe(5);
-      expect(applicationsService.countApproved).toHaveBeenCalled();
+      expect(applicationsService.countApprovedTake).toHaveBeenCalled();
     });
   });
 });
-

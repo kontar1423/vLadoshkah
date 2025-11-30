@@ -39,6 +39,9 @@ describe('Shelters routes', () => {
     jest.spyOn(sheltersService, 'getShelterById').mockImplementation((id) => {
       return Promise.resolve(id === 1 ? { id: 1, name: 'Home Shelter', photos: [] } : null);
     });
+    jest.spyOn(sheltersService, 'getShelterByAdminId').mockImplementation((adminId) => {
+      return Promise.resolve(adminId === 10 ? { id: 1, name: 'Home Shelter', admin_id: 10, photos: [] } : null);
+    });
     jest.spyOn(sheltersService, 'createShelter').mockImplementation((body) => {
       return Promise.resolve({ id: 2, ...body, photos: [] });
     });
@@ -61,6 +64,25 @@ describe('Shelters routes', () => {
       const res = await request(app).get('/api/shelters');
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
+    });
+  });
+
+  describe('GET /api/shelters/admin/:adminId', () => {
+    test('returns 200 when shelter exists for admin', async () => {
+      const res = await request(app).get('/api/shelters/admin/10');
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({ admin_id: 10 });
+    });
+
+    test('returns 404 when shelter not found for admin', async () => {
+      sheltersService.getShelterByAdminId.mockResolvedValueOnce(null);
+      const res = await request(app).get('/api/shelters/admin/99');
+      expect(res.status).toBe(404);
+    });
+
+    test('returns 400 for invalid admin id', async () => {
+      const res = await request(app).get('/api/shelters/admin/not-a-number');
+      expect(res.status).toBe(400);
     });
   });
 
