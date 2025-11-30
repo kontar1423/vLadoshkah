@@ -32,7 +32,7 @@ const upload = multer({
 // TAKE (adopt) routes
 takeRouter.post('/', authenticateToken, validate(createApplicationSchema), applicationsController.createTake);
 takeRouter.get('/count/approved', applicationsController.countApprovedTake);
-takeRouter.get('/by-animal/:animalId', authenticateToken, applicationsController.getTakeByAnimalId);
+takeRouter.get('/animal/:id', authenticateToken, validate(applicationIdSchema, 'params'), applicationsController.getTakeByAnimalId);
 takeRouter.get('/:id', authenticateToken, validate(applicationIdSchema, 'params'), applicationsController.getTakeById);
 takeRouter.get('/', authenticateToken, applicationsController.getAllTake);
 takeRouter.put('/:id', authenticateToken, validate(applicationIdSchema, 'params'), validate(updateApplicationSchema), applicationsController.updateTake);
