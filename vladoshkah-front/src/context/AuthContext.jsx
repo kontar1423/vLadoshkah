@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { authService } from '../services/authService'
 import { normalizeUserRole } from '../utils/roleUtils'
 
@@ -120,18 +120,33 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(nextUser))
   }
 
+  const refreshUserRef = useRef(null)
   const refreshUser = async () => {
-    try {
-      const freshUser = normalizeUserRole(await authService.getCurrentUserFromServer())
-      setUser(freshUser)
-      setIsAuthenticated(true)
-      setProfileCompleteFlag(freshUser)
-      localStorage.setItem('user', JSON.stringify(freshUser))
-      return freshUser
-    } catch (error) {
-      console.error('AuthContext: refreshUser error', error)
-      throw error
+    // Если уже идет обновление, возвращаем существующий промис
+    if (refreshUserRef.current) {
+      console.log('AuthContext: refreshUser already in progress, returning existing promise')
+      return refreshUserRef.current
     }
+
+    // Создаем новый промис для обновления
+    refreshUserRef.current = (async () => {
+      try {
+        const freshUser = normalizeUserRole(await authService.getCurrentUserFromServer())
+        setUser(freshUser)
+        setIsAuthenticated(true)
+        setProfileCompleteFlag(freshUser)
+        localStorage.setItem('user', JSON.stringify(freshUser))
+        return freshUser
+      } catch (error) {
+        console.error('AuthContext: refreshUser error', error)
+        throw error
+      } finally {
+        // Очищаем ссылку на промис после завершения
+        refreshUserRef.current = null
+      }
+    })()
+
+    return refreshUserRef.current
   }
 
   return (

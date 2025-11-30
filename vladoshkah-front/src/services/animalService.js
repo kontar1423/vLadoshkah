@@ -29,10 +29,17 @@ export const animalService = {
         return response.data;
     },
 
-    async getAnimalsByShelter(shelterId) {
+    async getAnimalsByShelter(shelterId, forceRefresh = false) {
         try {
-            console.log('Fetching animals for shelter:', shelterId);
-            const response = await api.get(`/animals/shelter/${shelterId}`);
+            console.log('Fetching animals for shelter:', shelterId, 'forceRefresh:', forceRefresh);
+            // Используем /animals/filters с параметром shelter_id вместо /animals/shelter/:shelterId
+            const params = new URLSearchParams();
+            params.append('shelter_id', shelterId);
+            if (forceRefresh) {
+                params.append('_t', Date.now().toString());
+            }
+            const url = `/animals/filters?${params.toString()}`;
+            const response = await api.get(url);
             console.log('Animals response:', response.data);
             return response.data;
         } catch (error) {
@@ -51,6 +58,16 @@ export const animalService = {
             return response.data;
         } catch (error) {
             console.error('Error creating animal:', error);
+            throw error;
+        }
+    },
+
+    async deleteAnimal(animalId) {
+        try {
+            const response = await api.delete(`/animals/${animalId}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error deleting animal ${animalId}:`, error);
             throw error;
         }
     }

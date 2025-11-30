@@ -12,6 +12,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import PersonalInfo from './pages/PersonalInfo'
 import ProfileSelector from './pages/ProfileSelector' // Исправленный импорт
+import AdminProfile from './pages/AdminProfile'
 import PetProfile from './pages/PetProfile'
 import ShelterProfile from './pages/ShelterProfile'
 import AnketaGive from './pages/AnketaGive'
@@ -36,6 +37,7 @@ function App() {
               <Route path="/регистрация" element={<Register />} />
               <Route path="/личная-информация" element={<PersonalInfo />} />
               <Route path="/профиль" element={<ProfileSelector />} /> {/* Единый маршрут */}
+              <Route path="/админ-профиль" element={<AdminProfile />} />
               <Route path="/питомец/:id" element={<PetProfile />} />
               <Route path="/приют/:id" element={<ShelterProfile />} />
               <Route path="/Anketa_give" element={<AnketaGive />} />

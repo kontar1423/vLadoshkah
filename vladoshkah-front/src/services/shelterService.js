@@ -75,7 +75,8 @@ export const shelterService = {
     // Добавляем метод для получения питомцев приюта
     async getShelterAnimals(shelterId) {
         try {
-            const response = await api.get(`/animals/shelter/${shelterId}`);
+            // Используем /animals/filters с параметром shelter_id вместо /animals/shelter/:shelterId
+            const response = await api.get(`/animals/filters?shelter_id=${shelterId}`);
             return response.data;
         } catch (error) {
             console.error(`Error fetching shelter ${shelterId} animals:`, error);

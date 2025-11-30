@@ -22,6 +22,7 @@ const PetProfile = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [checkingApplicationStatus, setCheckingApplicationStatus] = useState(true);
     const [similarFavoritesMap, setSimilarFavoritesMap] = useState({});
+    const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
     const { user } = useAuth();
 
     const UPLOADS_BASE_URL = import.meta.env.VITE_UPLOADS_BASE_URL || 'http://172.29.8.236:9000';
@@ -400,17 +401,47 @@ const PetProfile = () => {
         return sizeMap[size] || size;
     };
 
-    const getMainPhoto = () => {
+    const getCurrentPhoto = () => {
         if (!currentPet || !currentPet.photos || currentPet.photos.length === 0) {
             return null;
         }
         
-        const mainPhoto = currentPet.photos[0];
-        const photoUrl = mainPhoto.url;
+        const validPhotos = currentPet.photos.filter(photo => photo.url);
+        if (validPhotos.length === 0) {
+            return null;
+        }
         
-        console.log('Main photo URL:', photoUrl);
+        const safeIndex = currentPhotoIndex >= validPhotos.length ? 0 : currentPhotoIndex;
+        const currentPhoto = validPhotos[safeIndex];
+        const photoUrl = currentPhoto.url;
+        
+        console.log('Current photo URL:', photoUrl, 'Index:', safeIndex, 'Total:', validPhotos.length);
         return photoUrl;
     };
+
+    const getAvailablePhotos = () => {
+        if (!currentPet || !currentPet.photos || currentPet.photos.length === 0) {
+            return [];
+        }
+        return currentPet.photos.filter(photo => photo.url);
+    };
+
+    const handlePreviousPhoto = () => {
+        const availablePhotos = getAvailablePhotos();
+        if (availablePhotos.length === 0) return;
+        setCurrentPhotoIndex((prev) => (prev === 0 ? availablePhotos.length - 1 : prev - 1));
+    };
+
+    const handleNextPhoto = () => {
+        const availablePhotos = getAvailablePhotos();
+        if (availablePhotos.length === 0) return;
+        setCurrentPhotoIndex((prev) => (prev === availablePhotos.length - 1 ? 0 : prev + 1));
+    };
+
+    // Сбрасываем индекс при изменении питомца
+    useEffect(() => {
+        setCurrentPhotoIndex(0);
+    }, [id]);
 
     if (loading) {
         return (
@@ -458,7 +489,9 @@ const PetProfile = () => {
 
     const petInfo = getPetInfo();
     const petDetails = getPetDetails();
-    const mainPhotoUrl = getMainPhoto();
+    const currentPhotoUrl = getCurrentPhoto();
+    const availablePhotos = getAvailablePhotos();
+    const hasMultiplePhotos = availablePhotos.length > 1;
 
     return (
         <div className="min-h-screen bg-green-95 py-10">
@@ -466,24 +499,60 @@ const PetProfile = () => {
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
                 <div className="lg:w-1/3">
                     <article className="flex flex-col items-start gap-6 bg-green-95 rounded-custom p-6">
-                    <div className="w-full aspect-[1.01] rounded-custom overflow-hidden relative">
-                        {mainPhotoUrl ? (
-                            <img
-                                className="w-full h-full object-cover"
-                                alt={`Фотография ${currentPet.name}`}
-                                src={mainPhotoUrl}
-                                onError={(e) => {
-                                    console.error('Error loading image:', mainPhotoUrl);
-                                    e.target.style.display = 'none';
-                                    const fallback = document.getElementById(`fallback-${currentPet.id}`);
-                                    if (fallback) fallback.style.display = 'flex';
-                                }}
-                            />
+                    <div className="w-full aspect-[1.01] rounded-custom overflow-hidden relative group">
+                        {currentPhotoUrl ? (
+                            <>
+                                <img
+                                    className="w-full h-full object-cover transition-opacity duration-300"
+                                    alt={`Фотография ${currentPet.name} ${currentPhotoIndex + 1} из ${availablePhotos.length}`}
+                                    src={currentPhotoUrl}
+                                    onError={(e) => {
+                                        console.error('Error loading image:', currentPhotoUrl);
+                                        e.target.style.display = 'none';
+                                        const fallback = document.getElementById(`fallback-${currentPet.id}`);
+                                        if (fallback) fallback.style.display = 'flex';
+                                    }}
+                                />
+                                
+                                {/* Стрелочки для переключения фотографий */}
+                                {hasMultiplePhotos && (
+                                    <>
+                                        {/* Стрелка влево */}
+                                        <button
+                                            onClick={handlePreviousPhoto}
+                                            className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200"
+                                            aria-label="Предыдущее фото"
+                                            title="Предыдущее фото"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
+                                        
+                                        {/* Стрелка вправо */}
+                                        <button
+                                            onClick={handleNextPhoto}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200"
+                                            aria-label="Следующее фото"
+                                            title="Следующее фото"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                        
+                                        {/* Индикатор количества фотографий */}
+                                        <div className="absolute bottom-20 right-4 z-10 px-3 py-1.5 bg-black/50 text-white text-sm rounded-full backdrop-blur-sm">
+                                            {currentPhotoIndex + 1} / {availablePhotos.length}
+                                        </div>
+                                    </>
+                                )}
+                            </>
                         ) : null}
                         
                         <div 
                             id={`fallback-${currentPet.id}`}
-                            className={`w-full h-full bg-gradient-to-br from-green-70 to-green-60 rounded-custom flex items-center justify-center flex-col p-4 ${mainPhotoUrl ? 'hidden' : 'flex'}`}
+                            className={`w-full h-full bg-gradient-to-br from-green-70 to-green-60 rounded-custom flex items-center justify-center flex-col p-4 ${currentPhotoUrl ? 'hidden' : 'flex'}`}
                         >
                             <span className="text-green-98 font-inter text-center mb-2 text-xl font-bold">
                                 {currentPet.name}

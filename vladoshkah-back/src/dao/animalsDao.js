@@ -71,6 +71,21 @@ async function create({ name, age, type, health, gender, color, weight, personal
     return result.rows[0];
   } catch (err) {
     error(err, 'DAO: error creating animal');
+    
+    // Обрабатываем ошибки уникального ограничения
+    if (err.code === '23505') { // PostgreSQL unique violation
+      const errMessage = new Error('Питомец с такими данными уже существует в базе');
+      errMessage.status = 409;
+      throw errMessage;
+    }
+    
+    // Обрабатываем другие ошибки БД
+    if (err.code && err.code.startsWith('23')) { // PostgreSQL constraint violation
+      const errMessage = new Error('Ошибка при добавлении питомца: нарушение ограничений базы данных');
+      errMessage.status = 400;
+      throw errMessage;
+    }
+    
     throw err;
   }
 }

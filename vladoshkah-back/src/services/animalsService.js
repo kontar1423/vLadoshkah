@@ -58,21 +58,20 @@ async function getAnimalsWithPhotos(animals) {
 
 // Вспомогательная функция для инвалидации кэша
 async function invalidateAnimalCaches(animalId = null) {
-  const patterns = [
-    CACHE_KEYS.ALL_ANIMALS,
-    'animals:shelter:*',
-    'animals:search:*'
-  ];
+  const keysToDelete = [CACHE_KEYS.ALL_ANIMALS];
   
   if (animalId) {
-    patterns.push(CACHE_KEYS.ANIMAL_BY_ID(animalId));
+    keysToDelete.push(CACHE_KEYS.ANIMAL_BY_ID(animalId));
   }
   
-  // Clear the all animals cache since we're fetching all animals
-  await Promise.all([
-    redisClient.delete(CACHE_KEYS.ALL_ANIMALS),
-    redisClient.delete(CACHE_KEYS.ANIMAL_BY_ID(animalId)),
-  ]);
+  // Clear the all animals cache and specific animal cache
+  await Promise.all(keysToDelete.map(key => redisClient.delete(key)));
+  
+  // Clear shelter-specific caches using pattern
+  await redisClient.deleteByPattern('animals:shelter:*');
+  
+  // Clear search caches using pattern
+  await redisClient.deleteByPattern('animals:search:*');
 }
 
 // Получить всех животных
@@ -227,11 +226,19 @@ async function createAnimal(animalData, photoFiles = [], currentUser = null) {
     
     // 1. Создаем животное
     const animal = await animalsDao.create(animalData);
-    // Clear the all animals cache since we're adding a new animal
-    await Promise.all([
-      redisClient.delete(CACHE_KEYS.ALL_ANIMALS),
-      redisClient.delete(CACHE_KEYS.ANIMAL_BY_ID(animal.id))
-    ]);
+    // Clear the all animals cache and shelter-specific cache since we're adding a new animal
+    const shelterId = Number(animalData.shelter_id);
+    const cacheKeysToDelete = [
+      CACHE_KEYS.ALL_ANIMALS,
+      CACHE_KEYS.ANIMAL_BY_ID(animal.id)
+    ];
+    
+    // Очищаем кэш для конкретного приюта
+    if (shelterId) {
+      cacheKeysToDelete.push(CACHE_KEYS.ANIMALS_BY_SHELTER(shelterId));
+    }
+    
+    await Promise.all(cacheKeysToDelete.map(key => redisClient.delete(key)));
     // 2. Если есть фото - загружаем через photosService
     if (photosArray.length > 0) {
       await Promise.all(

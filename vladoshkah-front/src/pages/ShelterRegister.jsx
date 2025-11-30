@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { shelterService } from '../services/shelterService'
 import { userService } from '../services/userService'
@@ -23,6 +23,7 @@ const ShelterRegister = () => {
 
     const [photos, setPhotos] = useState([])
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isCheckingShelter, setIsCheckingShelter] = useState(true)
 
     const regions = [
         { value: '', label: 'Выберите регион' },
@@ -60,18 +61,53 @@ const ShelterRegister = () => {
     const prepareFormData = () => {
         const formDataToSend = new FormData()
         
-        // Добавляем все поля формы
-        Object.keys(formData).forEach(key => {
-            if (formData[key] !== '' && formData[key] !== null && formData[key] !== undefined) {
-                const value = typeof formData[key] === 'boolean' ? formData[key].toString() : formData[key];
-                formDataToSend.append(key, value);
-            }
-        })
-
-        // Добавляем admin_id текущего пользователя
-        if (user?.id) {
-            formDataToSend.append('admin_id', user.id.toString());
+        // Добавляем обязательное поле name
+        if (formData.name && formData.name.trim()) {
+            formDataToSend.append('name', formData.name.trim());
         }
+        
+        // Добавляем опциональные поля только если они не пустые
+        if (formData.address && formData.address.trim()) {
+            formDataToSend.append('address', formData.address.trim());
+        }
+        
+        if (formData.phone && formData.phone.trim()) {
+            formDataToSend.append('phone', formData.phone.trim());
+        }
+        
+        if (formData.email && formData.email.trim()) {
+            formDataToSend.append('email', formData.email.trim());
+        }
+        
+        if (formData.description && formData.description.trim()) {
+            formDataToSend.append('description', formData.description.trim());
+        }
+        
+        if (formData.working_hours && formData.working_hours.trim()) {
+            formDataToSend.append('working_hours', formData.working_hours.trim());
+        }
+        
+        if (formData.region && formData.region.trim()) {
+            formDataToSend.append('region', formData.region.trim());
+        }
+        
+        // Числовые поля - только если есть значение
+        if (formData.capacity && formData.capacity !== '') {
+            const capacityNum = parseInt(formData.capacity, 10);
+            if (!isNaN(capacityNum) && capacityNum >= 0) {
+                formDataToSend.append('capacity', capacityNum.toString());
+            }
+        }
+        
+        // Boolean поле
+        if (formData.can_adopt !== undefined && formData.can_adopt !== null) {
+            formDataToSend.append('can_adopt', formData.can_adopt ? 'true' : 'false');
+        }
+
+        // Добавляем admin_id текущего пользователя (не добавляем, так как бекенд устанавливает его автоматически)
+        // if (user?.id) {
+        //     formDataToSend.append('admin_id', user.id.toString());
+        // }
 
         // Добавляем статус по умолчанию
         formDataToSend.append('status', 'active');
@@ -119,24 +155,31 @@ const ShelterRegister = () => {
             const shelterResponse = await shelterService.createShelter(formDataToSend);
             console.log('✅ Приют создан:', shelterResponse);
             
-            console.log('🔄 Обновляем данные пользователя с shelter_id...');
-            await userService.updateUser({
-                shelter_id: shelterResponse.id
-            });
-            
-            // Обновляем контекст аутентификации
+            // Обновляем контекст аутентификации для получения актуальных данных
+            // Связь приюта с пользователем уже установлена через admin_id в таблице shelters
             if (refreshUser) {
                 await refreshUser();
-                console.log('✅ Данные пользователя обновлены с shelter_id');
+                console.log('✅ Данные пользователя обновлены');
             }
             
             alert('Приют успешно зарегистрирован! Теперь вы можете добавлять питомцев.');
-            navigate('/профиль');
+            // Перенаправляем на админ-профиль для обновления данных
+            navigate('/админ-профиль');
             
         } catch (error) {
             console.error('❌ Ошибка при регистрации приюта:', error);
             
-            if (error.response?.data?.message) {
+            // Обрабатываем ошибку "уже есть приют"
+            if (error.response?.data?.error === 'Shelter admin can have only one shelter' || 
+                error.response?.data?.message === 'Shelter admin can have only one shelter') {
+                alert('У вас уже зарегистрирован приют. Вы будете перенаправлены в профиль.');
+                navigate('/админ-профиль');
+                return;
+            }
+            
+            if (error.response?.data?.error) {
+                alert(`Ошибка: ${error.response.data.error}`);
+            } else if (error.response?.data?.message) {
                 alert(`Ошибка: ${error.response.data.message}`);
             } else {
                 alert('Произошла ошибка при регистрации приюта. Пожалуйста, попробуйте еще раз.');
@@ -144,6 +187,19 @@ const ShelterRegister = () => {
         } finally {
             setIsSubmitting(false);
         }
+    }
+
+    // Показываем индикатор загрузки, пока проверяем наличие приюта
+    if (isCheckingShelter) {
+        return (
+            <div className="min-h-screen bg-green-95 flex items-center justify-center px-4 py-10">
+                <div className="text-center">
+                    <div className="text-green-30 font-sf-rounded font-bold text-xl mb-4">
+                        Проверка данных...
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (

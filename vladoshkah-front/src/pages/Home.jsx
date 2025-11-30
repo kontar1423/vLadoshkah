@@ -14,7 +14,9 @@ import { useAuth } from '../context/AuthContext';
 import PetCarousel from '../components/PetCarousel';
 import ShelterCarousel from '../components/ShelterCarousel';
 import LetterByLetter from '../components/ArcLetterByLetter';
-import SheltersMap from '../components/SheltersMap'; 
+import SheltersMap from '../components/SheltersMap';
+import PetCardSkeleton from '../components/PetCardSkeleton';
+import ShelterCardSkeleton from '../components/ShelterCardSkeleton'; 
 
 const Home = () => {
   const { user } = useAuth();
@@ -249,7 +251,11 @@ const getDistrictName = (regionCode) => {
         </h2>
 
         {loadingAnimals ? (
-          <div className="text-center py-10 text-green-40">Загрузка питомцев...</div>
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {[...Array(3)].map((_, index) => (
+              <PetCardSkeleton key={index} />
+            ))}
+          </div>
         ) : (
           <PetCarousel pets={animals} favoritesMap={favoritesMap} />
         )}
@@ -311,7 +317,11 @@ const getDistrictName = (regionCode) => {
         </h2>
 
         {loadingShelters ? (
-          <div className="text-center py-10 text-green-40">Загрузка приютов...</div>
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {[...Array(2)].map((_, index) => (
+              <ShelterCardSkeleton key={index} />
+            ))}
+          </div>
         ) : (
           <ShelterCarousel shelters={shelters} />
         )}

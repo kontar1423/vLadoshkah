@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { favoriteService } from '../services/favoriteService';
 
-const PetCard = ({ petData, initialFavorite = false }) => {
+const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
     const {
         id,
         name = "Питомец",
@@ -194,9 +194,26 @@ const PetCard = ({ petData, initialFavorite = false }) => {
 
     return (
         <article 
-            className="flex flex-col w-full max-w-[320px] h-[420px] bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl"
+            className="flex flex-col w-full max-w-[320px] h-[420px] bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative"
             aria-label={`Карточка питомца ${name}`}
         >
+            {/* Кнопка удаления (показывается только если передан onDelete) */}
+            {onDelete && (
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onDelete(id);
+                    }}
+                    className="absolute top-2 right-2 z-20 w-8 h-8 bg-green-80 hover:bg-green-70 text-green-20 rounded-full flex items-center justify-center shadow-lg transition-colors border-2 border-green-30"
+                    aria-label="Удалить питомца"
+                    title="Удалить питомца"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            )}
             <div className="relative w-full aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden">
                 {photoUrl ? (
                     <>

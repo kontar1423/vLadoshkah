@@ -14,6 +14,7 @@ import { shelterService } from '../services/shelterService';
 import { favoriteService } from '../services/favoriteService';
 import { useAuth } from '../context/AuthContext';
 import SheltersMap from '../components/SheltersMap';
+import PetCardSkeleton from '../components/PetCardSkeleton';
 
 const FindPet = () => {
   const navigate = useNavigate();
@@ -597,13 +598,10 @@ const FindPet = () => {
           </div>
 
           {loading && (
-            <div className="text-center py-12">
-              <div className="bg-green-90 rounded-custom p-8 max-w-md mx-auto">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-40 mx-auto mb-4"></div>
-                <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-2">
-                  Загружаем питомцев...
-                </h3>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, index) => (
+                <PetCardSkeleton key={index} />
+              ))}
             </div>
           )}
 

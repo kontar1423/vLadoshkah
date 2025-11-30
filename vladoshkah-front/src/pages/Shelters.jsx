@@ -3,6 +3,7 @@ import ShelterCard from '../components/ShelterCard';
 import DistrictFilter from '../components/DistrictFilter';
 import { shelterService } from '../services/shelterService';
 import SheltersMap from '../components/SheltersMap';
+import ShelterCardSkeleton from '../components/ShelterCardSkeleton';
 
 const Shelters = () => {
   const [shelters, setShelters] = useState([]);
@@ -162,8 +163,17 @@ const Shelters = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-green-95 flex items-center justify-center">
-        <div className="text-lg text-green-30">Загрузка приютов...</div>
+      <div className="min-h-screen bg-green-95">
+        <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-10">
+          <div className="text-center mb-8">
+            <div className="h-12 w-64 bg-green-80 rounded-custom-small mx-auto mb-4 animate-pulse"></div>
+          </div>
+          <div className="space-y-6">
+            {[...Array(3)].map((_, index) => (
+              <ShelterCardSkeleton key={index} />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

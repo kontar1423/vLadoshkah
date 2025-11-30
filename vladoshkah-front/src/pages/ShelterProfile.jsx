@@ -151,14 +151,14 @@ const ShelterProfile = () => {
   };
 
   // Загрузка данных приюта
-  const loadShelterData = useCallback(async () => {
+  const loadShelterData = useCallback(async (forceRefresh = false) => {
     try {
       setLoading(true);
       setError('');
       
       const [shelterRes, animalsRes] = await Promise.allSettled([
         shelterService.getShelterById(id),
-        animalService.getAnimalsByShelter(id)
+        animalService.getAnimalsByShelter(id, forceRefresh)
       ]);
 
       if (shelterRes.status === 'rejected') throw shelterRes.reason;
@@ -269,7 +269,78 @@ const ShelterProfile = () => {
 
   useEffect(() => {
     loadShelterData();
-  }, [loadShelterData]);
+  }, [loadShelterData, id]);
+  
+  // Обновляем данные при фокусе на странице (возврат с другой страницы)
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('ShelterProfile: Window focused, refreshing data with force refresh');
+      loadShelterData(true); // Принудительное обновление при фокусе
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('ShelterProfile: Page visible, refreshing data with force refresh');
+        loadShelterData(true); // Принудительное обновление при видимости
+      }
+    };
+
+    // Обработчик события удаления питомца
+    const handlePetDeleted = (event) => {
+      const { petId, shelterId } = event.detail || {};
+      const shelterIdNum = Number(shelterId);
+      const currentShelterId = Number(id);
+      
+      if (shelterId && shelterIdNum === currentShelterId) {
+        const petIdNum = Number(petId);
+        console.log('ShelterProfile: Pet deleted event received, removing pet:', petId, 'Type:', typeof petId);
+        // Немедленно удаляем питомца из состояния с правильным сравнением типов
+        setAllPets(prev => {
+          const filtered = prev.filter(pet => {
+            const petIdToCompare = Number(pet.id);
+            const shouldKeep = petIdToCompare !== petIdNum;
+            if (!shouldKeep) {
+              console.log('ShelterProfile: Filtering out pet:', pet.id, 'Type:', typeof pet.id);
+            }
+            return shouldKeep;
+          });
+          console.log('ShelterProfile: Updated allPets, removed pet:', petId, 'Previous count:', prev.length, 'New count:', filtered.length);
+          return filtered;
+        });
+        setFilteredPets(prev => {
+          const filtered = prev.filter(pet => Number(pet.id) !== petIdNum);
+          console.log('ShelterProfile: Updated filteredPets, removed pet:', petId);
+          return filtered;
+        });
+        setAnimalCount(prev => Math.max(0, prev - 1));
+        // Обновляем favoritesMap
+        setFavoritesMap(prev => {
+          const updated = { ...prev };
+          delete updated[petId];
+          delete updated[petIdNum];
+          return updated;
+        });
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('petDeleted', handlePetDeleted);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('petDeleted', handlePetDeleted);
+    };
+  }, [loadShelterData, id]);
+  
+  // Обновляем данные при изменении ID приюта в URL
+  useEffect(() => {
+    if (id) {
+      console.log('ShelterProfile: Shelter ID changed, reloading data');
+      loadShelterData(true); // Принудительное обновление при смене ID
+    }
+  }, [id, loadShelterData]);
 
   // Поиск и фильтрация
   useEffect(() => {

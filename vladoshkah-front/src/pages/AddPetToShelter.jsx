@@ -22,7 +22,7 @@ const AddPetToShelter = () => {
         animal_size: '',
         health: 'healthy',
         personality: '',
-        description: '',
+        history: '',
     });
 
     const [petPhotos, setPetPhotos] = useState([]);
@@ -38,12 +38,12 @@ const AddPetToShelter = () => {
                 if (shelter) {
                     setShelterInfo(shelter);
                 } else {
-                    navigate('/профиль');
+                    navigate('/админ-профиль');
                 }
             }
         } catch (error) {
             console.error('Ошибка загрузки приюта:', error);
-            navigate('/профиль');
+            navigate('/админ-профиль');
         } finally {
             setLoading(false);
         }
@@ -96,29 +96,62 @@ const AddPetToShelter = () => {
         try {
             const formDataToSend = new FormData();
             
-            // Добавляем данные питомца
+            // Добавляем данные питомца (только непустые значения)
             Object.keys(formData).forEach(key => {
-                if (formData[key] !== '' && formData[key] !== null && formData[key] !== undefined) {
-                    formDataToSend.append(key, formData[key]);
+                const value = formData[key];
+                if (value !== '' && value !== null && value !== undefined) {
+                    // Преобразуем числа в строки для FormData
+                    const stringValue = typeof value === 'number' ? value.toString() : value;
+                    formDataToSend.append(key, stringValue);
                 }
             });
 
             // Добавляем ID приюта
-            formDataToSend.append('shelter_id', shelterInfo.id);
+            formDataToSend.append('shelter_id', shelterInfo.id.toString());
 
             // Добавляем фотографии
             petPhotos.forEach(photo => {
                 formDataToSend.append('photos', photo.file);
             });
 
+            console.log('Отправка данных питомца:', {
+                name: formData.name,
+                type: formData.type,
+                shelter_id: shelterInfo.id,
+                photosCount: petPhotos.length
+            });
+
             await animalService.createAnimal(formDataToSend);
 
             alert('Питомец успешно добавлен в приют!');
-            navigate('/профиль');
+            
+            // Небольшая задержка для обновления кэша на бекенде
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Переходим на админ-профиль с флагом обновления
+            navigate('/админ-профиль', { state: { refresh: true } });
             
         } catch (error) {
             console.error('Ошибка при добавлении питомца:', error);
-            alert('Произошла ошибка при добавлении питомца. Пожалуйста, попробуйте еще раз.');
+            console.error('Детали ошибки:', error.response?.data);
+            
+            // Показываем более детальное сообщение об ошибке
+            let errorMessage = 'Произошла ошибка при добавлении питомца. Пожалуйста, попробуйте еще раз.';
+            
+            if (error.response?.data?.error) {
+                errorMessage = error.response.data.error;
+            } else if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            // Проверяем, не является ли это ошибкой уникального ограничения
+            if (errorMessage.includes('duplicate') || errorMessage.includes('уже') || errorMessage.includes('already')) {
+                errorMessage = 'Питомец с такими данными уже существует в базе. Пожалуйста, проверьте данные или попробуйте добавить другого питомца.';
+            }
+            
+            alert(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -138,7 +171,7 @@ const AddPetToShelter = () => {
                 <div className="text-center">
                     <p className="text-green-20 mb-4">Приют не найден</p>
                     <button
-                        onClick={() => navigate('/профиль')}
+                        onClick={() => navigate('/админ-профиль')}
                         className="px-6 py-2 bg-green-50 text-green-100 rounded-custom-small hover:bg-green-60"
                     >
                         Вернуться в профиль
@@ -245,6 +278,59 @@ const AddPetToShelter = () => {
                                     className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-40 placeholder-green-40 focus:border-green-50 focus:outline-none"
                                 />
                             </div>
+
+                            <div>
+                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                    Состояние здоровья *
+                                </label>
+                                <select
+                                    name="health"
+                                    value={formData.health}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-40 focus:border-green-50 focus:outline-none"
+                                >
+                                    <option value="healthy">Здоровый</option>
+                                    <option value="needs_treatment">Требует лечения</option>
+                                    <option value="special_needs">Особые потребности</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-green-95 rounded-custom p-6">
+                        <h2 className="font-sf-rounded font-bold text-green-30 text-2xl mb-6">
+                            Дополнительная информация
+                        </h2>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                    Характер питомца
+                                </label>
+                                <textarea
+                                    name="personality"
+                                    value={formData.personality}
+                                    onChange={handleChange}
+                                    rows="4"
+                                    placeholder="Опишите характер питомца (например: дружелюбный, активный, спокойный)"
+                                    className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 placeholder-green-40 focus:border-green-50 focus:outline-none resize-none"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                    История питомца
+                                </label>
+                                <textarea
+                                    name="history"
+                                    value={formData.history}
+                                    onChange={handleChange}
+                                    rows="6"
+                                    placeholder="Расскажите историю питомца: откуда он появился, как попал в приют, особенности его прошлого"
+                                    className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 placeholder-green-40 focus:border-green-50 focus:outline-none resize-none"
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -315,7 +401,7 @@ const AddPetToShelter = () => {
                     <div className="flex gap-4 justify-end">
                         <button
                             type="button"
-                            onClick={() => navigate('/профиль')}
+                            onClick={() => navigate('/админ-профиль')}
                             className="px-6 py-3 bg-green-80 text-green-40 font-sf-rounded font-semibold rounded-custom-small hover:bg-green-70"
                         >
                             Назад
