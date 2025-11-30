@@ -82,6 +82,18 @@ async function countApprovedTake(req, res) {
   }
 }
 
+async function getTakeByAnimalId(req, res) {
+  try {
+    const { animalId } = req.params;
+    const applications = await applicationsService.getTakeByAnimalId(animalId);
+    res.json(applications);
+  } catch (err) {
+    const log = req.log || logger;
+    log.error(err, 'Controller: error fetching take applications by animal_id');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 // GIVE (surrender) applications
 async function createGive(req, res) {
   try {
@@ -160,6 +172,7 @@ export default {
   updateTake,
   removeTake,
   countApprovedTake,
+  getTakeByAnimalId,
   createGive,
   getGiveById,
   getAllGive,

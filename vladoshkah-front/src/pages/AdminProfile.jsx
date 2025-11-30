@@ -464,29 +464,23 @@ const AdminProfile = () => {
                                     <div className="flex items-center gap-3">
                                         <button
                                             onClick={handleAddPet}
-                                            className="px-6 py-3 bg-green-50 text-green-100 font-sf-rounded font-semibold text-base rounded-custom-small hover:bg-green-60 cursor-pointer transition-colors"
+                                            className="px-6 py-3 bg-green-40 text-green-100 font-sf-rounded font-semibold text-base rounded-custom-small hover:bg-green-60 cursor-pointer transition-colors"
                                         >
                                             + Добавить питомца
-                                        </button>
-                                        <button
-                                            onClick={handleEditShelter}
-                                            className="px-4 py-2 bg-green-80 text-green-30 font-sf-rounded font-medium text-sm rounded-custom-small hover:bg-green-70 transition-colors"
-                                        >
-                                            Редактировать приют
                                         </button>
                                     </div>
                                 </div>
                             </section>
                         )}
 
-                        {/* Табы для переключения между избранными и питомцами приюта */}
+                        
                         <section className="flex flex-col items-center gap-6 relative">
                             <header className="flex items-center justify-between relative self-stretch w-full">
                                 <div className="flex items-center gap-4">
                                     <h1 className="w-fit mt-[-1.00px] font-sf-rounded font-bold text-green-20 text-2xl md:text-3xl">
                                         {activeTab === 'favorites' ? 'Избранные питомцы' : 'Питомцы приюта'}
                                     </h1>
-                                    <span className="px-3 py-1 bg-green-50 text-green-100 font-sf-rounded font-medium text-sm rounded-full">
+                                    <span className="px-3 py-1 bg-green-40 text-green-100 font-sf-rounded font-medium text-sm rounded-full">
                                         {activeTab === 'favorites' ? favoritePets.length : shelterPets.length}
                                     </span>
                                 </div>
@@ -498,7 +492,7 @@ const AdminProfile = () => {
                                             onClick={() => setActiveTab('favorites')}
                                             className={`px-4 py-2 font-sf-rounded font-medium text-sm transition-colors ${
                                                 activeTab === 'favorites' 
-                                                    ? 'bg-green-50 text-green-100' 
+                                                    ? 'bg-green-40 text-green-100' 
                                                     : 'bg-green-90 text-green-40 hover:bg-green-80'
                                             }`}
                                         >
@@ -508,7 +502,7 @@ const AdminProfile = () => {
                                             onClick={() => setActiveTab('shelter')}
                                             className={`px-4 py-2 font-sf-rounded font-medium text-sm transition-colors ${
                                                 activeTab === 'shelter' 
-                                                    ? 'bg-green-50 text-green-100' 
+                                                    ? 'bg-green-40 text-green-100' 
                                                     : 'bg-green-90 text-green-40 hover:bg-green-80'
                                             }`}
                                         >

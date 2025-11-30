@@ -148,4 +148,26 @@ async function countByStatus(status, type = null) {
   }
 }
 
-export default { create, getById, getAll, update, remove, countByStatus };
+async function getByAnimalId(animalId, type = null) {
+  try {
+    const params = [animalId];
+    let whereClause = `WHERE animal_id = $1`;
+
+    if (type) {
+      params.push(type);
+      whereClause += ` AND type = $2`;
+    }
+
+    const result = await query(
+      `SELECT * FROM applications ${whereClause} ORDER BY created_at DESC`,
+      params
+    );
+    info({ animalId, type, count: result.rowCount }, 'DAO: fetched applications by animal_id');
+    return result.rows;
+  } catch (err) {
+    error(err, 'DAO: error fetching applications by animal_id');
+    throw err;
+  }
+}
+
+export default { create, getById, getAll, update, remove, countByStatus, getByAnimalId };

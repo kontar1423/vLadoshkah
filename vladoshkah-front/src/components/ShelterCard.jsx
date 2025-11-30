@@ -50,7 +50,7 @@ const ShelterCard = ({ shelterData, onShowMap }) => {
 
     return (
         <article className="relative w-full max-w-[1260px] min-h-[400px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row">
-            <div className="relative w-full md:w-[350px] h-[180px] md:h-full flex-shrink-0">
+            <div className="relative w-full md:w-[350px] h-[180px] md:h-full flex-shrink-0 overflow-hidden">
                 <img 
                     src={photoUrl || PriutPhoto} 
                     alt={`Приют ${name}`}

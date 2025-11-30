@@ -32,18 +32,42 @@ export const applicationService = {
     },
 
     async checkTakeApplicationForAnimal(animalId) {
-    try {
-        const applications = await this.getUserTakeApplications();
-        return applications.some(app => app.animal_id === animalId && app.status !== 'rejected');
-    } catch (error) {
-        console.error('Error checking application for animal:', error);
-        return false;
-    }
-},
+        try {
+            const applications = await this.getUserTakeApplications();
+            const animalIdNum = parseInt(animalId);
+            console.log('Checking applications for animal:', animalIdNum);
+            console.log('User applications:', applications);
+            
+            const hasApplication = applications.some(app => {
+                const appAnimalId = parseInt(app.animal_id);
+                const matches = appAnimalId === animalIdNum && app.status !== 'rejected';
+                console.log(`App animal_id: ${appAnimalId}, checking: ${animalIdNum}, matches: ${matches}, status: ${app.status}`);
+                return matches;
+            });
+            
+            console.log('Has application for this animal:', hasApplication);
+            return hasApplication;
+        } catch (error) {
+            console.error('Error checking application for animal:', error);
+            return false;
+        }
+    },
 
-    async checkTakeApplicationForAnimal(animalId) {
-        const applications = await this.getUserTakeApplications();
-        return applications.some(app => app.animal_id === animalId && app.status !== 'rejected');
+    async getApplicationsForAnimal(animalId) {
+        try {
+            // Используем endpoint для получения всех заявок на питомца
+            const response = await api.get(`/applications/take/animal/${animalId}`);
+            console.log('Applications for animal response:', response.data);
+            // Если ответ - массив, возвращаем его, иначе возвращаем пустой массив
+            return Array.isArray(response.data) ? response.data : [];
+        } catch (error) {
+            console.error('Error getting applications for animal:', error);
+            // Если endpoint не существует (404), возвращаем пустой массив
+            if (error.response?.status === 404) {
+                console.warn('Endpoint /applications/take/animal/:id not found, returning empty array');
+            }
+            return [];
+        }
     },
 
     async createGiveApplication(formData) {

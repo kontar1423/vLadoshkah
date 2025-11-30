@@ -144,17 +144,17 @@ export const Header = () => {
   return (
     <>
       <header
-        className="flex w-full min-h-[60px] md:min-h-[78px] items-center justify-between px-[20px] md:px-[40px] lg:px-[60px] xl:px-[80px] 2xl:px-[120px] py-2.5 sticky top-0 z-50 bg-[#ddf8d8cc] backdrop-blur-sm"
+        className="flex w-full min-h-[60px] md:min-h-[78px] items-center justify-between px-[20px] md:px-[40px] lg:px-[60px] xl:px-[80px] 2xl:px-[120px] py-2.5 sticky top-0 z-50 bg-[#ddf8d8cc] backdrop-blur-sm transition-all duration-300 shadow-soft"
         role="banner"
       >
         <div className="gap-[15px] md:gap-[30px] lg:gap-[50px] xl:gap-[60px] 2xl:gap-[70px] flex items-center relative flex-1 flex-wrap md:flex-nowrap">
           
           <div 
-            className="flex-shrink-0 cursor-pointer"
+            className="flex-shrink-0 cursor-pointer transition-opacity duration-300 hover:opacity-80"
             onClick={handleLogoClick}
           >
             <img
-              className="relative w-[100px] md:w-[120px] lg:w-[139px] h-4 md:h-4 lg:h-5"
+              className="relative w-[100px] md:w-[120px] lg:w-[139px] h-4 md:h-4 lg:h-5 transition-all duration-300"
               alt="В Ладошках Logo"
               src="https://c.animaapp.com/qqBlbLv1/img/----------.svg"
             />
@@ -170,13 +170,18 @@ export const Header = () => {
                 {item.path ? (
                   <button
                     onClick={() => handleNavButtonClick(item)}
-                    className={`inline-flex items-center justify-center gap-2.5 relative flex-[0_0_auto] hover:opacity-80 transition-opacity ${
-                      location.pathname === item.path ? 'text-green-30 font-semibold' : 'text-green-20'
+                    className={`inline-flex items-center justify-center gap-2.5 relative flex-[0_0_auto] transition-all duration-300 ${
+                      location.pathname === item.path 
+                        ? 'text-green-30 font-semibold' 
+                        : 'text-green-20 hover:text-green-30'
                     }`}
                   >
-                    <span className="relative w-fit mt-[-1.00px] font-inter font-medium text-lg md:text-xl tracking-[0] leading-[normal] whitespace-nowrap">
+                    <span className="relative w-fit mt-[-1.00px] font-inter font-medium text-lg md:text-xl tracking-[0] leading-[normal] whitespace-nowrap transition-all duration-300">
                       {item.label}
                     </span>
+                    {location.pathname === item.path && (
+                      <span className="absolute bottom-0 left-0 w-full h-0.5 bg-green-40 animate-scale-in"></span>
+                    )}
                   </button>
                 ) : (
                   <button
@@ -320,7 +325,7 @@ export const Header = () => {
         <div className="flex items-center gap-4 md:gap-2 relative" ref={userMenuRef}>
           <div className="relative hidden md:block">
             <button
-              className="relative flex items-center gap-2 cursor-pointer flex-shrink-0 hover:opacity-80 transition-opacity p-2 rounded-custom-small hover:bg-green-90"
+              className="relative flex items-center gap-2 cursor-pointer flex-shrink-0 transition-all duration-300 p-2 rounded-custom-small hover:bg-green-90"
               aria-label="User account"
               type="button"
               onClick={handleUserMenuToggle}
@@ -354,7 +359,7 @@ export const Header = () => {
                         }
                         setIsUserMenuOpen(false);
                       }}
-                      className="block w-full text-left px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer"
+                      className="block w-full text-left px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-all duration-300 cursor-pointer hover:pl-6"
                     >
                       Войти
                     </div>
@@ -388,7 +393,7 @@ export const Header = () => {
                           }
                           setIsUserMenuOpen(false);
                         }}
-                        className="flex items-center gap-3 px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer"
+                        className="flex items-center gap-3 px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-all duration-300 cursor-pointer hover:pl-6"
                       >
                         <img
                           className="w-5 h-5 rounded-full object-cover"
@@ -407,7 +412,7 @@ export const Header = () => {
                           }
                           setIsUserMenuOpen(false);
                         }}
-                        className="flex items-center gap-3 px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer"
+                        className="flex items-center gap-3 px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-all duration-300 cursor-pointer hover:pl-6"
                       >
                         <img
                           className="w-5 h-5 rounded-full object-cover"
@@ -420,7 +425,7 @@ export const Header = () => {
                     
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-3 w-full text-left px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80"
+                      className="flex items-center gap-3 w-full text-left px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-all duration-300 border-t border-green-80 hover:pl-6"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

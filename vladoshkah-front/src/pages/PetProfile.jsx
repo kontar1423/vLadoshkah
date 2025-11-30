@@ -5,6 +5,7 @@ import { animalService } from '../services/animalService';
 import { shelterService } from '../services/shelterService';
 import { applicationService } from '../services/applicationService';
 import AdoptionConfirmationModal from '../components/AdoptionConfirmationModal';
+import { useAuth } from '../context/AuthContext';
 
 const PetProfile = () => {
     const { id } = useParams();
@@ -15,29 +16,85 @@ const PetProfile = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isApplied, setIsApplied] = useState(false);
+    const [hasAnyApplication, setHasAnyApplication] = useState(false);
     const [isLoadingApplication, setIsLoadingApplication] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [checkingApplicationStatus, setCheckingApplicationStatus] = useState(true);
+    const { user } = useAuth();
 
     const UPLOADS_BASE_URL = import.meta.env.VITE_UPLOADS_BASE_URL || 'http://172.29.8.236:9000';
 
     useEffect(() => {
         checkApplicationStatus();
-    }, [id]);
+    }, [id, user]);
 
     const checkApplicationStatus = async () => {
         try {
+            const currentAnimalId = parseInt(id);
+            const currentUserId = user?.id ? parseInt(user.id) : null;
+            setCheckingApplicationStatus(true);
+            
             const token = localStorage.getItem('accessToken');
             if (!token) {
                 setIsApplied(false);
+                setHasAnyApplication(false);
                 setCheckingApplicationStatus(false);
                 return;
             }
-            const hasApplied = await applicationService.checkTakeApplicationForAnimal(parseInt(id));
-            setIsApplied(hasApplied);
+            
+            // Получаем все заявки на питомца (от всех пользователей)
+            let userHasApplied = false;
+            let hasAny = false;
+            
+            try {
+                const allApplications = await applicationService.getApplicationsForAnimal(currentAnimalId);
+                console.log('All applications for animal:', allApplications);
+                
+                if (Array.isArray(allApplications) && allApplications.length > 0) {
+                    // Фильтруем активные заявки (не rejected)
+                    const activeApplications = allApplications.filter(
+                        app => app.status !== 'rejected'
+                    );
+                    
+                    hasAny = activeApplications.length > 0;
+                    
+                    // Проверяем, есть ли заявка от текущего пользователя
+                    if (currentUserId && hasAny) {
+                        userHasApplied = activeApplications.some(
+                            app => parseInt(app.user_id) === currentUserId
+                        );
+                        console.log('User has applied for this animal:', userHasApplied);
+                    }
+                    
+                    console.log('Has any applications:', hasAny);
+                }
+            } catch (error) {
+                console.error('Error checking applications for animal:', error);
+                // Если endpoint не работает, пытаемся проверить через заявки пользователя
+                if (currentUserId) {
+                    try {
+                        const userApplications = await applicationService.getUserTakeApplications();
+                        const userAppForThisAnimal = userApplications.find(
+                            app => parseInt(app.animal_id) === currentAnimalId && app.status !== 'rejected'
+                        );
+                        if (userAppForThisAnimal) {
+                            userHasApplied = true;
+                            hasAny = true;
+                        }
+                    } catch (userError) {
+                        console.error('Error checking user applications:', userError);
+                    }
+                }
+            }
+            
+            console.log('Final status:', { isApplied: userHasApplied, hasAnyApplication: hasAny });
+            setIsApplied(userHasApplied);
+            setHasAnyApplication(hasAny);
+            
         } catch (error) {
             console.error('Error checking application status:', error);
             setIsApplied(false);
+            setHasAnyApplication(false);
         } finally {
             setCheckingApplicationStatus(false);
         }
@@ -46,7 +103,6 @@ const PetProfile = () => {
     const handleAdoptClick = () => {
         const token = localStorage.getItem('accessToken');
         if (!token) {
-            alert('Пожалуйста, войдите в систему чтобы подать заявку на усыновление');
             navigate('/войти');
             return;
         }
@@ -64,10 +120,19 @@ const PetProfile = () => {
                 description: `Заявка на усыновление питомца ${currentPet.name}`
             };
 
-            await applicationService.createTakeApplication(applicationData);
+            const response = await applicationService.createTakeApplication(applicationData);
+            console.log('Application created:', response);
+            
+            // Сразу устанавливаем состояние, что заявка отправлена (навсегда)
             setIsApplied(true);
+            setHasAnyApplication(true);
             setIsModalOpen(false);
             alert('Заявка успешно отправлена! Приют свяжется с вами в ближайшее время.');
+            
+            // Обновляем статус заявок после небольшой задержки (чтобы бэкенд успел обработать)
+            setTimeout(() => {
+                checkApplicationStatus();
+            }, 500);
             
         } catch (error) {
             console.error('Error creating adoption application:', error);
@@ -80,6 +145,7 @@ const PetProfile = () => {
             } else if (error.response?.status === 409) {
                 alert('Вы уже подавали заявку на этого питомца');
                 setIsApplied(true);
+                setHasAnyApplication(true);
             } else {
                 alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.');
             }
@@ -500,8 +566,21 @@ const PetProfile = () => {
                                     <button
                                         disabled
                                         className="w-full px-8 py-2 bg-green-70 text-green-40 font-sf-rounded font-semibold rounded-custom-small cursor-not-allowed opacity-75 text-lg text-center"
+                                        aria-disabled="true"
                                     >
                                         ✓ Заявка отправлена
+                                    </button>
+                                ) : hasAnyApplication ? (
+                                    <button
+                                        disabled
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                        }}
+                                        className="w-full px-8 py-2 bg-green-70 text-green-40 font-sf-rounded font-semibold rounded-custom-small cursor-not-allowed opacity-75 text-lg text-center pointer-events-none"
+                                        aria-disabled="true"
+                                    >
+                                        Питомца уже хотят забрать
                                     </button>
                                 ) : (
                                     <button

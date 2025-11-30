@@ -103,11 +103,22 @@ async function countApprovedTake() {
   }
 }
 
+async function getTakeByAnimalId(animalId) {
+  try {
+    const applications = await applicationsDao.getByAnimalId(animalId, 'take');
+    return applications;
+  } catch (err) {
+    logger.error(err, 'Service: error fetching take applications by animal_id');
+    throw err;
+  }
+}
+
 export default { 
   createTake, 
   getTakeById, 
   getAllTake, 
   updateTake, 
   removeTake, 
-  countApprovedTake 
+  countApprovedTake,
+  getTakeByAnimalId
 };

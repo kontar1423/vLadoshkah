@@ -346,13 +346,10 @@ const FindPet = () => {
         onReset={handleResetFilters}
       />
 
-      {showHelp && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-green-95 rounded-custom w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <HelpSection onClose={() => setShowHelp(false)} />
-          </div>
-        </div>
-      )}
+      <HelpSection 
+        isOpen={showHelp} 
+        onClose={() => setShowHelp(false)} 
+      />
 
       <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px]">
         <section className="relative w-full min-h-screen rounded-custom overflow-hidden bg-gradient-to-l mb-32">
@@ -372,7 +369,7 @@ const FindPet = () => {
             <div className="flex justify-center md:justify-start">
               <button
                 onClick={scrollToPets}
-                className="all-[unset] box-border inline-flex w-12 h-12 md:w-20 md:h-12 relative items-center justify-center bg-green-40 rounded-full cursor-pointer transition-colors hover:bg-green-50"
+                className="all-[unset] box-border inline-flex w-12 h-12 md:w-20 md:h-12 relative items-center justify-center bg-green-40 rounded-full cursor-pointer transition-all duration-300 hover:bg-green-50 hover:scale-110 hover:shadow-lg animate-bounce-soft"
                 aria-label="Перейти к питомцам"
                 type="button"
               >
@@ -386,8 +383,8 @@ const FindPet = () => {
           </div>
         </section>
 
-        <section className="mt-8 md:mt-16 max-w-[1160px] mx-auto mb-12">
-          <div className="relative w-full h-auto min-h-[300px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden">
+        <section className="mt-8 md:mt-16 max-w-[1160px] mx-auto mb-12 px-4 md:px-0">
+          <div className="relative w-full h-auto min-h-[250px] md:min-h-[300px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-green-80 rounded-full -translate-y-32 translate-x-32 opacity-50"></div>
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-green-70 rounded-full translate-y-24 -translate-x-24 opacity-30"></div>
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-green-60 rounded-full opacity-20"></div>
@@ -413,7 +410,7 @@ const FindPet = () => {
                   <div className="flex justify-center">
                     <button 
                       onClick={() => setShowHelp(true)}
-                      className="all-[unset] box-border inline-flex items-center justify-center px-6 py-3 bg-green-40 rounded-full cursor-pointer transition-colors hover:bg-green-50"
+                      className="all-[unset] box-border inline-flex items-center justify-center px-6 py-3 bg-green-40 rounded-full cursor-pointer transition-all duration-300 hover:bg-green-50 hover:scale-105 hover:shadow-md active:scale-95"
                     >
                       <span className="relative w-fit font-inter font-semibold text-green-95 text-base">
                         Помочь команде
@@ -426,16 +423,16 @@ const FindPet = () => {
           </div>
         </section>
 
-        <section className="mt-8 md:mt-16 max-w-[1160px] mx-auto mb-28">
-          <div className="relative w-full bg-green-90 rounded-custom overflow-hidden p-8 md:p-12">
+        <section className="mt-8 md:mt-16 max-w-[1160px] mx-auto mb-28 px-4 md:px-0">
+          <div className="relative w-full bg-green-90 rounded-custom overflow-hidden p-6 md:p-8 lg:p-12">
             <div className="absolute top-0 right-0 w-64 h-64 bg-green-80 rounded-full -translate-y-32 translate-x-32 opacity-50"></div>
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-green-70 rounded-full translate-y-24 -translate-x-24 opacity-30"></div>
             
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-              <div className="relative">
+              <div className="relative w-full lg:w-auto">
                 <div className="relative bg-green-40 rounded-[40px] p-6 md:p-8 transform -rotate-2 shadow-2xl">
                   <div className="transform rotate-2">
-                    <h3 className="font-sf-rounded font-bold text-green-95 text-2xl md:text-3xl lg:text-4xl text-center">
+                    <h3 className="font-sf-rounded font-bold text-green-95 text-xl sm:text-2xl md:text-3xl lg:text-4xl text-center">
                       более {allPets.length} животных<br />ищут свой дом!
                     </h3>
                   </div>
@@ -444,19 +441,19 @@ const FindPet = () => {
                 </div>
               </div>
 
-              <div className="flex-1 max-w-2xl">
+              <div className="flex-1 max-w-2xl w-full relative">
                 <div className="flex flex-col sm:flex-row gap-4 items-start">
-                  <div className="flex-1 relative">
+                  <div className="flex-1 relative w-full">
                     <div className="relative">
                       <input
                         type="text"
                         placeholder="Поиск животных..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full px-4 py-3 bg-green-95 border-2 border-green-40 rounded-custom font-inter text-green-40 placeholder-green-40 focus:outline-none focus:border-green-40 pr-12"
+                        className="w-full px-4 py-3 bg-green-95 border-2 border-green-40 rounded-custom font-inter text-green-40 placeholder-green-40 focus:outline-none focus:border-green-40 relative z-10"
                         disabled={loading}
                       />
-                      <div className="absolute left-30 top-1/2 transform -translate-y-1/2 animate-bounce">
+                      <div className="absolute -left-16 md:-left-20 lg:-left-24 top-1/2 transform -translate-y-1/2 animate-bounce pointer-events-none z-0">
                         <img 
                           src={miniPes} 
                           alt="Собака" 
@@ -469,7 +466,7 @@ const FindPet = () => {
                   <button
                     onClick={() => setShowFilters(true)}
                     disabled={loading}
-                    className="inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-green-70 rounded-custom-small hover:bg-green-80 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 hover:shadow-md active:scale-95 w-full sm:w-auto"
                     type="button"
                     aria-label="Фильтры"
                   >
@@ -542,7 +539,7 @@ const FindPet = () => {
           </div>
         </section>
 
-        <section id="pets-section" className="w-full max-w-[1260px] mx-auto py-30 mb-25">
+        <section id="pets-section" className="w-full max-w-[1260px] mx-auto py-8 md:py-30 mb-25 px-4 md:px-0">
           <div className="mb-6">
             <div className="bg-green-90 rounded-custom-small px-6 py-3 inline-block">
               <span className="font-inter font-medium text-green-30">
@@ -616,8 +613,8 @@ const FindPet = () => {
                         className={`flex items-center justify-center w-10 h-10 rounded-custom-small ${
                           currentPage === 1 
                             ? 'bg-green-80 text-green-60 cursor-not-allowed' 
-                            : 'bg-green-70 text-green-20 hover:bg-green-60 cursor-pointer'
-                        } transition-colors`}
+                            : 'bg-green-70 text-green-20 hover:bg-green-60 cursor-pointer hover:scale-110 hover:shadow-md active:scale-95'
+                        } transition-all duration-300`}
                         aria-label="Предыдущая страница"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -641,10 +638,10 @@ const FindPet = () => {
                                 )}
                                 <button
                                   onClick={() => goToPage(page)}
-                                  className={`w-10 h-10 rounded-custom-small font-inter font-medium transition-colors ${
+                                  className={`w-10 h-10 rounded-custom-small font-inter font-medium transition-all duration-300 ${
                                     page === currentPage
-                                      ? 'bg-green-70 text-green-20'
-                                      : 'bg-green-90 text-green-30 hover:bg-green-80'
+                                      ? 'bg-green-70 text-green-20 scale-110 shadow-md'
+                                      : 'bg-green-90 text-green-30 hover:bg-green-80 hover:scale-105'
                                   }`}
                                   aria-label={`Перейти на страницу ${page}`}
                                   aria-current={page === currentPage ? 'page' : undefined}
@@ -662,8 +659,8 @@ const FindPet = () => {
                         className={`flex items-center justify-center w-10 h-10 rounded-custom-small ${
                           currentPage === totalPages 
                             ? 'bg-green-80 text-green-60 cursor-not-allowed' 
-                            : 'bg-green-70 text-green-20 hover:bg-green-60 cursor-pointer'
-                        } transition-colors`}
+                            : 'bg-green-70 text-green-20 hover:bg-green-60 cursor-pointer hover:scale-110 hover:shadow-md active:scale-95'
+                        } transition-all duration-300`}
                         aria-label="Следующая страница"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -708,17 +705,17 @@ const FindPet = () => {
           )}
         </section>
 
-        <section className="mt-8 md:mt-16 max-w-[1160px] mx-auto mb-8">
+        <section className="mt-8 md:mt-16 max-w-[1160px] mx-auto mb-8 px-4 md:px-0">
           <div className="flex flex-col items-center gap-[25px] relative">
             <h1 className="self-stretch mt-[-1.00px] font-sf-rounded font-bold text-green-30 text-3xl md:text-4xl text-center">
               Животные рядом с твоим домом
             </h1>
 
-            <div className="h-[600px] items-start self-stretch w-full flex flex-col lg:flex-row gap-4">
+            <div className="h-auto md:h-[600px] items-start self-stretch w-full flex flex-col lg:flex-row gap-4">
               <aside className="flex-col w-full lg:w-[338px] items-start self-stretch">
                 <div className="bg-green-95 rounded-custom p-1 mb-2">
                   <form
-                    className="items-center self-stretch w-full flex"
+                    className="items-center self-stretch w-full flex gap-2"
                     onSubmit={handleShelterSearchSubmit}
                     role="search"
                   >
@@ -739,7 +736,7 @@ const FindPet = () => {
 
                     <button
                       type="submit"
-                      className="w-[49px] h-[49px] flex items-center justify-center bg-green-70 rounded-full hover:bg-green-80 transition-colors ml-2"
+                      className="w-[49px] h-[49px] flex-shrink-0 flex items-center justify-center bg-green-70 rounded-full hover:bg-green-80 transition-colors"
                       aria-label="Выполнить поиск"
                     >
                       <img
@@ -751,7 +748,7 @@ const FindPet = () => {
                   </form>
                 </div>
 
-                <div className="bg-green-90 rounded-custom p-4 flex-1 max-h-[500px] overflow-y-auto">
+                <div className="bg-green-90 rounded-custom p-4 flex-1 max-h-[300px] md:max-h-[500px] overflow-y-auto">
                   <nav
                     className="flex flex-col items-start h-full"
                     aria-label="Список приютов для животных"
@@ -809,7 +806,7 @@ const FindPet = () => {
                 </div>
               </aside>
 
-              <div className="relative w-full lg:w-[812px] h-[600px] rounded-custom overflow-hidden border-2 border-green-40">
+              <div className="relative w-full lg:w-[812px] h-[400px] md:h-[600px] rounded-custom overflow-hidden border-2 border-green-40">
                 <SheltersMap 
                   shelters={shelters}
                   searchQuery={shelterSearchQuery}
