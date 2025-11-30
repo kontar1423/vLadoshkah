@@ -48,6 +48,16 @@ async function getTakeById(id) {
   }
 }
 
+async function getTakeByAnimalId(animalId) {
+  try {
+    const applications = await applicationsDao.getAllByAnimalId(animalId, 'take');
+    return applications;
+  } catch (err) {
+    logger.error(err, 'Service: error fetching take applications by animal id');
+    throw err;
+  }
+}
+
 async function getAllTake() {
   try {
     await redisClient.delete(CACHE_KEYS.ALL_TAKE);
@@ -103,22 +113,12 @@ async function countApprovedTake() {
   }
 }
 
-async function getTakeByAnimalId(animalId) {
-  try {
-    const applications = await applicationsDao.getByAnimalId(animalId, 'take');
-    return applications;
-  } catch (err) {
-    logger.error(err, 'Service: error fetching take applications by animal_id');
-    throw err;
-  }
-}
-
 export default { 
   createTake, 
   getTakeById, 
+  getTakeByAnimalId,
   getAllTake, 
   updateTake, 
   removeTake, 
-  countApprovedTake,
-  getTakeByAnimalId
+  countApprovedTake 
 };

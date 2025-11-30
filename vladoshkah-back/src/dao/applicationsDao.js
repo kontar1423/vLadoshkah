@@ -58,6 +58,31 @@ async function getAll(options = {}) {
   }
 }
 
+async function getAllByAnimalId(animalId, type = null) {
+  try {
+    const params = [animalId];
+    let whereClause = 'WHERE animal_id = $1';
+
+    if (type) {
+      params.push(type);
+      whereClause += ' AND type = $2';
+    }
+
+    const result = await query(
+      `SELECT * FROM applications ${whereClause} ORDER BY created_at DESC`,
+      params
+    );
+    info(
+      { animal_id: animalId, type, count: result.rowCount },
+      'DAO: fetched applications by animal id'
+    );
+    return result.rows;
+  } catch (err) {
+    error(err, 'DAO: error fetching applications by animal id');
+    throw err;
+  }
+}
+
 async function update(id, applicationData, type = null) {
   try {
     // Сначала получаем текущие данные заявки
@@ -148,26 +173,4 @@ async function countByStatus(status, type = null) {
   }
 }
 
-async function getByAnimalId(animalId, type = null) {
-  try {
-    const params = [animalId];
-    let whereClause = `WHERE animal_id = $1`;
-
-    if (type) {
-      params.push(type);
-      whereClause += ` AND type = $2`;
-    }
-
-    const result = await query(
-      `SELECT * FROM applications ${whereClause} ORDER BY created_at DESC`,
-      params
-    );
-    info({ animalId, type, count: result.rowCount }, 'DAO: fetched applications by animal_id');
-    return result.rows;
-  } catch (err) {
-    error(err, 'DAO: error fetching applications by animal_id');
-    throw err;
-  }
-}
-
-export default { create, getById, getAll, update, remove, countByStatus, getByAnimalId };
+export default { create, getById, getAll, getAllByAnimalId, update, remove, countByStatus };

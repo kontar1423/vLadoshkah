@@ -35,6 +35,18 @@ async function getTakeById(req, res) {
   }
 }
 
+async function getTakeByAnimalId(req, res) {
+  try {
+    const { id } = req.params;
+    const applications = await applicationsService.getTakeByAnimalId(id);
+    res.json(applications);
+  } catch (err) {
+    const log = req.log || logger;
+    log.error(err, 'Controller: error fetching take applications by animal id');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 async function getAllTake(req, res) {
   try {
     const applications = await applicationsService.getAllTake();
@@ -78,18 +90,6 @@ async function countApprovedTake(req, res) {
   } catch (err) {
     const log = req.log || logger;
     log.error(err, 'Controller: error counting approved take applications');
-    res.status(500).json({ error: 'Internal server error' });
-  }
-}
-
-async function getTakeByAnimalId(req, res) {
-  try {
-    const { animalId } = req.params;
-    const applications = await applicationsService.getTakeByAnimalId(animalId);
-    res.json(applications);
-  } catch (err) {
-    const log = req.log || logger;
-    log.error(err, 'Controller: error fetching take applications by animal_id');
     res.status(500).json({ error: 'Internal server error' });
   }
 }
@@ -168,11 +168,11 @@ async function removeGive(req, res) {
 export default {
   createTake,
   getTakeById,
+  getTakeByAnimalId,
   getAllTake,
   updateTake,
   removeTake,
   countApprovedTake,
-  getTakeByAnimalId,
   createGive,
   getGiveById,
   getAllGive,
