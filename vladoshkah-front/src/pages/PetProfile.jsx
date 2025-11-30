@@ -362,8 +362,24 @@ const PetProfile = () => {
         if (typeof age === 'number') {
             if (age < 1) return "Меньше года";
             if (age === 1) return "1 год";
-            if (age < 5) return `${age} года`;
-            return `${age} лет`;
+            
+            // Правильное склонение: год/года/лет
+            const lastDigit = age % 10;
+            const lastTwoDigits = age % 100;
+            
+            // Исключения: 11, 12, 13, 14 всегда "лет"
+            if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+                return `${age} лет`;
+            }
+            
+            // 1 -> год, 2-4 -> года, остальные -> лет
+            if (lastDigit === 1) {
+                return `${age} год`;
+            } else if (lastDigit >= 2 && lastDigit <= 4) {
+                return `${age} года`;
+            } else {
+                return `${age} лет`;
+            }
         }
         return age;
     };
@@ -399,6 +415,15 @@ const PetProfile = () => {
             'large': 'Крупный'
         };
         return sizeMap[size] || size;
+    };
+
+    const getHealthDisplay = (health) => {
+        const healthMap = {
+            'healthy': 'Здоровый',
+            'needs_treatment': 'Требует лечения',
+            'special_needs': 'Особые потребности'
+        };
+        return healthMap[health] || health || 'Состояние здоровья не указано';
     };
 
     const getCurrentPhoto = () => {
@@ -634,7 +659,7 @@ const PetProfile = () => {
                                 Состояние здоровья
                             </h4>
                             <p className="text-green-20 text-sm font-inter">
-                                {currentPet.health}
+                                {getHealthDisplay(currentPet.health)}
                             </p>
                         </div>
                     </div>
