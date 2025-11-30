@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { shelterService } from '../services/shelterService';
 import { animalService } from '../services/animalService';
 import { userService } from '../services/userService';
+import { favoriteService } from '../services/favoriteService';
 import PetCard from '../components/PetCard';
 import { getPhotoUrl } from '../utils/photoHelpers';
 import { isShelterAdminRole } from '../utils/roleUtils';
@@ -19,12 +20,9 @@ const AdminProfile = () => {
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState(null);
     const [activeTab, setActiveTab] = useState('favorites'); // 'favorites' или 'shelter'
+    const [shelterFavoritesMap, setShelterFavoritesMap] = useState({});
     const lastUserIdRef = useRef(null);
 
-    const getFavoriteStorageKey = () => {
-        const currentUser = userData || user;
-        return currentUser ? `favoritePets_${currentUser.id}` : 'favoritePets_anonymous';
-    };
 
     // Проверка роли и загрузка данных
     useEffect(() => {
@@ -60,14 +58,6 @@ const AdminProfile = () => {
     }, [navigate]);
 
     useEffect(() => {
-        const handleStorageChange = (event) => {
-            const storageKey = getFavoriteStorageKey();
-            if (event.key === storageKey || !event.key) {
-                console.log('🔄 AdminProfile: Storage changed for current user, reloading favorites...');
-                loadFavoritePets();
-            }
-        };
-
         const handleCustomFavoritesUpdate = (event) => {
             const eventUserId = event.detail?.userId;
             const currentUserId = (userData || user)?.id;
@@ -78,12 +68,25 @@ const AdminProfile = () => {
             }
         };
 
-        window.addEventListener('storage', handleStorageChange);
+        const handleShelterFavoritesUpdate = (event) => {
+            const eventUserId = event.detail?.userId;
+            const eventAnimalId = event.detail?.animalId;
+            const eventIsFavorite = event.detail?.isFavorite;
+            
+            if (eventAnimalId && eventUserId === user?.id && eventIsFavorite !== undefined) {
+                setShelterFavoritesMap(prev => ({
+                    ...prev,
+                    [eventAnimalId]: eventIsFavorite
+                }));
+            }
+        };
+
         window.addEventListener('favoritesUpdated', handleCustomFavoritesUpdate);
+        window.addEventListener('favoritesUpdated', handleShelterFavoritesUpdate);
 
         return () => {
-            window.removeEventListener('storage', handleStorageChange);
             window.removeEventListener('favoritesUpdated', handleCustomFavoritesUpdate);
+            window.removeEventListener('favoritesUpdated', handleShelterFavoritesUpdate);
         };
     }, [user?.id, userData?.id]);
 
@@ -167,6 +170,21 @@ const AdminProfile = () => {
             const pets = await animalService.getAnimalsByShelter(shelterId);
             setShelterPets(pets || []);
             console.log('AdminProfile: Shelter pets loaded:', pets?.length || 0);
+            
+            // Проверяем избранные для питомцев приюта
+            if (pets && pets.length > 0 && user?.id) {
+                try {
+                    const animalIds = pets.map(pet => pet.id);
+                    const favoritesResult = await favoriteService.checkFavoritesBulk(user.id, animalIds);
+                    setShelterFavoritesMap(favoritesResult || {});
+                } catch (favoritesError) {
+                    console.error('Error loading favorites for shelter pets:', favoritesError);
+                    setShelterFavoritesMap({});
+                }
+            } else {
+                setShelterFavoritesMap({});
+            }
+            
             // Если есть приют — по умолчанию открываем вкладку «Питомцы приюта», чтобы их было видно
             if (pets?.length >= 0) {
                 setActiveTab('shelter');
@@ -174,6 +192,7 @@ const AdminProfile = () => {
         } catch (error) {
             console.error('AdminProfile: Error loading shelter pets:', error);
             setShelterPets([]);
+            setShelterFavoritesMap({});
         }
     };
 
@@ -188,18 +207,17 @@ const AdminProfile = () => {
                 return;
             }
             
-            const storageKey = getFavoriteStorageKey();
-            const favoriteIds = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            const uniqueFavoriteIds = [...new Set(favoriteIds)];
+            // Получаем список избранных из API
+            const favoriteIds = await favoriteService.getUserFavorites(currentUser.id);
+            console.log('📋 AdminProfile: Favorite pets IDs for user', currentUser.id, ':', favoriteIds);
             
-            console.log('📋 AdminProfile: Favorite pets IDs for user', currentUser.id, ':', uniqueFavoriteIds);
-            
-            if (uniqueFavoriteIds.length === 0) {
+            if (!favoriteIds || favoriteIds.length === 0) {
                 setFavoritePets([]);
                 return;
             }
             
-            const petPromises = uniqueFavoriteIds.map(async (petId) => {
+            // Загружаем полную информацию о каждом питомце
+            const petPromises = favoriteIds.map(async (petId) => {
                 try {
                     console.log(`AdminProfile: Loading pet ${petId}...`);
                     const pet = await animalService.getAnimalById(petId);
@@ -365,7 +383,7 @@ const AdminProfile = () => {
                     <PetCard 
                         key={pet.id}
                         petData={pet}
-                        initialFavorite={activeTab === 'favorites'}
+                        initialFavorite={activeTab === 'favorites' ? true : shelterFavoritesMap[pet.id] === true}
                         onFavoriteChange={activeTab === 'favorites' ? forceRefreshFavorites : forceRefreshShelterPets}
                         showShelterInfo={activeTab !== 'shelter'}
                     />

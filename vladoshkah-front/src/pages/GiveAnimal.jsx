@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ShelterCard from '../components/ShelterCard';
 import miniPes from '../assets/images/mini_pes.png';
@@ -10,6 +10,7 @@ const GiveAnimal = () => {
   const [acceptingShelters, setAcceptingShelters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const loadingRef = useRef(false);
 
   useEffect(() => {
     loadAcceptingShelters();
@@ -17,6 +18,13 @@ const GiveAnimal = () => {
 
   const loadAcceptingShelters = async () => {
     try {
+      // Защита от множественных одновременных запросов
+      if (loadingRef.current) {
+        console.log('GiveAnimal: Load already in progress, skipping');
+        return;
+      }
+
+      loadingRef.current = true;
       setLoading(true);
       setError('');
       
@@ -52,6 +60,7 @@ const GiveAnimal = () => {
       setError('Не удалось загрузить список приютов');
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   };
 

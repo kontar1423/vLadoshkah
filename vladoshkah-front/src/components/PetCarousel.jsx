@@ -1,7 +1,7 @@
     import React, { useState, useEffect, useRef } from 'react';
     import PetCard from './PetCard';
 
-    const PetCarousel = ({ pets = [] }) => {
+    const PetCarousel = ({ pets = [], favoritesMap = {} }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const containerRef = useRef(null);
@@ -38,7 +38,10 @@
     if (pets.length === 1) {
         return (
         <div className="flex justify-center py-6">
-            <PetCard petData={pets[0]} />
+            <PetCard 
+                petData={pets[0]} 
+                initialFavorite={favoritesMap[pets[0].id] === true}
+            />
         </div>
         );
     }
@@ -103,7 +106,10 @@
                     willChange: 'transform, opacity',
                 }}
                 >
-                <PetCard petData={pet} />
+                <PetCard 
+                    petData={pet} 
+                    initialFavorite={favoritesMap[pet.id] === true}
+                />
                 </div>
             );
             })}

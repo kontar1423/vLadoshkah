@@ -6,6 +6,7 @@ import PetCard from '../components/PetCard';
 import FiltersP from '../components/Filters_priut';
 import { shelterService } from '../services/shelterService';
 import { animalService } from '../services/animalService';
+import { favoriteService } from '../services/favoriteService';
 import SheltersMap from '../components/SheltersMap';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -13,7 +14,7 @@ import api from '../services/api';
 const ShelterProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   // Проверка ID
   if (!id || isNaN(Number(id))) {
@@ -37,6 +38,7 @@ const ShelterProfile = () => {
   const [userRating, setUserRating] = useState(null);
   const [ratingStats, setRatingStats] = useState({ average: 0, totalRatings: 0 });
   const [isRatingLoading, setIsRatingLoading] = useState(false);
+  const [favoritesMap, setFavoritesMap] = useState({});
 
   const [shelterData, setShelterData] = useState({
     id: null,
@@ -222,13 +224,48 @@ const ShelterProfile = () => {
       setAllPets(formattedPets);
       setFilteredPets(formattedPets);
       setAnimalCount(formattedPets.length);
+      
+      // Проверяем избранные для всех питомцев одним bulk запросом
+      if (formattedPets.length > 0 && user?.id) {
+        try {
+          const animalIds = formattedPets.map(pet => pet.id);
+          const favoritesResult = await favoriteService.checkFavoritesBulk(user.id, animalIds);
+          setFavoritesMap(favoritesResult || {});
+        } catch (favoritesError) {
+          console.error('Error loading favorites:', favoritesError);
+          setFavoritesMap({});
+        }
+      } else {
+        setFavoritesMap({});
+      }
     } catch (err) {
       console.error('Ошибка загрузки данных приюта:', err);
       setError('Не удалось загрузить данные приюта');
     } finally {
       setLoading(false);
     }
-  }, [id, isAuthenticated]);
+  }, [id, isAuthenticated, user?.id]);
+
+  // Обновляем favoritesMap при изменении избранного
+  useEffect(() => {
+    const handleFavoritesUpdated = (event) => {
+      const eventUserId = event.detail?.userId;
+      const eventAnimalId = event.detail?.animalId;
+      const eventIsFavorite = event.detail?.isFavorite;
+      
+      if (eventAnimalId && eventUserId === user?.id && eventIsFavorite !== undefined) {
+        setFavoritesMap(prev => ({
+          ...prev,
+          [eventAnimalId]: eventIsFavorite
+        }));
+      }
+    };
+
+    window.addEventListener('favoritesUpdated', handleFavoritesUpdated);
+    return () => {
+      window.removeEventListener('favoritesUpdated', handleFavoritesUpdated);
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     loadShelterData();
@@ -668,7 +705,11 @@ const ShelterProfile = () => {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {currentPets.map((pet) => (
-                  <PetCard key={pet.id} petData={pet} />
+                  <PetCard 
+                    key={pet.id} 
+                    petData={pet}
+                    initialFavorite={favoritesMap[pet.id] === true}
+                  />
                 ))}
               </div>
 

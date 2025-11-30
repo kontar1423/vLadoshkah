@@ -46,12 +46,51 @@
     
     async getUserFavorites(userId) {
         try {
-        const favorites = JSON.parse(localStorage.getItem('favoritePets') || '[]');
-        return favorites;
+            // Используем bulk endpoint для получения всех избранных
+            // Получаем все животные, затем проверяем их статус избранного через bulk endpoint
+            const allAnimals = await api.get('/animals');
+            const animalIds = allAnimals.data.map(animal => animal.id);
+            
+            if (animalIds.length === 0) {
+                return [];
+            }
+            
+            // Используем bulk endpoint для проверки избранных
+            const response = await api.post('/users/favorite/animals', {
+                user_id: userId,
+                animal_ids: animalIds
+            });
+            
+            // Фильтруем только те, которые в избранном (true)
+            // Ответ: { "9": true, "10": false, "11": true }
+            const favoritesMap = response.data || {};
+            const favoriteIds = Object.keys(favoritesMap)
+                .filter(id => favoritesMap[id] === true)
+                .map(id => parseInt(id));
+            
+            return favoriteIds;
         } catch (error) {
-        console.error(' favoriteService: Error getting user favorites:', error);
-        const favorites = JSON.parse(localStorage.getItem('favoritePets') || '[]');
-        return favorites;
+            console.error('favoriteService: Error getting user favorites:', error);
+            // При ошибке возвращаем пустой массив
+            return [];
+        }
+    },
+    
+    async checkFavoritesBulk(userId, animalIds) {
+        try {
+            if (!animalIds || animalIds.length === 0) {
+                return {};
+            }
+            
+            const response = await api.post('/users/favorite/animals', {
+                user_id: userId,
+                animal_ids: animalIds
+            });
+            
+            return response.data || {};
+        } catch (error) {
+            console.error('favoriteService: Error checking favorites bulk:', error);
+            return {};
         }
     }
     };

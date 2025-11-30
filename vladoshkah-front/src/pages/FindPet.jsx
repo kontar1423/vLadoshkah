@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Pes from '../assets/images/sobaka.png';
 import ButtonIcon from '../assets/images/Button.png';
@@ -11,10 +11,13 @@ import LineIcon from '../assets/images/line.png';
 import miniPes from '../assets/images/mini_pes.png';
 import { animalService } from '../services/animalService';
 import { shelterService } from '../services/shelterService';
+import { favoriteService } from '../services/favoriteService';
+import { useAuth } from '../context/AuthContext';
 import SheltersMap from '../components/SheltersMap';
 
 const FindPet = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [shelterSearchQuery, setShelterSearchQuery] = useState("");
   const [allPets, setAllPets] = useState([]);
@@ -30,6 +33,8 @@ const FindPet = () => {
   const [error, setError] = useState(null);
   const [activeFilters, setActiveFilters] = useState({});
   const [highlightedShelter, setHighlightedShelter] = useState(null);
+  const [favoritesMap, setFavoritesMap] = useState({}); // Маппинг animal_id -> isFavorite
+  const sheltersLoadingRef = useRef(false);
 
   const getFilterDisplayName = (filterKey, filterValue) => {
     const filterLabels = {
@@ -114,6 +119,27 @@ const FindPet = () => {
     loadShelters();
   }, []);
 
+  // Обновляем favoritesMap при изменении избранного
+  useEffect(() => {
+    const handleFavoritesUpdated = (event) => {
+      const eventUserId = event.detail?.userId;
+      const eventAnimalId = event.detail?.animalId;
+      const eventIsFavorite = event.detail?.isFavorite;
+      
+      if (eventAnimalId && eventUserId === user?.id && eventIsFavorite !== undefined) {
+        setFavoritesMap(prev => ({
+          ...prev,
+          [eventAnimalId]: eventIsFavorite
+        }));
+      }
+    };
+
+    window.addEventListener('favoritesUpdated', handleFavoritesUpdated);
+    return () => {
+      window.removeEventListener('favoritesUpdated', handleFavoritesUpdated);
+    };
+  }, [user?.id]);
+
   useEffect(() => {
     if (shelterSearchQuery.trim() === "") {
       setFilteredShelters(shelters);
@@ -151,6 +177,20 @@ const FindPet = () => {
         animals = [];
       }
       
+      // После загрузки питомцев проверяем избранные одним bulk запросом
+      if (animals.length > 0 && user?.id) {
+        try {
+          const animalIds = animals.map(pet => pet.id);
+          const favoritesResult = await favoriteService.checkFavoritesBulk(user.id, animalIds);
+          setFavoritesMap(favoritesResult || {});
+        } catch (favoritesError) {
+          console.error('Error loading favorites:', favoritesError);
+          setFavoritesMap({});
+        }
+      } else {
+        setFavoritesMap({});
+      }
+      
       setAllPets(animals);
       setFilteredPets(animals);
     } catch (err) {
@@ -164,7 +204,14 @@ const FindPet = () => {
   };
 
   const loadShelters = async () => {
+    // Защита от множественных одновременных запросов
+    if (sheltersLoadingRef.current) {
+      console.log('FindPet: Shelters load already in progress, skipping');
+      return;
+    }
+
     try {
+      sheltersLoadingRef.current = true;
       setSheltersLoading(true);
       const sheltersData = await shelterService.getAllShelters();
       setShelters(sheltersData);
@@ -175,6 +222,7 @@ const FindPet = () => {
       setFilteredShelters([]);
     } finally {
       setSheltersLoading(false);
+      sheltersLoadingRef.current = false;
     }
   };
 
@@ -595,6 +643,7 @@ const FindPet = () => {
                       <PetCard 
                         key={pet.id}
                         petData={pet}
+                        initialFavorite={favoritesMap[pet.id] === true}
                       />
                     ))}
                   </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import LapaIcon from '../assets/images/lapa.png';
 import KotPhoto from '../assets/images/kot.png';
 import CherbelPesPhoto from '../assets/images/cherbelpes.png';
@@ -9,13 +9,15 @@ import GodpesPhoto from '../assets/images/godpes.png';
 import MiniShelterCard from '../components/MiniShelterCard';
 import { animalService } from '../services/animalService';
 import { shelterService } from '../services/shelterService';
+import { favoriteService } from '../services/favoriteService';
+import { useAuth } from '../context/AuthContext';
 import PetCarousel from '../components/PetCarousel';
 import ShelterCarousel from '../components/ShelterCarousel';
 import LetterByLetter from '../components/ArcLetterByLetter';
 import SheltersMap from '../components/SheltersMap'; 
 
 const Home = () => {
-
+  const { user } = useAuth();
   const [animals, setAnimals] = useState([]);
   const [shelters, setShelters] = useState([]);
   const [loadingAnimals, setLoadingAnimals] = useState(true);
@@ -23,6 +25,8 @@ const Home = () => {
   const [animalIndex, setAnimalIndex] = useState(0);
   const [shelterIndex, setShelterIndex] = useState(0);
   const [showText, setShowText] = useState(false); 
+  const [favoritesMap, setFavoritesMap] = useState({});
+  const sheltersLoadingRef = useRef(false);
 
 const [selectedDistrict, setSelectedDistrict] = useState('all'); 
 
@@ -51,16 +55,53 @@ const getUniqueDistricts = (shelters) => {
         console.log('Начало загрузки животных...');
         const data = await animalService.getAllAnimals(); 
         console.log('Данные животных:', data);
-        setAnimals(Array.isArray(data) ? data : []);
+        const animalsData = Array.isArray(data) ? data : [];
+        setAnimals(animalsData);
+        
+        // Проверяем избранные для всех питомцев одним bulk запросом
+        if (animalsData.length > 0 && user?.id) {
+          try {
+            const animalIds = animalsData.map(pet => pet.id);
+            const favoritesResult = await favoriteService.checkFavoritesBulk(user.id, animalIds);
+            setFavoritesMap(favoritesResult || {});
+          } catch (favoritesError) {
+            console.error('Error loading favorites:', favoritesError);
+            setFavoritesMap({});
+          }
+        } else {
+          setFavoritesMap({});
+        }
       } catch (err) {
         console.error('Ошибка загрузки животных:', err);
         setAnimals([]);
+        setFavoritesMap({});
       } finally {
         setLoadingAnimals(false);
       }
     };
     loadAnimals();
-  }, []);
+  }, [user?.id]);
+
+  // Обновляем favoritesMap при изменении избранного
+  useEffect(() => {
+    const handleFavoritesUpdated = (event) => {
+      const eventUserId = event.detail?.userId;
+      const eventAnimalId = event.detail?.animalId;
+      const eventIsFavorite = event.detail?.isFavorite;
+      
+      if (eventAnimalId && eventUserId === user?.id && eventIsFavorite !== undefined) {
+        setFavoritesMap(prev => ({
+          ...prev,
+          [eventAnimalId]: eventIsFavorite
+        }));
+      }
+    };
+
+    window.addEventListener('favoritesUpdated', handleFavoritesUpdated);
+    return () => {
+      window.removeEventListener('favoritesUpdated', handleFavoritesUpdated);
+    };
+  }, [user?.id]);
 
 const getDistrictName = (regionCode) => {
   const districtMap = {
@@ -83,7 +124,14 @@ const getDistrictName = (regionCode) => {
 
   useEffect(() => {
     const loadShelters = async () => {
+      // Защита от множественных одновременных запросов
+      if (sheltersLoadingRef.current) {
+        console.log('Home: Shelters load already in progress, skipping');
+        return;
+      }
+
       try {
+        sheltersLoadingRef.current = true;
         const data = await shelterService.getAllShelters();
         
         const formattedShelters = (Array.isArray(data) ? data : []).map(shelter => ({
@@ -99,6 +147,7 @@ const getDistrictName = (regionCode) => {
         setShelters([]);
       } finally {
         setLoadingShelters(false);
+        sheltersLoadingRef.current = false;
       }
     };
     loadShelters();
@@ -202,7 +251,7 @@ const getDistrictName = (regionCode) => {
         {loadingAnimals ? (
           <div className="text-center py-10 text-green-40">Загрузка питомцев...</div>
         ) : (
-          <PetCarousel pets={animals} />
+          <PetCarousel pets={animals} favoritesMap={favoritesMap} />
         )}
       </section>
 

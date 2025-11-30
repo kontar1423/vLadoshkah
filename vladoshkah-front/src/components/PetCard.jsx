@@ -19,14 +19,10 @@ const PetCard = ({ petData, initialFavorite = false }) => {
     const { user } = useAuth();
     const [isFavorite, setIsFavorite] = useState(initialFavorite);
     const [favoriteLoading, setFavoriteLoading] = useState(false);
-    const lastCheckRef = useRef({ userId: null, animalId: null });
+    const checkInProgressRef = useRef(false);
 
     const UPLOADS_BASE_URL = import.meta.env.VITE_UPLOADS_BASE_URL || 'http://172.29.8.236:9000/uploads';
 
-    const getFavoriteStorageKey = () => {
-        const currentUser = user || JSON.parse(localStorage.getItem('user') || 'null');
-        return currentUser ? `favoritePets_${currentUser.id}` : 'favoritePets_anonymous';
-    };
 
     const formatAge = (age) => {
         if (typeof age === 'number') {
@@ -76,30 +72,23 @@ const PetCard = ({ petData, initialFavorite = false }) => {
         setFavoriteLoading(true);
         
         try {
-            const storageKey = getFavoriteStorageKey();
+            const newFavoriteState = !isFavorite;
             
             if (isFavorite) {
                 await favoriteService.removeFavorite(currentUser.id, id);
-                setIsFavorite(false);
                 console.log('PetCard: Removed from favorites');
-                
-                const favorites = JSON.parse(localStorage.getItem(storageKey) || '[]');
-                const updatedFavorites = favorites.filter(favId => favId !== id);
-                localStorage.setItem(storageKey, JSON.stringify(updatedFavorites));
             } else {
                 await favoriteService.addFavorite(currentUser.id, id);
-                setIsFavorite(true);
                 console.log('PetCard: Added to favorites');
-                
-                const favorites = JSON.parse(localStorage.getItem(storageKey) || '[]');
-                if (!favorites.includes(id)) {
-                    favorites.push(id);
-                    localStorage.setItem(storageKey, JSON.stringify(favorites));
-                }
             }
+            
+            // Обновляем состояние локально
+            setIsFavorite(newFavoriteState);
+            
 
+            // Отправляем событие для обновления списка избранных на других страницах
             window.dispatchEvent(new CustomEvent('favoritesUpdated', { 
-                detail: { userId: currentUser.id } 
+                detail: { userId: currentUser.id, animalId: id, isFavorite: newFavoriteState } 
             }));
             console.log('PetCard: Sent favoritesUpdated event');
 
@@ -114,24 +103,46 @@ const PetCard = ({ petData, initialFavorite = false }) => {
     useEffect(() => {
         let cancelled = false;
 
-        if (initialFavorite) {
-            setIsFavorite(true);
+        // Если initialFavorite передан, используем его и не делаем запрос к API
+        if (initialFavorite !== undefined) {
+            setIsFavorite(initialFavorite);
+            // Если initialFavorite передан, не делаем запрос к API
+            // Но все равно слушаем события обновления избранного
+            const handleFavoritesUpdated = (event) => {
+                const eventUserId = event.detail?.userId;
+                const eventAnimalId = event.detail?.animalId;
+                const eventIsFavorite = event.detail?.isFavorite;
+                const currentUser = user || JSON.parse(localStorage.getItem('user') || 'null');
+                
+                if (eventAnimalId === id && eventUserId === currentUser?.id && eventIsFavorite !== undefined) {
+                    console.log('PetCard: Updating favorite status from event:', eventIsFavorite);
+                    setIsFavorite(eventIsFavorite);
+                }
+            };
+            
+            window.addEventListener('favoritesUpdated', handleFavoritesUpdated);
+            
             return () => {
                 cancelled = true;
+                window.removeEventListener('favoritesUpdated', handleFavoritesUpdated);
             };
         }
 
         const checkFavoriteStatus = async () => {
             const currentUser = user || JSON.parse(localStorage.getItem('user') || 'null');
             
-            if (!currentUser?.id || !id) return;
+            if (!currentUser?.id || !id) {
+                setIsFavorite(false);
+                return;
+            }
 
-            const alreadyChecked =
-                lastCheckRef.current.userId === currentUser.id &&
-                lastCheckRef.current.animalId === id;
-            if (alreadyChecked) return;
+            // Если проверка уже выполняется, не повторяем (защита от множественных запросов)
+            if (checkInProgressRef.current) {
+                console.log('PetCard: Check already in progress, skipping');
+                return;
+            }
 
-            lastCheckRef.current = { userId: currentUser.id, animalId: id };
+            checkInProgressRef.current = true;
 
             try {
                 console.log('Checking favorite status for:', {
@@ -142,30 +153,39 @@ const PetCard = ({ petData, initialFavorite = false }) => {
                 const result = await favoriteService.checkFavorite(currentUser.id, id);
                 if (cancelled) return;
                 setIsFavorite(result.isFavorite);
-                
-                const storageKey = getFavoriteStorageKey();
-                const favorites = JSON.parse(localStorage.getItem(storageKey) || '[]');
-                
-                if (result.isFavorite && !favorites.includes(id)) {
-                    favorites.push(id);
-                    localStorage.setItem(storageKey, JSON.stringify(favorites));
-                } else if (!result.isFavorite && favorites.includes(id)) {
-                    const updatedFavorites = favorites.filter(favId => favId !== id);
-                    localStorage.setItem(storageKey, JSON.stringify(updatedFavorites));
-                }
+                console.log('PetCard: Favorite status updated:', result.isFavorite);
             } catch (error) {
                 if (cancelled) return;
                 console.error('PetCard: Error checking favorite status:', error);
-                const storageKey = getFavoriteStorageKey();
-                const favorites = JSON.parse(localStorage.getItem(storageKey) || '[]');
-                setIsFavorite(favorites.includes(id));
+                // При ошибке оставляем текущее состояние или false
+                setIsFavorite(false);
+            } finally {
+                checkInProgressRef.current = false;
             }
         };
 
+        // Обработчик события обновления избранного
+        const handleFavoritesUpdated = (event) => {
+            const eventUserId = event.detail?.userId;
+            const eventAnimalId = event.detail?.animalId;
+            const eventIsFavorite = event.detail?.isFavorite;
+            const currentUser = user || JSON.parse(localStorage.getItem('user') || 'null');
+            
+            // Если событие относится к этому питомцу и текущему пользователю
+            if (eventAnimalId === id && eventUserId === currentUser?.id && eventIsFavorite !== undefined) {
+                console.log('PetCard: Updating favorite status from event:', eventIsFavorite);
+                setIsFavorite(eventIsFavorite);
+            }
+        };
+
+        // Всегда проверяем статус при монтировании компонента
         checkFavoriteStatus();
+        window.addEventListener('favoritesUpdated', handleFavoritesUpdated);
 
         return () => {
             cancelled = true;
+            checkInProgressRef.current = false;
+            window.removeEventListener('favoritesUpdated', handleFavoritesUpdated);
         };
     }, [user?.id, id, initialFavorite]);
 

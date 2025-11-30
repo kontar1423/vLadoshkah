@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ShelterCard from '../components/ShelterCard';
 import DistrictFilter from '../components/DistrictFilter';
 import { shelterService } from '../services/shelterService';
@@ -17,13 +17,21 @@ const Shelters = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const loadingRef = useRef(false);
 
   useEffect(() => {
     loadShelters();
   }, []);
 
   const loadShelters = async () => {
+    // Защита от множественных одновременных запросов
+    if (loadingRef.current) {
+      console.log('Shelters: Load already in progress, skipping');
+      return;
+    }
+
     try {
+      loadingRef.current = true;
       setLoading(true);
       setError('');
       const sheltersData = await shelterService.getAllShelters();
@@ -60,8 +68,10 @@ const Shelters = () => {
       console.error('Ошибка загрузки приютов:', err);
       setShelters([]);
       setFilteredShelters([]);
+      setError('Не удалось загрузить приюты. Попробуйте обновить страницу.');
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   };
 

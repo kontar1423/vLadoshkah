@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import PetCard from '../components/PetCard'
 import { animalService } from '../services/animalService'
 import { shelterService } from '../services/shelterService'
+import { favoriteService } from '../services/favoriteService'
 import { useAuth } from '../context/AuthContext'
 import { getPhotoUrl } from '../utils/photoHelpers' 
 import { isShelterAdminRole } from '../utils/roleUtils'
@@ -13,6 +14,7 @@ const Profile = () => {
     const [shelterInfo, setShelterInfo] = useState(null)
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState('favorites')
+    const [shelterFavoritesMap, setShelterFavoritesMap] = useState({})
     const { user, updateUser } = useAuth()
     const navigate = useNavigate()
 
@@ -88,9 +90,24 @@ const Profile = () => {
             const pets = await shelterService.getShelterAnimals(shelterId);
             setShelterPets(pets || []);
             console.log('✅ Profile: Питомцы приюта загружены:', pets?.length || 0);
+            
+            // Проверяем избранные для питомцев приюта
+            if (pets && pets.length > 0 && user?.id) {
+                try {
+                    const animalIds = pets.map(pet => pet.id);
+                    const favoritesResult = await favoriteService.checkFavoritesBulk(user.id, animalIds);
+                    setShelterFavoritesMap(favoritesResult || {});
+                } catch (favoritesError) {
+                    console.error('Error loading favorites for shelter pets:', favoritesError);
+                    setShelterFavoritesMap({});
+                }
+            } else {
+                setShelterFavoritesMap({});
+            }
         } catch (error) {
             console.error('❌ Profile: Ошибка загрузки питомцев:', error);
             setShelterPets([]);
+            setShelterFavoritesMap({});
         }
     }
 
@@ -104,16 +121,17 @@ const Profile = () => {
                 return;
             }
             
-            const storageKey = `favoritePets_${user.id}`;
-            const favoriteIds = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            const uniqueFavoriteIds = [...new Set(favoriteIds)];
+            // Получаем список избранных из API
+            const favoriteIds = await favoriteService.getUserFavorites(user.id);
+            console.log('📋 Profile: Избранные ID:', favoriteIds);
             
-            if (uniqueFavoriteIds.length === 0) {
+            if (!favoriteIds || favoriteIds.length === 0) {
                 setFavoritePets([]);
                 return;
             }
 
-            const petPromises = uniqueFavoriteIds.map(async (petId) => {
+            // Загружаем полную информацию о каждом питомце
+            const petPromises = favoriteIds.map(async (petId) => {
                 try {
                     const pet = await animalService.getAnimalById(petId);
                     return pet;
@@ -126,6 +144,7 @@ const Profile = () => {
             const results = await Promise.all(petPromises);
             const validPets = results.filter(pet => pet !== null && pet.id);
             
+            console.log(`✅ Profile: Загружено ${validPets.length} избранных питомцев`);
             setFavoritePets(validPets);
             
         } catch (error) {
@@ -133,6 +152,27 @@ const Profile = () => {
             setFavoritePets([]);
         }
     }
+
+    // Обновляем shelterFavoritesMap при изменении избранного
+    useEffect(() => {
+        const handleShelterFavoritesUpdate = (event) => {
+            const eventUserId = event.detail?.userId;
+            const eventAnimalId = event.detail?.animalId;
+            const eventIsFavorite = event.detail?.isFavorite;
+            
+            if (eventAnimalId && eventUserId === user?.id && eventIsFavorite !== undefined) {
+                setShelterFavoritesMap(prev => ({
+                    ...prev,
+                    [eventAnimalId]: eventIsFavorite
+                }));
+            }
+        };
+
+        window.addEventListener('favoritesUpdated', handleShelterFavoritesUpdate);
+        return () => {
+            window.removeEventListener('favoritesUpdated', handleShelterFavoritesUpdate);
+        };
+    }, [user?.id]);
 
     const handleAddPet = () => {
         if (shelterInfo) {
@@ -201,7 +241,7 @@ const Profile = () => {
                     <PetCard 
                         key={pet.id}
                         petData={pet}
-                        initialFavorite={activeTab === 'favorites'}
+                        initialFavorite={activeTab === 'favorites' ? true : shelterFavoritesMap[pet.id] === true}
                         showShelterInfo={activeTab !== 'shelter'}
                     />
                 ))}

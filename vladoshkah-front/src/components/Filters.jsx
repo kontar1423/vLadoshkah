@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from 'react-dom';
 import { shelterService } from '../services/shelterService';
 
@@ -15,6 +15,7 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
 
     const [shelters, setShelters] = useState([]);
     const [loading, setLoading] = useState(false);
+    const loadingRef = useRef(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -75,7 +76,14 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
     }, [isOpen, initialFilters]);
 
     const loadShelters = async () => {
+        // Защита от множественных одновременных запросов
+        if (loadingRef.current) {
+            console.log('Filters: Load already in progress, skipping');
+            return;
+        }
+
         try {
+            loadingRef.current = true;
             setLoading(true);
             const sheltersData = await shelterService.getAllShelters();
             setShelters(sheltersData);
@@ -83,6 +91,7 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
             console.error('Ошибка загрузки приютов:', error);
         } finally {
             setLoading(false);
+            loadingRef.current = false;
         }
     };
 

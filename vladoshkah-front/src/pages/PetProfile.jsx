@@ -4,6 +4,7 @@ import PetCard from '../components/PetCard';
 import { animalService } from '../services/animalService';
 import { shelterService } from '../services/shelterService';
 import { applicationService } from '../services/applicationService';
+import { favoriteService } from '../services/favoriteService';
 import AdoptionConfirmationModal from '../components/AdoptionConfirmationModal';
 import { useAuth } from '../context/AuthContext';
 
@@ -20,6 +21,7 @@ const PetProfile = () => {
     const [isLoadingApplication, setIsLoadingApplication] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [checkingApplicationStatus, setCheckingApplicationStatus] = useState(true);
+    const [similarFavoritesMap, setSimilarFavoritesMap] = useState({});
     const { user } = useAuth();
 
     const UPLOADS_BASE_URL = import.meta.env.VITE_UPLOADS_BASE_URL || 'http://172.29.8.236:9000';
@@ -250,6 +252,20 @@ const PetProfile = () => {
                     const finalSimilar = similar.slice(0, 3);
                     const normalizedSimilar = finalSimilar.map(normalizePetData);
                     setSimilarPets(normalizedSimilar);
+                    
+                    // Проверяем избранные для похожих питомцев
+                    if (normalizedSimilar.length > 0 && user?.id) {
+                        try {
+                            const animalIds = normalizedSimilar.map(pet => pet.id);
+                            const favoritesResult = await favoriteService.checkFavoritesBulk(user.id, animalIds);
+                            setSimilarFavoritesMap(favoritesResult || {});
+                        } catch (favoritesError) {
+                            console.error('Error loading favorites for similar pets:', favoritesError);
+                            setSimilarFavoritesMap({});
+                        }
+                    } else {
+                        setSimilarFavoritesMap({});
+                    }
                 } catch (similarError) {
                     console.warn('Error loading similar pets:', similarError);
                     setSimilarPets([]);
@@ -268,7 +284,28 @@ const PetProfile = () => {
         if (id) {
             loadPetData();
         }
-    }, [id]);
+    }, [id, user?.id]);
+
+    // Обновляем similarFavoritesMap при изменении избранного
+    useEffect(() => {
+        const handleFavoritesUpdated = (event) => {
+            const eventUserId = event.detail?.userId;
+            const eventAnimalId = event.detail?.animalId;
+            const eventIsFavorite = event.detail?.isFavorite;
+            
+            if (eventAnimalId && eventUserId === user?.id && eventIsFavorite !== undefined) {
+                setSimilarFavoritesMap(prev => ({
+                    ...prev,
+                    [eventAnimalId]: eventIsFavorite
+                }));
+            }
+        };
+
+        window.addEventListener('favoritesUpdated', handleFavoritesUpdated);
+        return () => {
+            window.removeEventListener('favoritesUpdated', handleFavoritesUpdated);
+        };
+    }, [user?.id]);
 
     const normalizePetData = (petData) => {
         if (!petData) return null;
@@ -637,6 +674,7 @@ const PetProfile = () => {
                                     <PetCard 
                                         key={pet.id}
                                         petData={pet}
+                                        initialFavorite={similarFavoritesMap[pet.id] === true}
                                     />
                                 ))}
                             </div>
