@@ -30,12 +30,8 @@ const SiteAdminPanel = () => {
         { id: 'applications', label: 'Заявки' }
     ];
 
-    if (activeTab === 'profile') {
-        return <Profile />;
-    }
-
     return (
-        <div className="min-h-screen bg-green-95 py-8 px-4">
+        <div className={`min-h-screen py-8 px-4 ${activeTab === 'profile' ? 'bg-green-95' : 'bg-green-95'}`}>
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-green-30 font-sf-rounded font-bold text-4xl md:text-5xl mb-2">
@@ -53,8 +49,8 @@ const SiteAdminPanel = () => {
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-6 py-3 rounded-custom-small font-sf-rounded font-semibold text-base transition-all duration-200 ${
                                 activeTab === tab.id
-                                    ? 'bg-green-30 text-green-100 shadow-lg'
-                                    : 'bg-green-95 text-green-30 hover:bg-green-80 hover:text-green-20'
+                                    ? 'bg-green-40 text-green-95 shadow-lg'
+                                    : 'bg-green-95 text-green-40 hover:bg-green-80 hover:text-green-20'
                             }`}
                         >
                             {tab.label}
@@ -62,12 +58,18 @@ const SiteAdminPanel = () => {
                     ))}
                 </div>
 
-                <div className="bg-green-90 rounded-custom p-6 border-2 border-green-30">
-                    {activeTab === 'users' && <UsersManagement />}
-                    {activeTab === 'shelters' && <SheltersManagement />}
-                    {activeTab === 'animals' && <AnimalsManagement />}
-                    {activeTab === 'applications' && <ApplicationsManagement />}
-                </div>
+                {activeTab === 'profile' ? (
+                    <div>
+                        <Profile isInAdminPanel={true} />
+                    </div>
+                ) : (
+                    <div className="bg-green-95 rounded-custom p-6 border-2 border-green-30">
+                        {activeTab === 'users' && <UsersManagement />}
+                        {activeTab === 'shelters' && <SheltersManagement />}
+                        {activeTab === 'animals' && <AnimalsManagement />}
+                        {activeTab === 'applications' && <ApplicationsManagement />}
+                    </div>
+                )}
             </div>
         </div>
     );

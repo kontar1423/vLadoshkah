@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext'
 import { getPhotoUrl } from '../utils/photoHelpers' 
 import { isShelterAdminRole } from '../utils/roleUtils'
 
-const Profile = () => {
+const Profile = ({ isInAdminPanel = false }) => {
     const [favoritePets, setFavoritePets] = useState([])
     const [shelterPets, setShelterPets] = useState([])
     const [shelterInfo, setShelterInfo] = useState(null)
@@ -256,7 +256,7 @@ const Profile = () => {
     };
 
     return (
-        <div className="min-h-screen bg-green-95">
+        <div className={`min-h-screen ${isInAdminPanel ? 'bg-transparent' : 'bg-green-95'}`}>
             <div className="max-w-container mx-auto px-4 md:px-8 lg:px-16 py-10">
                 
                 <div className="flex flex-col lg:flex-row gap-8">
