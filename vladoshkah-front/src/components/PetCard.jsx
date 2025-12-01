@@ -195,7 +195,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
     const mainPhoto = photos.length > 0 ? photos[0] : null;
     const photoUrl = mainPhoto ? getPhotoUrl(mainPhoto) : null;
 
-    const truncatePersonality = (text, maxLength = 50) => {
+    const truncatePersonality = (text, maxLength = 20) => {
         if (!text) return '';
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
@@ -203,7 +203,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
 
     return (
         <article 
-            className="flex flex-col w-full max-w-[180px] sm:max-w-[280px] md:max-w-[320px] h-[240px] sm:h-[400px] md:h-[420px] bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative"
+            className="flex flex-col w-full max-w-[180px] sm:max-w-[280px] md:max-w-[320px] h-[200px] sm:h-[400px] md:h-[420px] bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative"
             aria-label={`Карточка питомца ${name}`}
         >
             {onDelete && (
@@ -222,7 +222,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
                     </svg>
                 </button>
             )}
-            <div className="relative w-full h-[120px] sm:h-auto sm:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden">
+            <div className="relative w-full h-[90px] sm:h-auto sm:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden">
                 {photoUrl ? (
                     <>
                         <img
@@ -265,7 +265,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
                 )}
             </div>
 
-            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 w-full px-1.5 sm:px-2 md:px-3 lg:px-4 relative -mt-2.5 sm:-mt-4 md:-mt-5 lg:-mt-6">
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 w-full px-1.5 sm:px-2 md:px-3 lg:px-4 relative -mt-1.5 sm:-mt-4 md:-mt-5 lg:-mt-6 mb-0 sm:mb-1">
                 <div className="px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-0.5 bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0 max-w-[60px] sm:max-w-none">
                     <span className="font-inter text-green-30 text-[10px] sm:text-xs md:text-sm lg:text-base truncate block">
                         {name}
@@ -283,20 +283,20 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
                 </div>
             </div>
 
-            <div className="flex-1 px-1.5 sm:px-2 md:px-3 lg:px-4 py-1 sm:py-1.5 md:py-2 lg:py-3 min-h-[30px] sm:min-h-[50px] md:min-h-[55px] lg:min-h-[72px] flex flex-col justify-start">
+            <div className="flex-1 px-1.5 sm:px-2 md:px-3 lg:px-4 py-0 sm:py-1 md:py-2 lg:py-3 min-h-[15px] sm:min-h-[50px] md:min-h-[55px] lg:min-h-[72px] flex flex-col justify-start">
                 {personality && (
-                    <p className="text-green-40 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter line-clamp-1 sm:line-clamp-2 mb-0.5 sm:mb-1" title={personality}>
-                        {truncatePersonality(personality, 50)}
+                    <p className="text-green-40 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter line-clamp-1 sm:line-clamp-2 mb-0 sm:mb-0.5" title={personality}>
+                        {truncatePersonality(personality, 20)}
                     </p>
                 )}
                 {shelter_name && (
-                    <p className="text-green-50 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter mt-auto truncate">
+                    <p className="text-green-50 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter mt-0 sm:mt-auto truncate">
                         {shelter_name}
                     </p>
                 )}
             </div>
 
-            <div className="flex flex-row w-full items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 sm:px-2 md:px-3 lg:px-4 pb-1 sm:pb-1.5 md:pb-2 lg:pb-3 pt-0.5">
+            <div className="flex flex-row w-full items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 sm:px-2 md:px-3 lg:px-4 pb-1 sm:pb-1.5 md:pb-2 lg:pb-3 pt-0 sm:pt-1">
                 <Link
                     to={`/pet/${id}`}
                     className="text-green-98 flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2 px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-0.5 sm:py-1 md:py-1.5 lg:py-2 flex-1 bg-green-60 rounded-custom-small hover:bg-green-50 transition-colors shadow-sm text-[9px] sm:text-[10px] md:text-xs lg:text-[13px]"

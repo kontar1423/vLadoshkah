@@ -57,47 +57,20 @@
     }
 
     if (isMobile && pets.length > 0) {
-        const getMobileCarouselItems = () => {
-            const items = [];
-            for (let offset = -1; offset <= 1; offset++) {
-                const index = (currentIndex + offset + pets.length) % pets.length;
-                items.push({ pet: pets[index], position: offset, uniqueKey: `${pets[index].id}-${offset}-${currentIndex}` });
-            }
-            return items;
-        };
-
-        const mobileItems = getMobileCarouselItems();
+        const currentPet = pets[currentIndex];
 
         return (
-            <div className="relative w-full max-w-2xl mx-auto px-2">
-                <div className="relative overflow-hidden">
-                    <div className="flex items-center justify-center gap-1">
-                        {mobileItems.map(({ pet, position, uniqueKey }) => {
-                            const isActive = position === 0;
-                            const scale = isActive ? 1 : 0.9;
-                            const opacity = isActive ? 1 : 0.7;
-
-                            return (
-                                <div
-                                    key={uniqueKey}
-                                    className="flex-shrink-0 transition-all duration-500 ease-out"
-                                    style={{
-                                        width: `${100 / 3}%`,
-                                        transform: `scale(${scale})`,
-                                        opacity: opacity,
-                                    }}
-                                >
-                                    <PetCard 
-                                        petData={pet} 
-                                        initialFavorite={favoritesMap[pet.id] === true}
-                                    />
-                                </div>
-                            );
-                        })}
+            <div className="relative w-full max-w-xs mx-auto px-2">
+                <div className="relative overflow-hidden flex items-center justify-center min-h-[240px]">
+                    <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center">
+                        <PetCard 
+                            petData={currentPet} 
+                            initialFavorite={favoritesMap[currentPet.id] === true}
+                        />
                     </div>
                 </div>
 
-                {pets.length > 3 && (
+                {pets.length > 1 && (
                     <>
                         <button
                             onClick={prevPet}

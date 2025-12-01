@@ -236,117 +236,54 @@ const FindPet = () => {
   };
 
 
-  const handleApplyFilters = (filters) => {
+  const handleApplyFilters = async (filters) => {
     console.log("Applied filters:", filters);
     setActiveFilters(filters);
+    setLoading(true);
     
-    let filtered = [...allPets];
-
-    if (filters.type) {
-      filtered = filtered.filter(pet => {
-        if (filters.type === 'dog') return pet.type === 'dog';
-        if (filters.type === 'cat') return pet.type === 'cat';
-        return true;
-      });
+    try {
+      const filteredData = await animalService.getAnimalsWithFilters(filters);
+      setAllPets(filteredData);
+      setFilteredPets(filteredData);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error('Error applying filters:', error);
+      setError('Не удалось применить фильтры');
+    } finally {
+      setLoading(false);
     }
-
-    if (filters.gender) {
-      filtered = filtered.filter(pet => pet.gender === filters.gender);
-    }
-
-    if (filters.animal_size) {
-      filtered = filtered.filter(pet => pet.animal_size === filters.animal_size);
-    }
-
-    if (filters.age_min !== undefined) {
-      filtered = filtered.filter(pet => pet.age >= filters.age_min);
-    }
-    if (filters.age_max !== undefined) {
-      filtered = filtered.filter(pet => pet.age <= filters.age_max);
-    }
-
-    if (filters.health) {
-      filtered = filtered.filter(pet => pet.health === filters.health);
-    }
-
-    if (filters.shelter_id) {
-      filtered = filtered.filter(pet => pet.shelter_id === filters.shelter_id);
-    }
-
-    setFilteredPets(filtered);
-    setCurrentPage(1);
   };
 
 
   useEffect(() => {
     if (searchTerm.trim() === "") {
-      applyFiltersToPets(activeFilters);
+      setFilteredPets(allPets);
     } else {
-      let searchedPets = [...allPets];
-      
-      searchedPets = applyFilters(searchedPets, activeFilters);
-      
-      searchedPets = searchedPets.filter(pet => 
+      const searchedPets = allPets.filter(pet => 
         pet && pet.name && pet.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      
       setFilteredPets(searchedPets);
     }
     setCurrentPage(1);
-  }, [searchTerm, allPets, activeFilters]);
+  }, [searchTerm, allPets]);
 
   
-  const applyFilters = (pets, filters) => {
-    if (!filters || Object.keys(filters).length === 0) return pets;
-
-    let filtered = [...pets];
-
-    if (filters.type && filters.type !== '') {
-      if (filters.type === 'dog') {
-        filtered = filtered.filter(pet => pet.type === 'dog');
-      } else if (filters.type === 'cat') {
-        filtered = filtered.filter(pet => pet.type === 'cat');
-      }
-    }
-
-    if (filters.gender && filters.gender !== '') {
-      filtered = filtered.filter(pet => pet.gender === filters.gender);
-    }
-
-    if (filters.animal_size && filters.animal_size !== '') {
-      filtered = filtered.filter(pet => pet.animal_size === filters.animal_size);
-    }
-
-    if (filters.health && filters.health !== '') {
-      filtered = filtered.filter(pet => pet.health === filters.health);
-    }
-
-    if (filters.shelter_id && filters.shelter_id !== '') {
-      filtered = filtered.filter(pet => pet.shelter_id === filters.shelter_id);
-    }
-
-    if (filters.age_min !== undefined) {
-      filtered = filtered.filter(pet => pet.age >= filters.age_min);
-    }
-
-    if (filters.age_max !== undefined) {
-      filtered = filtered.filter(pet => pet.age <= filters.age_max);
-    }
-
-    return filtered;
-  };
-
-  const applyFiltersToPets = (filters) => {
-    const filtered = applyFilters(allPets, filters);
-    setFilteredPets(filtered);
-  };
-
-  
-  const handleResetFilters = () => {
+  const handleResetFilters = async () => {
     setActiveFilters({});
     setSearchTerm("");
-    setFilteredPets(allPets);
-    setCurrentPage(1);
+    setLoading(true);
+    
+    try {
+      const allAnimals = await animalService.getAllAnimals();
+      setAllPets(allAnimals);
+      setFilteredPets(allAnimals);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error('Error resetting filters:', error);
+      setError('Не удалось сбросить фильтры');
+    } finally {
+      setLoading(false);
+    }
   };
 
   

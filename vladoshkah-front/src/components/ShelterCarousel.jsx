@@ -54,44 +54,17 @@
     }
 
     if (isMobile && shelters.length > 0) {
-        const getMobileCarouselItems = () => {
-            const items = [];
-            for (let offset = -1; offset <= 1; offset++) {
-                const index = (currentIndex + offset + shelters.length) % shelters.length;
-                items.push({ shelter: shelters[index], position: offset, uniqueKey: `${shelters[index].id}-${offset}-${currentIndex}` });
-            }
-            return items;
-        };
-
-        const mobileItems = getMobileCarouselItems();
+        const currentShelter = shelters[currentIndex];
 
         return (
-            <div className="relative w-full max-w-2xl mx-auto px-2">
-                <div className="relative overflow-hidden">
-                    <div className="flex items-center justify-center gap-1">
-                        {mobileItems.map(({ shelter, position, uniqueKey }) => {
-                            const isActive = position === 0;
-                            const scale = isActive ? 1 : 0.9;
-                            const opacity = isActive ? 1 : 0.7;
-
-                            return (
-                                <div
-                                    key={uniqueKey}
-                                    className="flex-shrink-0 transition-all duration-500 ease-out"
-                                    style={{
-                                        width: `${100 / 3}%`,
-                                        transform: `scale(${scale})`,
-                                        opacity: opacity,
-                                    }}
-                                >
-                                    <MiniShelterCard shelter={shelter} />
-                                </div>
-                            );
-                        })}
+            <div className="relative w-full max-w-xs mx-auto px-2">
+                <div className="relative overflow-hidden flex items-center justify-center min-h-[200px]">
+                    <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center">
+                        <MiniShelterCard shelter={currentShelter} />
                     </div>
                 </div>
 
-                {shelters.length > 3 && (
+                {shelters.length > 1 && (
                     <>
                         <button
                             onClick={prevShelter}
