@@ -43,7 +43,7 @@ describe('sheltersController', () => {
       await sheltersController.getAll(req, res);
 
       expect(res.json).toHaveBeenCalledWith(mockShelters);
-      expect(sheltersService.getAllShelters).toHaveBeenCalled();
+      expect(sheltersService.getAllShelters).toHaveBeenCalledWith({ limit: null, adminId: null });
     });
 
     test('возвращает 500 при ошибке', async () => {
@@ -53,6 +53,26 @@ describe('sheltersController', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: 'Database error' });
+    });
+
+    test('фильтрует по admin_id если передан', async () => {
+      req.query.admin_id = '5';
+      const mockShelters = [{ id: 3, admin_id: 5 }];
+      jest.spyOn(sheltersService, 'getAllShelters').mockResolvedValue(mockShelters);
+
+      await sheltersController.getAll(req, res);
+
+      expect(res.json).toHaveBeenCalledWith(mockShelters);
+      expect(sheltersService.getAllShelters).toHaveBeenCalledWith({ limit: null, adminId: 5 });
+    });
+
+    test('возвращает 400 при невалидном admin_id', async () => {
+      req.query.admin_id = 'abc';
+
+      await sheltersController.getAll(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Invalid admin_id' });
     });
   });
 

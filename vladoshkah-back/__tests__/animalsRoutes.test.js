@@ -149,7 +149,7 @@ describe('Animals routes', () => {
       expect(res.status).toBe(201);
       expect(animalsService.createAnimal).toHaveBeenCalledWith(
         expect.objectContaining({ shelter_id: 1 }),
-        undefined,
+        expect.any(Array),
         expect.objectContaining({ userId: 1, role: 'shelter_admin' })
       );
     });

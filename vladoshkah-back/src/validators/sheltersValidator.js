@@ -144,6 +144,16 @@ export const shelterIdSchema = Joi.object({
     })
 });
 
+export const shelterAdminIdSchema = Joi.object({
+  adminId: Joi.number().integer().positive().required()
+    .messages({
+      'number.base': 'ID администратора должен быть числом',
+      'number.integer': 'ID администратора должен быть целым числом',
+      'number.positive': 'ID администратора должен быть положительным числом',
+      'any.required': 'ID администратора обязателен'
+    })
+});
+
 export const shelterVoteSchema = Joi.object({
   shelter_id: Joi.number().integer().positive().required()
     .messages({

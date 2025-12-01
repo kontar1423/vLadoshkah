@@ -187,7 +187,7 @@ describe('animalsController', () => {
 
       await animalsController.create(req, res);
 
-      expect(spy).toHaveBeenCalledWith(req.body, undefined, req.user);
+      expect(spy).toHaveBeenCalledWith(req.body, expect.any(Array), req.user);
       expect(res.status).toHaveBeenCalledWith(201);
     });
 

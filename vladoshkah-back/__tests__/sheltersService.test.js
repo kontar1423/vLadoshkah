@@ -8,6 +8,7 @@ describe('sheltersService', () => {
     // Мокаем все методы DAO используя jest.spyOn
     jest.spyOn(sheltersDao, 'getAll').mockResolvedValue([{ id: 1, name: 'Home', admin_id: 10 }]);
     jest.spyOn(sheltersDao, 'getById').mockResolvedValue({ id: 1, name: 'Home', admin_id: 10 });
+    jest.spyOn(sheltersDao, 'getByAdminId').mockResolvedValue([]);
     jest.spyOn(sheltersDao, 'create').mockImplementation((data) => Promise.resolve({ id: 10, ...data }));
     jest.spyOn(sheltersDao, 'update').mockImplementation((id, data) => Promise.resolve({ id, ...data }));
     jest.spyOn(sheltersDao, 'remove').mockResolvedValue(true);
@@ -26,6 +27,16 @@ describe('sheltersService', () => {
     expect(sheltersDao.getAll).toHaveBeenCalled();
   });
 
+  test('getAllShelters filters by admin_id when passed', async () => {
+    sheltersDao.getByAdminId.mockResolvedValue([{ id: 2, name: 'Admin Shelter', admin_id: 5 }]);
+
+    const res = await sheltersService.getAllShelters({ adminId: 5 });
+
+    expect(sheltersDao.getByAdminId).toHaveBeenCalledWith(5);
+    expect(sheltersDao.getAll).not.toHaveBeenCalled();
+    expect(res[0].admin_id).toBe(5);
+  });
+
   test('getShelterById returns shelter', async () => {
     const res = await sheltersService.getShelterById(1);
     expect(res).toBeDefined();
@@ -37,6 +48,22 @@ describe('sheltersService', () => {
     sheltersDao.getById.mockResolvedValueOnce(null);
     
     const res = await sheltersService.getShelterById(999);
+    expect(res).toBeNull();
+  });
+
+  test('getShelterByAdminId returns first shelter for admin', async () => {
+    sheltersDao.getByAdminId.mockResolvedValueOnce([{ id: 2, name: 'Admin Shelter', admin_id: 7 }]);
+
+    const res = await sheltersService.getShelterByAdminId(7);
+
+    expect(sheltersDao.getByAdminId).toHaveBeenCalledWith(7);
+    expect(res).toMatchObject({ id: 2, admin_id: 7 });
+  });
+
+  test('getShelterByAdminId returns null when admin has no shelter', async () => {
+    sheltersDao.getByAdminId.mockResolvedValueOnce([]);
+
+    const res = await sheltersService.getShelterByAdminId(999);
     expect(res).toBeNull();
   });
 
@@ -54,6 +81,13 @@ describe('sheltersService', () => {
     const res = await sheltersService.createShelter({ name: 'Owned shelter' }, null, { role: 'shelter_admin', userId: 5 });
     expect(sheltersDao.create).toHaveBeenCalledWith(expect.objectContaining({ admin_id: 5 }));
     expect(res).toBeDefined();
+  });
+
+  test('createShelter forbids multiple shelters for shelter_admin', async () => {
+    sheltersDao.getByAdminId.mockResolvedValueOnce([{ id: 1, admin_id: 5 }]);
+    await expect(
+      sheltersService.createShelter({ name: 'Another shelter' }, null, { role: 'shelter_admin', userId: 5 })
+    ).rejects.toMatchObject({ status: 400 });
   });
 
   test('updateShelter succeeds with valid data', async () => {

@@ -20,7 +20,7 @@ const AddPetToShelter = () => {
         age: '',
         color: '',
         animal_size: '',
-        health: 'healthy',
+        health: '',
         personality: '',
         history: '',
     });

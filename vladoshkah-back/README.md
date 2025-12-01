@@ -133,6 +133,7 @@ photo=<file>
 ## Приюты (`/api/shelters`)
 
 - `GET /api/shelters` — публичный список. Поля: `name`, `address?`, `phone?`, `email?`, `inn?` (10 или 12 цифр), `website?`, `description?`, `capacity?`, `working_hours?`, `can_adopt?`, `region?`, `admin_id?`, `status`, `rating`, `total_ratings`, `photos` (если прикреплены). Дополнительно можно передать `?limit=10`, чтобы ограничить количество записей.
+- `GET /api/shelters/admin/:adminId` — получить приют по `admin_id` (это `user_id` пользователя с ролью `shelter_admin`; используется для личного кабинета администратора приюта).
 - `GET /api/shelters/:id` — подробности по ID (+ `photos`).
 - `POST /api/shelters` — создать приют (`admin`; `shelter_admin` создаёт приют только для себя, `admin_id` берётся из токена). Тело как в списке полей выше (ИНН валидируется как строка из 10 или 12 цифр). Маршрут принимает `multipart/form-data`, но переданный файл `photo` сейчас сервером не сохраняется.
 - `PUT|PATCH /api/shelters/:id` — обновить приют (`admin`; `shelter_admin` может редактировать только приюты, где он указан в `admin_id`, смена владельца запрещена).

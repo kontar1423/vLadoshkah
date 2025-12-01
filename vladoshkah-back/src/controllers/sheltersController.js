@@ -9,7 +9,16 @@ async function getAll(req, res) {
     if (!Number.isInteger(limit) || limit <= 0) {
       limit = null;
     }
-    const shelters = await sheltersService.getAllShelters(limit);
+
+    let adminId = null;
+    if (req.query.admin_id !== undefined) {
+      adminId = Number(req.query.admin_id);
+      if (!Number.isInteger(adminId) || adminId <= 0) {
+        return res.status(400).json({ error: 'Invalid admin_id' });
+      }
+    }
+
+    const shelters = await sheltersService.getAllShelters({ limit, adminId });
     res.json(shelters);
   } catch (err) {
     const log = req.log || logger;
@@ -32,6 +41,24 @@ async function getById(req, res) {
     const log = req.log || logger;
     log.error(err, 'Controller: error fetching shelter');
     res.status(500).json({ error: 'Database error' });
+  }
+}
+
+// Получить приют по shelter_admin_id
+async function getByAdminId(req, res) {
+  try {
+    const adminId = Number(req.params.adminId);
+    if (!Number.isInteger(adminId)) {
+      return res.status(400).json({ error: 'Invalid admin_id' });
+    }
+
+    const shelter = await sheltersService.getShelterByAdminId(adminId);
+    if (!shelter) return res.status(404).json({ error: 'Not found' });
+    res.json(shelter);
+  } catch (err) {
+    const log = req.log || logger;
+    log.error(err, 'Controller: error fetching shelter by admin_id');
+    res.status(err.status || 500).json({ error: err.message || 'Database error' });
   }
 }
 
@@ -125,4 +152,4 @@ async function vote(req, res) {
   }
 }
 
-export default { getAll, getById, create, update, remove, vote };
+export default { getAll, getById, getByAdminId, create, update, remove, vote };
