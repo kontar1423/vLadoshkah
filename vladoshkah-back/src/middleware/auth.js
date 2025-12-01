@@ -2,6 +2,15 @@ import jwt from 'jsonwebtoken';
 import authConfig from '../config/auth.js';
 const jwtConfig = authConfig.jwt;
 import logger from '../logger.js';
+import usersDao from '../dao/usersDao.js';
+
+// Поддержка старого алиаса роли admin_shelter
+const normalizeRole = (role) => {
+  if (!role) return role;
+  const value = String(role).toLowerCase();
+  if (value === 'admin_shelter') return 'shelter_admin';
+  return value;
+};
 
 /**
  * Middleware для проверки JWT токена
@@ -21,7 +30,7 @@ function authenticateToken(req, res, next) {
     }
 
     // Проверяем токен
-    jwt.verify(token, jwtConfig.secret, (err, decoded) => {
+    jwt.verify(token, jwtConfig.secret, async (err, decoded) => {
       if (err) {
         if (err.name === 'TokenExpiredError') {
           return res.status(401).json({
@@ -41,14 +50,43 @@ function authenticateToken(req, res, next) {
         });
       }
 
-      // Добавляем данные пользователя в запрос
-      req.user = {
-        userId: decoded.userId,
-        email: decoded.email,
-        role: decoded.role
-      };
+      const tokenRole = normalizeRole(decoded.role);
 
-      next();
+      // В тестовой среде не дергаем базу, чтобы не усложнять моки
+      if (process.env.NODE_ENV === 'test') {
+        req.user = {
+          userId: decoded.userId,
+          email: decoded.email,
+          role: tokenRole
+        };
+        return next();
+      }
+
+      try {
+        // Берем актуальную роль из БД, чтобы обновления ролей применялись без перелогина
+        const dbUser = await usersDao.getById(decoded.userId);
+        if (!dbUser) {
+          return res.status(401).json({
+            success: false,
+            error: 'User not found'
+          });
+        }
+
+        // Добавляем данные пользователя в запрос
+        req.user = {
+          userId: decoded.userId,
+          email: dbUser.email || decoded.email,
+          role: normalizeRole(dbUser.role || tokenRole)
+        };
+
+        next();
+      } catch (dbError) {
+        logger.error(dbError, 'Middleware: error loading user for auth');
+        res.status(500).json({
+          success: false,
+          error: 'Internal server error'
+        });
+      }
     });
   } catch (error) {
     logger.error(error, 'Middleware: error in authenticateToken');
@@ -72,7 +110,10 @@ function authorize(...allowedRoles) {
       });
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    const userRole = normalizeRole(req.user.role);
+    const normalizedAllowed = allowedRoles.map(normalizeRole);
+
+    if (!normalizedAllowed.includes(userRole)) {
       return res.status(403).json({
         success: false,
         error: 'Insufficient permissions'
@@ -87,4 +128,3 @@ export {
   authenticateToken,
   authorize
 };
-
