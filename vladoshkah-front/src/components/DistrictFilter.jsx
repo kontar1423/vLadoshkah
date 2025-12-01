@@ -453,19 +453,21 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
         className="bg-green-95 rounded-custom w-full max-w-6xl flex flex-col items-start gap-6 p-8 relative my-auto shadow-xl"
         style={{ 
           maxHeight: 'calc(100vh - 2rem)',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          position: 'relative'
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex items-center justify-between self-stretch w-full gap-4">
+        <header className="flex items-center justify-between self-stretch w-full gap-4 sticky top-0 bg-green-95 z-50 pb-2">
           <div>
             <h1 className="text-3xl font-sf-rounded font-bold text-green-30">Выберите округа Москвы</h1>
             
           </div>
           <button
             onClick={onClose}
-            className="relative w-8 h-8 cursor-pointer text-green-40 hover:text-green-30 transition-colors"
+            className="w-8 h-8 cursor-pointer text-green-40 hover:text-green-30 transition-colors flex-shrink-0"
             aria-label="Закрыть фильтры"
+            style={{ position: 'relative', zIndex: 100 }}
           >
             <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

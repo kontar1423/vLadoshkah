@@ -54,19 +54,57 @@ const AddPetToShelter = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handlePhotoUpload = (e) => {
+    const cropImageToSquare = (file) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const size = Math.min(img.width, img.height);
+                    canvas.width = size;
+                    canvas.height = size;
+                    
+                    const ctx = canvas.getContext('2d');
+                    const x = (img.width - size) / 2;
+                    const y = (img.height - size) / 2;
+                    
+                    ctx.drawImage(img, x, y, size, size, 0, 0, size, size);
+                    
+                    canvas.toBlob((blob) => {
+                        const croppedFile = new File([blob], file.name, {
+                            type: file.type,
+                            lastModified: Date.now()
+                        });
+                        resolve(croppedFile);
+                    }, file.type, 0.95);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const handlePhotoUpload = async (e) => {
         const files = Array.from(e.target.files);
         if (files.length + petPhotos.length > 5) {
             alert('Можно загрузить не более 5 фотографий');
             return;
         }
         
-        const newPhotos = files.map(file => ({
-            file,
-            preview: URL.createObjectURL(file)
-        }));
-        
-        setPetPhotos(prev => [...prev, ...newPhotos]);
+        try {
+            const croppedFiles = await Promise.all(files.map(file => cropImageToSquare(file)));
+            
+            const newPhotos = croppedFiles.map(file => ({
+                file,
+                preview: URL.createObjectURL(file)
+            }));
+            
+            setPetPhotos(prev => [...prev, ...newPhotos]);
+        } catch (error) {
+            console.error('Ошибка при обработке фотографий:', error);
+            alert('Ошибка при обработке фотографий');
+        }
     };
 
     const removePhoto = (index) => {
@@ -257,6 +295,20 @@ const AddPetToShelter = () => {
 
                             <div>
                                 <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                    Цвет
+                                </label>
+                                <input
+                                    type="text"
+                                    name="color"
+                                    value={formData.color}
+                                    onChange={handleChange}
+                                    placeholder="Например: рыжий, черный, белый"
+                                    className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 placeholder-green-40 focus:border-green-50 focus:outline-none"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
                                     Возраст (лет) *
                                 </label>
                                 <input
@@ -366,7 +418,7 @@ const AddPetToShelter = () => {
                                                     <img
                                                         src={photo.preview}
                                                         alt={`Preview ${index + 1}`}
-                                                        className="w-full h-20 object-cover rounded-custom-small border-2 border-green-40"
+                                                        className="w-full aspect-square object-cover rounded-custom-small border-2 border-green-40"
                                                     />
                                                     <button
                                                         type="button"
