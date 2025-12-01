@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { shelterService } from '../services/shelterService'
 import { userService } from '../services/userService'
@@ -23,7 +23,6 @@ const ShelterRegister = () => {
 
     const [photos, setPhotos] = useState([])
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [isCheckingShelter, setIsCheckingShelter] = useState(true)
 
     const regions = [
         { value: '', label: 'Выберите регион' },
@@ -187,19 +186,6 @@ const ShelterRegister = () => {
         } finally {
             setIsSubmitting(false);
         }
-    }
-
-    // Показываем индикатор загрузки, пока проверяем наличие приюта
-    if (isCheckingShelter) {
-        return (
-            <div className="min-h-screen bg-green-95 flex items-center justify-center px-4 py-10">
-                <div className="text-center">
-                    <div className="text-green-30 font-sf-rounded font-bold text-xl mb-4">
-                        Проверка данных...
-                    </div>
-                </div>
-            </div>
-        );
     }
 
     return (
