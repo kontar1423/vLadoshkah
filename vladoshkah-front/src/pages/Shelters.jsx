@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import ShelterCard from '../components/ShelterCard';
+import MiniShelterCard from '../components/MiniShelterCard';
 import DistrictFilter from '../components/DistrictFilter';
 import { shelterService } from '../services/shelterService';
 import SheltersMap from '../components/SheltersMap';
@@ -18,7 +19,17 @@ const Shelters = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
   const loadingRef = useRef(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     loadShelters();
@@ -298,12 +309,19 @@ const Shelters = () => {
 
           {shelters.length > 0 && (
             <>
-              <div className="grid grid-cols-1 gap-8">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-1 gap-2 sm:gap-4 md:gap-8">
                 {currentShelters.map((shelter) => (
-                  <ShelterCard 
-                    key={shelter.id}
-                    shelterData={shelter}
-                  />
+                  isMobile ? (
+                    <MiniShelterCard 
+                      key={shelter.id}
+                      shelter={shelter}
+                    />
+                  ) : (
+                    <ShelterCard 
+                      key={shelter.id}
+                      shelterData={shelter}
+                    />
+                  )
                 ))}
               </div>
 

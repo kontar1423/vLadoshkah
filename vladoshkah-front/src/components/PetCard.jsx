@@ -195,9 +195,15 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
     const mainPhoto = photos.length > 0 ? photos[0] : null;
     const photoUrl = mainPhoto ? getPhotoUrl(mainPhoto) : null;
 
+    const truncatePersonality = (text, maxLength = 50) => {
+        if (!text) return '';
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + '...';
+    };
+
     return (
         <article 
-            className="flex flex-col w-full max-w-[320px] h-[420px] bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative"
+            className="flex flex-col w-full max-w-[180px] sm:max-w-[280px] md:max-w-[320px] h-[240px] sm:h-[400px] md:h-[420px] bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative"
             aria-label={`Карточка питомца ${name}`}
         >
             {onDelete && (
@@ -207,16 +213,16 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
                         e.stopPropagation();
                         onDelete(id);
                     }}
-                    className="absolute top-2 right-2 z-20 w-8 h-8 bg-green-80 hover:bg-green-70 text-green-20 rounded-full flex items-center justify-center shadow-lg transition-colors border-2 border-green-30"
+                    className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-20 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-green-80 hover:bg-green-70 text-green-20 rounded-full flex items-center justify-center shadow-lg transition-colors border-2 border-green-30"
                     aria-label="Удалить питомца"
                     title="Удалить питомца"
                 >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             )}
-            <div className="relative w-full aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden">
+            <div className="relative w-full h-[120px] sm:h-auto sm:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden">
                 {photoUrl ? (
                     <>
                         <img
@@ -259,48 +265,48 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
                 )}
             </div>
 
-            <div className="flex items-center gap-2 w-full px-4 relative -mt-6">
-                <div className="px-3 py-1 bg-green-90 rounded-full border-2 border-green-30 shadow-sm">
-                    <span className="font-inter text-green-30 text-sm md:text-base">
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 w-full px-1.5 sm:px-2 md:px-3 lg:px-4 relative -mt-2.5 sm:-mt-4 md:-mt-5 lg:-mt-6">
+                <div className="px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-0.5 bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0 max-w-[60px] sm:max-w-none">
+                    <span className="font-inter text-green-30 text-[10px] sm:text-xs md:text-sm lg:text-base truncate block">
                         {name}
                     </span>
                 </div>
-                <div className="flex w-8 h-8 items-center justify-center bg-green-90 rounded-full border-2 border-green-30 shadow-sm">
-                    <span className={`text-sm ${gender === "male" ? "text-blue-400" : "text-pink-400"}`}>
+                <div className="flex w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 items-center justify-center bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0">
+                    <span className={`text-[10px] sm:text-xs md:text-sm ${gender === "male" ? "text-blue-400" : "text-pink-400"}`}>
                         {gender === "male" ? "♂" : "♀"}
                     </span>
                 </div>
-                <div className="px-2 py-1 bg-green-90 rounded-full border-2 border-green-30 shadow-sm">
-                    <span className="font-inter text-green-30 text-xs md:text-sm">
+                <div className="px-1 sm:px-1.5 md:px-2 py-0.5 bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0">
+                    <span className="font-inter text-green-30 text-[9px] sm:text-[10px] md:text-xs lg:text-sm">
                         {formatAge(age)}
                     </span>
                 </div>
             </div>
 
-            <div className="flex-1 px-4 py-4 min-h-[72px] flex flex-col justify-start">
+            <div className="flex-1 px-1.5 sm:px-2 md:px-3 lg:px-4 py-1 sm:py-1.5 md:py-2 lg:py-3 min-h-[30px] sm:min-h-[50px] md:min-h-[55px] lg:min-h-[72px] flex flex-col justify-start">
                 {personality && (
-                    <p className="text-green-40 text-xs font-inter line-clamp-3 mb-1">
-                        {personality}
+                    <p className="text-green-40 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter line-clamp-1 sm:line-clamp-2 mb-0.5 sm:mb-1" title={personality}>
+                        {truncatePersonality(personality, 50)}
                     </p>
                 )}
                 {shelter_name && (
-                    <p className="text-green-50 text-xs font-inter mt-auto">
+                    <p className="text-green-50 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter mt-auto truncate">
                         {shelter_name}
                     </p>
                 )}
             </div>
 
-            <div className="flex w-full items-center gap-2 px-4 pb-4 pt-1">
+            <div className="flex flex-row w-full items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 sm:px-2 md:px-3 lg:px-4 pb-1 sm:pb-1.5 md:pb-2 lg:pb-3 pt-0.5">
                 <Link
                     to={`/pet/${id}`}
-                    className="text-green-98 flex items-center justify-center gap-2 px-3 py-2 flex-1 bg-green-60 rounded-custom-small hover:bg-green-50 transition-colors shadow-sm text-[13px]"
+                    className="text-green-98 flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2 px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-0.5 sm:py-1 md:py-1.5 lg:py-2 flex-1 bg-green-60 rounded-custom-small hover:bg-green-50 transition-colors shadow-sm text-[9px] sm:text-[10px] md:text-xs lg:text-[13px]"
                 >
                     Познакомиться
                 </Link>
                 <button
                     onClick={handleFavoriteClick}
                     disabled={favoriteLoading}
-                    className={`flex w-8 h-8 items-center justify-center rounded-custom-small transition-colors shadow-sm ${
+                    className={`flex w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 items-center justify-center rounded-custom-small transition-colors shadow-sm flex-shrink-0 ${
                         isFavorite 
                         ? 'bg-red-50 text-red-300 hover:bg-red-100' 
                         : 'bg-green-60 text-green-98 hover:bg-green-50'
@@ -308,10 +314,10 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
                     aria-label={isFavorite ? "Удалить из избранного" : "Добавить в избранное"}
                 >
                     {favoriteLoading ? (
-                        <div className="w-4 h-4 border-2 border-green-98 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 border-2 border-green-98 border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                         <svg 
-                            className={`w-4 h-4 ${isFavorite ? 'fill-current' : 'stroke-current'}`}
+                            className={`w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 ${isFavorite ? 'fill-current' : 'stroke-current'}`}
                             fill={isFavorite ? "currentColor" : "none"}
                             strokeWidth={isFavorite ? 0 : 2}
                             viewBox="0 0 24 24"

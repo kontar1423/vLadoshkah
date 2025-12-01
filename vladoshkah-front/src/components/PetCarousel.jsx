@@ -4,7 +4,17 @@
     const PetCarousel = ({ pets = [], favoritesMap = {} }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const containerRef = useRef(null);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 640);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     const CARD_WIDTH = 320;
     const GAP = 20;
@@ -22,7 +32,7 @@
     useEffect(() => {
         if (pets.length <= 1) return;
         const interval = setInterval(() => {
-        if (!isTransitioning) nextPet();
+            if (!isTransitioning) nextPet();
         }, 5000);
         return () => clearInterval(interval);
     }, [pets.length, currentIndex, isTransitioning]);
@@ -46,7 +56,98 @@
         );
     }
 
-    
+    if (isMobile && pets.length > 0) {
+        const getMobileCarouselItems = () => {
+            const items = [];
+            for (let offset = -1; offset <= 1; offset++) {
+                const index = (currentIndex + offset + pets.length) % pets.length;
+                items.push({ pet: pets[index], position: offset, uniqueKey: `${pets[index].id}-${offset}-${currentIndex}` });
+            }
+            return items;
+        };
+
+        const mobileItems = getMobileCarouselItems();
+
+        return (
+            <div className="relative w-full max-w-2xl mx-auto px-2">
+                <div className="relative overflow-hidden">
+                    <div className="flex items-center justify-center gap-1">
+                        {mobileItems.map(({ pet, position, uniqueKey }) => {
+                            const isActive = position === 0;
+                            const scale = isActive ? 1 : 0.9;
+                            const opacity = isActive ? 1 : 0.7;
+
+                            return (
+                                <div
+                                    key={uniqueKey}
+                                    className="flex-shrink-0 transition-all duration-500 ease-out"
+                                    style={{
+                                        width: `${100 / 3}%`,
+                                        transform: `scale(${scale})`,
+                                        opacity: opacity,
+                                    }}
+                                >
+                                    <PetCard 
+                                        petData={pet} 
+                                        initialFavorite={favoritesMap[pet.id] === true}
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {pets.length > 3 && (
+                    <>
+                        <button
+                            onClick={prevPet}
+                            disabled={isTransitioning}
+                            className={`absolute left-0 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-300 ${
+                                isTransitioning
+                                    ? 'opacity-50 cursor-not-allowed'
+                                    : 'hover:bg-green-60 hover:scale-110 shadow-xl'
+                            }`}
+                            aria-label="Предыдущий питомец"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+
+                        <button
+                            onClick={nextPet}
+                            disabled={isTransitioning}
+                            className={`absolute right-0 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-300 ${
+                                isTransitioning
+                                    ? 'opacity-50 cursor-not-allowed'
+                                    : 'hover:bg-green-60 hover:scale-110 shadow-xl'
+                            }`}
+                            aria-label="Следующий питомец"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+
+                        <div className="flex justify-center mt-4 space-x-2">
+                            {pets.map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => navigateTo(i)}
+                                    disabled={isTransitioning}
+                                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                        i === currentIndex ? 'bg-green-70 scale-125' : 'bg-green-40 hover:bg-green-50'
+                                    }`}
+                                    aria-label={`Перейти к питомцу ${i + 1}`}
+                                />
+                            ))}
+                        </div>
+                    </>
+                )}
+            </div>
+        );
+    }
+
     const getCarouselItems = () => {
         const items = [];
         for (let offset = -1; offset <= 1; offset++) {

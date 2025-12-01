@@ -434,14 +434,15 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-2 sm:p-4"
       style={{ 
         position: 'fixed', 
         top: 0, 
         left: 0, 
         right: 0, 
         bottom: 0,
-        overflowY: 'auto'
+        overflowY: 'auto',
+        paddingTop: '80px'
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -450,22 +451,22 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
       }}
     >
       <div 
-        className="bg-green-95 rounded-custom w-full max-w-6xl flex flex-col items-start gap-6 p-8 relative my-auto shadow-xl"
+        className="bg-green-95 rounded-custom w-full max-w-6xl flex flex-col items-start gap-3 sm:gap-4 md:gap-6 p-4 sm:p-6 md:p-8 relative my-auto shadow-xl"
         style={{ 
-          maxHeight: 'calc(100vh - 2rem)',
+          maxHeight: 'calc(100vh - 100px)',
           overflowY: 'auto',
           position: 'relative'
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex items-center justify-between self-stretch w-full gap-4 sticky top-0 bg-green-95 z-50 pb-2">
+        <header className="flex items-center justify-between self-stretch w-full gap-2 sm:gap-4 sticky top-0 bg-green-95 z-50 pb-2">
           <div>
-            <h1 className="text-3xl font-sf-rounded font-bold text-green-30">Выберите округа Москвы</h1>
+            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-sf-rounded font-bold text-green-30">Выберите округа Москвы</h1>
             
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 cursor-pointer text-green-40 hover:text-green-30 transition-colors flex-shrink-0"
+            className="w-6 h-6 sm:w-8 sm:h-8 cursor-pointer text-green-40 hover:text-green-30 transition-colors flex-shrink-0"
             aria-label="Закрыть фильтры"
             style={{ position: 'relative', zIndex: 100 }}
           >
@@ -475,11 +476,11 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
           </button>
         </header>
 
-        <div className="w-full bg-green-90 rounded-custom-small p-4 shadow-sm border-2 border-green-40">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="w-full bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 shadow-sm border-2 border-green-40">
+          <div className="flex flex-col gap-2 sm:gap-3 md:gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
               <div>
-                <p className="font-inter text-green-30 font-semibold">Карта округов Москвы</p>
+                <p className="font-inter text-green-30 font-semibold text-xs sm:text-sm md:text-base">Карта округов Москвы</p>
                 
               </div>
               <div className="flex flex-wrap gap-2">
@@ -492,16 +493,16 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
                     return (
                       <span
                         key={regionId}
-                        className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-green-90 border border-green-80 text-green-30 text-sm"
+                        className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full bg-green-90 border border-green-80 text-green-30 text-xs sm:text-sm"
                       >
                         <span
-                          className="w-3.5 h-3.5 rounded-full border border-green-30"
+                          className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border border-green-30 flex-shrink-0"
                           style={{ backgroundColor: color }}
                         />
-                        {district?.name || regionId}
+                        <span className="truncate max-w-[100px] sm:max-w-none">{district?.name || regionId}</span>
                         <button
                           onClick={() => toggleRegion(regionId)}
-                          className="text-green-40 hover:text-green-20"
+                          className="text-green-40 hover:text-green-20 flex-shrink-0"
                           aria-label={`Убрать ${district?.name || regionId}`}
                         >
                           ×
@@ -513,8 +514,8 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-[1.8fr_1fr] gap-4 items-start">
-              <div className="rounded-custom-small border border-green-80 bg-green-95 overflow-hidden aspect-[4/3] min-h-[360px]">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-3 sm:gap-4 items-start">
+              <div className="rounded-custom-small border border-green-80 bg-green-95 overflow-hidden aspect-[4/3] min-h-[240px] sm:min-h-[300px] md:min-h-[360px]">
                 <object
                   ref={mapRef}
                   data={MAP_SRC}
@@ -524,12 +525,12 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
                 />
               </div>
 
-              <aside className="bg-green-95 rounded-custom-small p-3 flex flex-col gap-3 border border-green-80">
+              <aside className="bg-green-95 rounded-custom-small p-2 sm:p-3 flex flex-col gap-2 sm:gap-3 border border-green-80">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-sf-rounded font-semibold text-green-30 text-base">Легенда округов</p>
-                  <span className="text-green-50 text-xs font-inter">Кликните, чтобы выбрать</span>
+                  <p className="font-sf-rounded font-semibold text-green-30 text-sm sm:text-base">Легенда округов</p>
+                  <span className="text-green-50 text-xs font-inter hidden sm:inline">Кликните, чтобы выбрать</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
                   {districts.map((district) => {
                     const isActive = selectedDistricts.includes(district.id);
                     const color = legendColorFor(district.id);
@@ -539,17 +540,17 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
                         type="button"
                         onClick={() => toggleRegion(district.id)}
                         aria-pressed={isActive}
-                        className={`flex items-center gap-2 p-2 rounded-custom-small border text-left transition-colors ${
+                        className={`flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-custom-small border text-left transition-colors ${
                           isActive
                             ? 'bg-green-30 border-green-20 text-green-100 shadow-sm'
                             : 'bg-green-95 border-green-30 text-green-30 hover:bg-green-80 hover:border-green-20'
                         }`}
                       >
                         <span
-                          className="w-4 h-4 rounded-full border border-green-30"
+                          className="w-3 h-3 sm:w-4 sm:h-4 rounded-full border border-green-30 flex-shrink-0"
                           style={{ backgroundColor: color }}
                         />
-                        <span className="font-inter text-sm leading-tight">{district.name}</span>
+                        <span className="font-inter text-xs sm:text-sm leading-tight truncate">{district.name}</span>
                       </button>
                     );
                   })}
@@ -561,11 +562,11 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
 
       
 
-        <div className="flex gap-3 self-stretch justify-end pt-4 border-t border-green-80 w-full">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 self-stretch justify-end pt-3 sm:pt-4 border-t border-green-80 w-full">
           <button
             type="button"
             onClick={handleReset}
-            className="px-6 py-3 bg-green-80 rounded-[20px] text-green-20 hover:bg-green-70 font-medium transition-colors"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-green-80 rounded-[20px] text-green-20 hover:bg-green-70 font-medium transition-colors text-sm sm:text-base"
           >
             Сбросить все
           </button>
@@ -573,7 +574,7 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
             type="button"
             onClick={handleApply}
             disabled={selectedDistricts.length === 0}
-            className={`px-6 py-3 rounded-[20px] font-medium transition-colors ${
+            className={`px-4 sm:px-6 py-2 sm:py-3 rounded-[20px] font-medium transition-colors text-sm sm:text-base ${
               selectedDistricts.length > 0
                 ? 'bg-green-70 text-green-20 hover:bg-green-60 cursor-pointer'
                 : 'bg-green-80 text-green-60 cursor-not-allowed'

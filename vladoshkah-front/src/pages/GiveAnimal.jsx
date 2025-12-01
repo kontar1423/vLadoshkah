@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ShelterCard from '../components/ShelterCard';
+import MiniShelterCard from '../components/MiniShelterCard';
 import miniPes from '../assets/images/mini_pes.png';
 import LapaIcon from '../assets/images/lapa.png';
 import { shelterService } from '../services/shelterService';
@@ -10,7 +11,17 @@ const GiveAnimal = () => {
   const [acceptingShelters, setAcceptingShelters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
   const loadingRef = useRef(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     loadAcceptingShelters();
@@ -18,7 +29,7 @@ const GiveAnimal = () => {
 
   const loadAcceptingShelters = async () => {
     try {
-      // Защита от множественных одновременных запросов
+    
       if (loadingRef.current) {
         console.log('GiveAnimal: Load already in progress, skipping');
         return;
@@ -186,16 +197,18 @@ const GiveAnimal = () => {
 
         <section id="shelters-section" className="w-full max-w-[1260px] mx-auto">
           {acceptingShelters.length > 0 ? (
-            <div className="space-y-8 mb-16">
+            <div className={isMobile ? "grid grid-cols-2 gap-2 sm:gap-4 mb-16" : "space-y-8 mb-16"}>
               {acceptingShelters.map((shelter, index) => (
                 <div 
                   key={shelter.id}
-                  className="animate-fade-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  className={isMobile ? "" : "animate-fade-up"}
+                  style={isMobile ? {} : { animationDelay: `${index * 0.1}s` }}
                 >
-                  <ShelterCard 
-                    shelterData={shelter}
-                  />
+                  {isMobile ? (
+                    <MiniShelterCard shelter={shelter} />
+                  ) : (
+                    <ShelterCard shelterData={shelter} />
+                  )}
                 </div>
               ))}
             </div>
