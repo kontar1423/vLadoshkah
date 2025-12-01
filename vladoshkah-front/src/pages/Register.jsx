@@ -16,7 +16,7 @@ const Register = () => {
   useEffect(() => {
     if (isAuthenticated) {
       const profileComplete = localStorage.getItem('profileComplete')
-      navigate(profileComplete === 'true' ? '/профиль' : '/личная-информация')
+      navigate(profileComplete === 'true' ? '/profile' : '/personal-info')
     }
   }, [isAuthenticated, navigate])
 
@@ -60,7 +60,7 @@ const Register = () => {
 
       if (result.success) {
         console.log('Register: Successful! Redirecting to personal info...');
-        navigate('/личная-информация');
+        navigate('/personal-info');
       } else {
         console.error(' Register: Failed with error:', result.error);
         setError(result.error || 'Ошибка при регистрации');
@@ -159,7 +159,7 @@ const Register = () => {
             <p className="text-center text-green-30 font-inter font-medium text-sm md:text-base">
               Уже есть аккаунт?{' '}
               <Link
-                to="/войти"
+                to="/login"
                 className="text-green-50 hover:text-green-60 font-semibold transition-colors underline"
               >
                 Войти

@@ -45,7 +45,6 @@ const PetProfile = () => {
                 return;
             }
             
-            // Получаем все заявки на питомца (от всех пользователей)
             let userHasApplied = false;
             let hasAny = false;
             
@@ -54,14 +53,12 @@ const PetProfile = () => {
                 console.log('All applications for animal:', allApplications);
                 
                 if (Array.isArray(allApplications) && allApplications.length > 0) {
-                    // Фильтруем активные заявки (не rejected)
                     const activeApplications = allApplications.filter(
                         app => app.status !== 'rejected'
                     );
                     
                     hasAny = activeApplications.length > 0;
                     
-                    // Проверяем, есть ли заявка от текущего пользователя
                     if (currentUserId && hasAny) {
                         userHasApplied = activeApplications.some(
                             app => parseInt(app.user_id) === currentUserId
@@ -73,7 +70,6 @@ const PetProfile = () => {
                 }
             } catch (error) {
                 console.error('Error checking applications for animal:', error);
-                // Если endpoint не работает, пытаемся проверить через заявки пользователя
                 if (currentUserId) {
                     try {
                         const userApplications = await applicationService.getUserTakeApplications();
@@ -106,7 +102,7 @@ const PetProfile = () => {
     const handleAdoptClick = () => {
         const token = localStorage.getItem('accessToken');
         if (!token) {
-            navigate('/войти');
+            navigate('/login');
             return;
         }
 
@@ -126,13 +122,11 @@ const PetProfile = () => {
             const response = await applicationService.createTakeApplication(applicationData);
             console.log('Application created:', response);
             
-            // Сразу устанавливаем состояние, что заявка отправлена (навсегда)
             setIsApplied(true);
             setHasAnyApplication(true);
             setIsModalOpen(false);
             alert('Заявка успешно отправлена! Приют свяжется с вами в ближайшее время.');
             
-            // Обновляем статус заявок после небольшой задержки (чтобы бэкенд успел обработать)
             setTimeout(() => {
                 checkApplicationStatus();
             }, 500);
@@ -144,7 +138,7 @@ const PetProfile = () => {
                 alert('Сессия истекла. Пожалуйста, войдите снова.');
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
-                navigate('/войти');
+                navigate('/login');
             } else if (error.response?.status === 409) {
                 alert('Вы уже подавали заявку на этого питомца');
                 setIsApplied(true);
@@ -214,11 +208,9 @@ const PetProfile = () => {
                     }
                 }
 
-                // Загружаем похожих питомцев
                 try {
                     let similar = [];
                     
-                    // Сначала пытаемся найти похожих в том же приюте
                     if (normalizedPet.shelter_id) {
                         try {
                             const shelterPets = await animalService.getAnimalsByShelter(normalizedPet.shelter_id);
@@ -230,14 +222,12 @@ const PetProfile = () => {
                         }
                     }
                     
-                    // Если не хватает до 3, дополняем питомцами того же типа из других приютов
                     if (similar.length < 3 && normalizedPet.type) {
                         try {
                             const allByType = await animalService.getAnimalsWithFilters({
                                 type: normalizedPet.type
                             });
                             
-                            // Исключаем текущего питомца и тех, кто уже в списке
                             const existingIds = new Set([parseInt(id), ...similar.map(p => p.id)]);
                             const additional = allByType
                                 .filter(pet => !existingIds.has(pet.id))
@@ -249,12 +239,10 @@ const PetProfile = () => {
                         }
                     }
                     
-                    // Ограничиваем до 3 питомцев
                     const finalSimilar = similar.slice(0, 3);
                     const normalizedSimilar = finalSimilar.map(normalizePetData);
                     setSimilarPets(normalizedSimilar);
                     
-                    // Проверяем избранные для похожих питомцев
                     if (normalizedSimilar.length > 0 && user?.id) {
                         try {
                             const animalIds = normalizedSimilar.map(pet => pet.id);
@@ -287,7 +275,6 @@ const PetProfile = () => {
         }
     }, [id, user?.id]);
 
-    // Обновляем similarFavoritesMap при изменении избранного
     useEffect(() => {
         const handleFavoritesUpdated = (event) => {
             const eventUserId = event.detail?.userId;
@@ -363,16 +350,13 @@ const PetProfile = () => {
             if (age < 1) return "Меньше года";
             if (age === 1) return "1 год";
             
-            // Правильное склонение: год/года/лет
             const lastDigit = age % 10;
             const lastTwoDigits = age % 100;
             
-            // Исключения: 11, 12, 13, 14 всегда "лет"
             if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
                 return `${age} лет`;
             }
             
-            // 1 -> год, 2-4 -> года, остальные -> лет
             if (lastDigit === 1) {
                 return `${age} год`;
             } else if (lastDigit >= 2 && lastDigit <= 4) {
@@ -463,7 +447,6 @@ const PetProfile = () => {
         setCurrentPhotoIndex((prev) => (prev === availablePhotos.length - 1 ? 0 : prev + 1));
     };
 
-    // Сбрасываем индекс при изменении питомца
     useEffect(() => {
         setCurrentPhotoIndex(0);
     }, [id]);
@@ -501,7 +484,7 @@ const PetProfile = () => {
                             {error || 'Питомец не найден'}
                         </p>
                         <Link
-                            to="/найти-питомца"
+                            to="/find-pet"
                             className="px-6 py-3 bg-green-70 text-green-20 rounded-custom-small hover:bg-green-60 transition-colors inline-block"
                         >
                             Вернуться к поиску
@@ -539,10 +522,8 @@ const PetProfile = () => {
                                     }}
                                 />
                                 
-                                {/* Стрелочки для переключения фотографий */}
                                 {hasMultiplePhotos && (
                                     <>
-                                        {/* Стрелка влево */}
                                         <button
                                             onClick={handlePreviousPhoto}
                                             className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200"
@@ -554,7 +535,6 @@ const PetProfile = () => {
                                             </svg>
                                         </button>
                                         
-                                        {/* Стрелка вправо */}
                                         <button
                                             onClick={handleNextPhoto}
                                             className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200"
@@ -566,7 +546,6 @@ const PetProfile = () => {
                                             </svg>
                                         </button>
                                         
-                                        {/* Индикатор количества фотографий */}
                                         <div className="absolute bottom-20 right-4 z-10 px-3 py-1.5 bg-black/50 text-white text-sm rounded-full backdrop-blur-sm">
                                             {currentPhotoIndex + 1} / {availablePhotos.length}
                                         </div>
@@ -696,7 +675,7 @@ const PetProfile = () => {
                             </address>
 
                             <Link
-                                to={`/приют/${currentPet.shelter_id}`}
+                                to={`/shelter/${currentPet.shelter_id}`}
                                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-70 rounded-custom-small hover:bg-green-60 transition-colors"
                                 aria-label="Перейти к профилю приюта"
                             >

@@ -16,7 +16,6 @@ const ShelterProfile = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
 
-  // Проверка ID
   if (!id || isNaN(Number(id))) {
     return (
       <div className="min-h-screen bg-green-95 flex items-center justify-center">
@@ -59,7 +58,6 @@ const ShelterProfile = () => {
     districtId: ""
   });
 
-  // Получение человекочитаемого названия фильтра
   const getFilterDisplayName = (filterKey, filterValue) => {
     const filterLabels = {
       type: {
@@ -98,24 +96,18 @@ const ShelterProfile = () => {
     return 'лет';
   };
 
-  // Применение фильтров
   const applyFilters = useCallback((pets, filters) => {
     if (!filters || Object.keys(filters).length === 0) return pets;
 
     return pets.filter(pet => {
-      // Тип животного
       if (filters.type && filters.type !== 'Все' && pet.type !== filters.type) return false;
       
-      // Пол
       if (filters.gender && filters.gender !== 'Любой' && pet.gender !== filters.gender) return false;
       
-      // Размер
       if (filters.animal_size && filters.animal_size !== 'Любой' && pet.animal_size !== filters.animal_size) return false;
       
-      // Здоровье
       if (filters.health && filters.health !== 'Любое' && pet.health !== filters.health) return false;
       
-      // Возраст
       if (filters.age_min !== undefined && pet.age < filters.age_min) return false;
       if (filters.age_max !== undefined && pet.age > filters.age_max) return false;
       
@@ -123,7 +115,6 @@ const ShelterProfile = () => {
     });
   }, []);
 
-  // Обработчики фильтров
   const handleApplyFilters = (filters) => {
     setActiveFilters(filters);
     setShowFilters(false);
@@ -134,9 +125,8 @@ const ShelterProfile = () => {
     setSearchTerm("");
   };
 
-  // Навигация
   const goToApplication = () => {
-    navigate('/Anketa_give', { state: { shelterId: id, shelterName: shelterData.name } });
+    navigate('/application-give', { state: { shelterId: id, shelterName: shelterData.name } });
   };
 
   const scrollToMap = () => {
@@ -144,13 +134,20 @@ const ShelterProfile = () => {
     if (mapSection) mapSection.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Функция для безопасного преобразования в число
   const safeNumber = (value, defaultValue = 0) => {
     const num = parseFloat(value);
     return isNaN(num) ? defaultValue : num;
   };
 
-  // Загрузка данных приюта
+  const getRatingWord = (count) => {
+    const num = Math.abs(count) % 100;
+    const lastDigit = num % 10;
+    
+    if (lastDigit === 1 && num !== 11) return 'оценка';
+    if ([2, 3, 4].includes(lastDigit) && ![12, 13, 14].includes(num)) return 'оценки';
+    return 'оценок';
+  };
+
   const loadShelterData = useCallback(async (forceRefresh = false) => {
     try {
       setLoading(true);
@@ -171,15 +168,34 @@ const ShelterProfile = () => {
         console.error('Ошибка загрузки животных:', animalsRes.reason);
       }
 
-      // Используем рейтинг из данных приюта
       const avgRating = safeNumber(shelter.rating, 0);
       const totalRatings = safeNumber(shelter.total_ratings, 0);
 
-      // Загрузка оценки пользователя из localStorage
       let userVote = null;
-      if (isAuthenticated) {
-        const userRatings = JSON.parse(localStorage.getItem('userShelterRatings') || '{}');
+      if (isAuthenticated && user?.id) {
+        const storageKey = `userShelterRatings_${user.id}`;
+        const userRatings = JSON.parse(localStorage.getItem(storageKey) || '{}');
         userVote = userRatings[id] || null;
+        
+        try {
+          const voteData = await shelterService.getUserVote(id);
+          const backendVote = voteData?.vote || null;
+          
+          if (backendVote !== null) {
+            userVote = backendVote;
+            userRatings[id] = backendVote;
+            localStorage.setItem(storageKey, JSON.stringify(userRatings));
+            console.log('Оценка обновлена с бекенда:', backendVote);
+          } else if (userVote === null) {
+            delete userRatings[id];
+            localStorage.setItem(storageKey, JSON.stringify(userRatings));
+            console.log('Оценка не найдена ни в бекенде, ни в localStorage');
+          } else {
+            console.log('В бекенде нет оценки, используем из localStorage:', userVote);
+          }
+        } catch (error) {
+          console.error('Ошибка загрузки оценки пользователя с бекенда:', error);
+        }
       }
 
       setShelterData({
@@ -205,7 +221,19 @@ const ShelterProfile = () => {
         average: avgRating, 
         totalRatings: totalRatings 
       });
-      setUserRating(userVote);
+      
+      if (userVote !== null) {
+        setUserRating(userVote);
+        console.log('Оценка установлена из loadShelterData:', userVote);
+      } else {
+        setUserRating(prev => {
+          if (prev !== null) {
+            console.log('Оценка из localStorage сохранена, не перезаписываем null из бекенда');
+            return prev;
+          }
+          return null;
+        });
+      }
 
       const formattedPets = Array.isArray(animals) ? animals.map(animal => ({
         id: animal.id,
@@ -225,7 +253,6 @@ const ShelterProfile = () => {
       setFilteredPets(formattedPets);
       setAnimalCount(formattedPets.length);
       
-      // Проверяем избранные для всех питомцев одним bulk запросом
       if (formattedPets.length > 0 && user?.id) {
         try {
           const animalIds = formattedPets.map(pet => pet.id);
@@ -246,7 +273,6 @@ const ShelterProfile = () => {
     }
   }, [id, isAuthenticated, user?.id]);
 
-  // Обновляем favoritesMap при изменении избранного
   useEffect(() => {
     const handleFavoritesUpdated = (event) => {
       const eventUserId = event.detail?.userId;
@@ -270,22 +296,114 @@ const ShelterProfile = () => {
   useEffect(() => {
     loadShelterData();
   }, [loadShelterData, id]);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.id && id) {
+      const storageKey = `userShelterRatings_${user.id}`;
+      try {
+        const userRatings = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        const cachedVote = userRatings[id] || null;
+        console.log('Загрузка оценки из localStorage:', {
+          userId: user.id,
+          shelterId: id,
+          cachedVote: cachedVote,
+          storageKey: storageKey,
+          allRatings: userRatings
+        });
+        if (cachedVote) {
+          setUserRating(cachedVote);
+          console.log('Оценка установлена из localStorage:', cachedVote);
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки оценки из localStorage:', error);
+      }
+      
+      const loadUserVote = async () => {
+        try {
+          const voteData = await shelterService.getUserVote(id);
+          const backendVote = voteData?.vote || null;
+          
+          if (backendVote !== null) {
+            setUserRating(backendVote);
+            
+            const storageKey = `userShelterRatings_${user.id}`;
+            const userRatings = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            userRatings[id] = backendVote;
+            localStorage.setItem(storageKey, JSON.stringify(userRatings));
+          } else {
+            const storageKey = `userShelterRatings_${user.id}`;
+            const userRatings = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            const cachedVote = userRatings[id] || null;
+            
+            if (cachedVote) {
+              setUserRating(cachedVote);
+            } else {
+              setUserRating(null);
+              delete userRatings[id];
+              localStorage.setItem(storageKey, JSON.stringify(userRatings));
+            }
+          }
+        } catch (error) {
+          console.error('Ошибка загрузки оценки с бекенда:', error);
+        }
+      };
+      
+      loadUserVote();
+    } else {
+      setUserRating(null);
+    }
+  }, [user?.id, id, isAuthenticated]);
   
-  // Обновляем данные при фокусе на странице (возврат с другой страницы)
   useEffect(() => {
     const handleFocus = () => {
       console.log('ShelterProfile: Window focused, refreshing data with force refresh');
+      if (isAuthenticated && user?.id && id) {
+        const storageKey = `userShelterRatings_${user.id}`;
+        try {
+          const userRatings = JSON.parse(localStorage.getItem(storageKey) || '{}');
+          const cachedVote = userRatings[id] || null;
+          console.log('Загрузка оценки из localStorage при фокусе:', {
+            userId: user.id,
+            shelterId: id,
+            cachedVote: cachedVote,
+            storageKey: storageKey
+          });
+          if (cachedVote) {
+            setUserRating(cachedVote);
+            console.log('Оценка восстановлена из localStorage при фокусе:', cachedVote);
+          }
+        } catch (error) {
+          console.error('Ошибка загрузки оценки из localStorage при фокусе:', error);
+        }
+      }
       loadShelterData(true); // Принудительное обновление при фокусе
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         console.log('ShelterProfile: Page visible, refreshing data with force refresh');
+        if (isAuthenticated && user?.id && id) {
+          const storageKey = `userShelterRatings_${user.id}`;
+          try {
+            const userRatings = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            const cachedVote = userRatings[id] || null;
+            console.log('Загрузка оценки из localStorage при видимости:', {
+              userId: user.id,
+              shelterId: id,
+              cachedVote: cachedVote
+            });
+            if (cachedVote) {
+              setUserRating(cachedVote);
+              console.log('Оценка восстановлена из localStorage при видимости:', cachedVote);
+            }
+          } catch (error) {
+            console.error('Ошибка загрузки оценки из localStorage при видимости:', error);
+          }
+        }
         loadShelterData(true); // Принудительное обновление при видимости
       }
     };
 
-    // Обработчик события удаления питомца
     const handlePetDeleted = (event) => {
       const { petId, shelterId } = event.detail || {};
       const shelterIdNum = Number(shelterId);
@@ -294,7 +412,6 @@ const ShelterProfile = () => {
       if (shelterId && shelterIdNum === currentShelterId) {
         const petIdNum = Number(petId);
         console.log('ShelterProfile: Pet deleted event received, removing pet:', petId, 'Type:', typeof petId);
-        // Немедленно удаляем питомца из состояния с правильным сравнением типов
         setAllPets(prev => {
           const filtered = prev.filter(pet => {
             const petIdToCompare = Number(pet.id);
@@ -313,7 +430,6 @@ const ShelterProfile = () => {
           return filtered;
         });
         setAnimalCount(prev => Math.max(0, prev - 1));
-        // Обновляем favoritesMap
         setFavoritesMap(prev => {
           const updated = { ...prev };
           delete updated[petId];
@@ -334,7 +450,6 @@ const ShelterProfile = () => {
     };
   }, [loadShelterData, id]);
   
-  // Обновляем данные при изменении ID приюта в URL
   useEffect(() => {
     if (id) {
       console.log('ShelterProfile: Shelter ID changed, reloading data');
@@ -342,7 +457,6 @@ const ShelterProfile = () => {
     }
   }, [id, loadShelterData]);
 
-  // Поиск и фильтрация
   useEffect(() => {
     let filtered = [...allPets];
     
@@ -361,10 +475,9 @@ const ShelterProfile = () => {
     setCurrentPage(1);
   }, [searchTerm, allPets, activeFilters, applyFilters]);
 
-  // Отправка оценки через правильный эндпоинт
   const handleRateShelter = async (rating) => {
     if (!isAuthenticated) {
-      navigate('/войти');
+      navigate('/login');
       return;
     }
 
@@ -377,30 +490,36 @@ const ShelterProfile = () => {
 
       console.log('Response from vote API:', response.data);
 
-      // Сохраняем оценку пользователя в localStorage
-      const userRatings = JSON.parse(localStorage.getItem('userShelterRatings') || '{}');
-      
-      // Определяем, это новая оценка или изменение существующей
-      const isNewRating = userRatings[id] === undefined;
-      userRatings[id] = rating;
-      localStorage.setItem('userShelterRatings', JSON.stringify(userRatings));
+      let isNewRating = false;
+      if (user?.id) {
+        const storageKey = `userShelterRatings_${user.id}`;
+        const userRatings = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        
+        isNewRating = userRatings[id] === undefined;
+        userRatings[id] = rating;
+        localStorage.setItem(storageKey, JSON.stringify(userRatings));
+        
+        console.log('Оценка сохранена в localStorage:', {
+          userId: user.id,
+          shelterId: id,
+          rating: rating,
+          storageKey: storageKey,
+          allRatings: userRatings
+        });
+        
+        setUserRating(rating);
+      }
 
-      // Обновляем данные согласно ответу API
       const newRating = safeNumber(response.data.rating, ratingStats.average);
       
-      // Правильно обновляем количество оценок
-      // Если это новая оценка - увеличиваем счетчик, если изменение - оставляем прежним
-      const newTotalRatings = isNewRating 
-        ? ratingStats.totalRatings + 1 
-        : ratingStats.totalRatings;
+      const newTotalRatings = safeNumber(response.data.totalRatings, ratingStats.totalRatings);
 
-      setUserRating(rating);
+      console.log('Оценка установлена в состояние:', rating);
+      console.log('Количество оценок из API:', newTotalRatings);
       setRatingStats({
         average: newRating,
         totalRatings: newTotalRatings
       });
-
-      // Обновляем данные приюта
       setShelterData(prev => ({
         ...prev,
         rating: newRating
@@ -409,24 +528,25 @@ const ShelterProfile = () => {
     } catch (error) {
       console.error('Ошибка при оценке приюта:', error);
       if (error.response?.status === 409) {
-        // Если пользователь уже оценивал, все равно обновляем оценку
         const response = await api.post('/shelters/vote', {
           shelter_id: Number(id),
           vote: rating
         });
 
-        // Сохраняем оценку пользователя в localStorage
-        const userRatings = JSON.parse(localStorage.getItem('userShelterRatings') || '{}');
-        userRatings[id] = rating;
-        localStorage.setItem('userShelterRatings', JSON.stringify(userRatings));
+        if (user?.id) {
+          const storageKey = `userShelterRatings_${user.id}`;
+          const userRatings = JSON.parse(localStorage.getItem(storageKey) || '{}');
+          userRatings[id] = rating;
+          localStorage.setItem(storageKey, JSON.stringify(userRatings));
+        }
 
-        // Обновляем данные
         const newRating = safeNumber(response.data.rating, ratingStats.average);
+        const newTotalRatings = safeNumber(response.data.totalRatings, ratingStats.totalRatings);
         
         setUserRating(rating);
         setRatingStats({
           average: newRating,
-          totalRatings: ratingStats.totalRatings // Количество оценок не меняется при изменении
+          totalRatings: newTotalRatings
         });
 
         setShelterData(prev => ({
@@ -441,7 +561,6 @@ const ShelterProfile = () => {
     }
   };
 
-  // Компонент звезд для оценки
   const RatingStars = ({ currentRating, onRate, disabled = false, size = "medium" }) => {
     const [hoverRating, setHoverRating] = useState(0);
     
@@ -477,7 +596,6 @@ const ShelterProfile = () => {
     );
   };
 
-  // Статические звезды для отображения рейтинга
   const StaticStars = ({ rating, size = "medium" }) => {
     const safeRating = safeNumber(rating, 0);
     const stars = [];
@@ -516,13 +634,11 @@ const ShelterProfile = () => {
     return stars;
   };
 
-  // Пагинация
   const indexOfLastPet = currentPage * petsPerPage;
   const indexOfFirstPet = indexOfLastPet - petsPerPage;
   const currentPets = filteredPets.slice(indexOfFirstPet, indexOfLastPet);
   const totalPages = Math.ceil(filteredPets.length / petsPerPage);
 
-  // Визуализация активных фильтров
   const activeFilterLabels = Object.entries(activeFilters)
     .filter(([_, value]) => value !== '' && value !== undefined && value !== null)
     .map(([key, value]) => getFilterDisplayName(key, value));
@@ -554,7 +670,6 @@ const ShelterProfile = () => {
       />
 
       <div className="max-w-container mx-auto px-4 space-y-8">
-        {/* Карточка приюта */}
         <div className="relative w-full max-w-[1260px] min-h-[400px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row">
           <div className="relative w-full md:w-[350px] h-[180px] md:h-full flex-shrink-0">
             <img 
@@ -598,7 +713,7 @@ const ShelterProfile = () => {
                     <StaticStars rating={ratingStats.average} />
                   </div>
                   <span className="font-inter font-medium text-green-30 text-sm">
-                    {safeNumber(ratingStats.average).toFixed(1)} ({ratingStats.totalRatings} оценок)
+                    {safeNumber(ratingStats.average).toFixed(1)} ({ratingStats.totalRatings} {getRatingWord(ratingStats.totalRatings)})
                   </span>
                 </div>
               </header>
@@ -644,7 +759,6 @@ const ShelterProfile = () => {
           </div>
         </div>
 
-        {/* БЛОК ОЦЕНКИ ПРИЮТА */}
         <div className="w-full max-w-[1260px] mx-auto">
           <div className="bg-green-90 rounded-custom p-6 border-2 border-green-70">
             <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
@@ -702,7 +816,6 @@ const ShelterProfile = () => {
           </div>
         </div>
 
-        {/* Остальной код остается без изменений */}
         <section className="bg-green-95 rounded-custom p-6 w-full max-w-[1160px] mx-auto">
           <div className="flex flex-col lg:flex-row justify-between items-center gap-6 w-full">
             <div className="w-full lg:w-auto text-center lg:text-left">
@@ -733,7 +846,6 @@ const ShelterProfile = () => {
           </div>
         </section>
 
-        {/* Кнопка фильтров и активные фильтры */}
         <div className="flex flex-wrap items-center gap-2.5 p-[15px] relative bg-green-90 rounded-custom w-full max-w-[1260px] mx-auto">
           <button
             onClick={() => setShowFilters(true)}
@@ -752,7 +864,6 @@ const ShelterProfile = () => {
             </span>
           </button>
 
-          {/* Активные фильтры рядом с кнопкой */}
           {activeFilterLabels.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {activeFilterLabels.map((label, index) => (
@@ -770,7 +881,6 @@ const ShelterProfile = () => {
           )}
         </div>
 
-        {/* Список питомцев */}
         <section className="w-full max-w-[1260px] mx-auto">
           {allPets.length > 0 ? (
             <>

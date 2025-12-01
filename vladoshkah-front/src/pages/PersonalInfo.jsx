@@ -25,7 +25,7 @@ const PersonalInfo = () => {
         const token = localStorage.getItem('accessToken');
         if (!token) {
             console.log('PersonalInfo: No token found, redirecting to register');
-            navigate('/регистрация');
+            navigate('/register');
             return;
         }
 
@@ -167,7 +167,7 @@ const PersonalInfo = () => {
             
             console.log('PersonalInfo: All data synchronized, redirecting...');
             
-            navigate('/профиль');
+            navigate('/profile');
             
         } catch (error) {
             console.error('PersonalInfo: Error updating profile:', error);

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Profile from './Profile';
 import AdminProfile from './AdminProfile';
+import SiteAdminPanel from './SiteAdminPanel';
 import { isShelterAdminRole } from '../utils/roleUtils';
 
 const ProfileSelector = () => {
@@ -11,15 +12,14 @@ const ProfileSelector = () => {
     useEffect(() => {
         const initializeProfile = async () => {
             try {
-                console.log('🔄 ProfileSelector: Инициализация профиля...');
+                console.log('ProfileSelector: Инициализация профиля...');
                 
-                // Всегда обновляем данные пользователя при загрузке
                 if (user?.id) {
                     await refreshUser();
                 }
                 
             } catch (error) {
-                console.error('❌ ProfileSelector: Ошибка инициализации:', error);
+                console.error('ProfileSelector: Ошибка инициализации:', error);
             } finally {
                 setIsLoading(false);
             }
@@ -39,13 +39,19 @@ const ProfileSelector = () => {
         );
     }
 
-    // Показываем AdminProfile если пользователь shelter_admin/admin_shelter или admin
-    const showAdminProfile = isShelterAdminRole(user?.role) || user?.role === 'admin';
+    const isSiteAdmin = user?.role === 'admin';
+    const isShelterAdmin = isShelterAdminRole(user?.role);
     
-    console.log('🎯 ProfileSelector: Роль пользователя:', user?.role);
-    console.log('🎯 ProfileSelector: Показываем:', showAdminProfile ? 'AdminProfile' : 'Profile');
+    console.log('ProfileSelector: Роль пользователя:', user?.role);
+    console.log('ProfileSelector: Показываем:', isSiteAdmin ? 'SiteAdminPanel' : isShelterAdmin ? 'AdminProfile' : 'Profile');
     
-    return showAdminProfile ? <AdminProfile /> : <Profile />;
+    if (isSiteAdmin) {
+        return <SiteAdminPanel />;
+    } else if (isShelterAdmin) {
+        return <AdminProfile />;
+    } else {
+        return <Profile />;
+    }
 };
 
 export default ProfileSelector;

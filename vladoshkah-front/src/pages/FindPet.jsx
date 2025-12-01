@@ -120,7 +120,6 @@ const FindPet = () => {
     loadShelters();
   }, []);
 
-  // Обновляем favoritesMap при изменении избранного
   useEffect(() => {
     const handleFavoritesUpdated = (event) => {
       const eventUserId = event.detail?.userId;
@@ -178,7 +177,6 @@ const FindPet = () => {
         animals = [];
       }
       
-      // После загрузки питомцев проверяем избранные одним bulk запросом
       if (animals.length > 0 && user?.id) {
         try {
           const animalIds = animals.map(pet => pet.id);
@@ -205,7 +203,6 @@ const FindPet = () => {
   };
 
   const loadShelters = async () => {
-    // Защита от множественных одновременных запросов
     if (sheltersLoadingRef.current) {
       console.log('FindPet: Shelters load already in progress, skipping');
       return;
@@ -859,7 +856,7 @@ const FindPet = () => {
                   searchQuery={shelterSearchQuery}
                   highlightedShelters={highlightedShelter ? [highlightedShelter] : []}
                   onShelterClick={(shelter) => {
-                    window.location.href = `/приют/${shelter.id}`;
+                    window.location.href = `/shelter/${shelter.id}`;
                   }}
                 />
               </div>

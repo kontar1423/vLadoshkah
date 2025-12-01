@@ -214,7 +214,7 @@
                         onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        window.location.href = `/приют/${shelter.id}`;
+                        window.location.href = `/shelter/${shelter.id}`;
                         }}
                         className="w-full px-3 py-2 bg-green-40 text-green-98 rounded-custom-small text-sm hover:bg-green-40 transition-colors"
                     >

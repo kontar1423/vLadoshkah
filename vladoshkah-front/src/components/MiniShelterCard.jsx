@@ -38,7 +38,7 @@
         <div className="flex justify-between items-center mt-auto">
             <span className="font-inter text-green-50 text-sm">Округ: {district || 'Москва'}</span>
             <Link
-            to={`/приют/${id}`}
+            to={`/shelter/${id}`}
             className="font-inter font-medium text-green-70 hover:text-green-60 text-sm transition-colors"
             >
             Подробнее →

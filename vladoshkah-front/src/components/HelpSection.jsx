@@ -20,7 +20,7 @@ const HelpSection = ({ isOpen, onClose }) => {
 
     const handleContactShelters = () => {
         if (onClose) onClose();
-        navigate('/приюты');
+        navigate('/shelters');
     };
 
     const handleContentClick = (e) => {

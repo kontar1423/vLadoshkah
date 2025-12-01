@@ -25,17 +25,15 @@ const Profile = () => {
     const loadProfileData = async () => {
         try {
             setLoading(true);
-            console.log('🔄 Profile: Загружаем данные профиля...');
-            
             await loadFavoritePets();
-            const canManageShelter = isShelterAdminRole(user?.role) || user?.role === 'admin'
+            const canManageShelter = isShelterAdminRole(user?.role);
             
             if (canManageShelter) {
                 await loadShelterData();
             }
             
         } catch (error) {
-            console.error('❌ Profile: Ошибка загрузки данных:', error);
+            console.error('Profile: Ошибка загрузки данных:', error);
         } finally {
             setLoading(false);
         }
@@ -43,17 +41,14 @@ const Profile = () => {
 
     const loadShelterData = async () => {
         try {
-            console.log('🔄 Profile: Загружаем данные приюта...');
             let shelterId = user?.shelter_id;
             let shelter = null;
 
             if (shelterId) {
-                console.log('ℹ️ Profile: Ищем приют по shelter_id пользователя');
                 shelter = await shelterService.getShelterById(shelterId);
             }
 
             if (!shelter && user?.id) {
-                console.log('ℹ️ Profile: Ищем приют по admin_id, так как shelter_id отсутствует');
                 const shelterByAdmin = await shelterService.getShelterByAdminId(user.id);
 
                 if (shelterByAdmin) {
@@ -67,18 +62,17 @@ const Profile = () => {
             }
 
             if (shelter && shelterId) {
-                console.log('✅ Profile: Приют найден:', shelter);
                 setShelterInfo(shelter);
                 await loadShelterPets(shelterId);
-                // Если у пользователя есть приют — сразу показываем вкладку питомцев приюта
-                setActiveTab('shelter');
+                if (isShelterAdminRole(user?.role)) {
+                    setActiveTab('shelter');
+                }
             } else {
-                console.log('ℹ️ Profile: Приют для пользователя не найден');
                 setShelterInfo(null);
                 setShelterPets([]);
             }
         } catch (error) {
-            console.error('❌ Profile: Ошибка загрузки приюта:', error);
+            console.error('Profile: Ошибка загрузки приюта:', error);
             setShelterInfo(null);
             setShelterPets([]);
         }
@@ -86,12 +80,9 @@ const Profile = () => {
 
     const loadShelterPets = async (shelterId) => {
         try {
-            console.log('🔄 Profile: Загружаем питомцев приюта...');
             const pets = await shelterService.getShelterAnimals(shelterId);
             setShelterPets(pets || []);
-            console.log('✅ Profile: Питомцы приюта загружены:', pets?.length || 0);
             
-            // Проверяем избранные для питомцев приюта
             if (pets && pets.length > 0 && user?.id) {
                 try {
                     const animalIds = pets.map(pet => pet.id);
@@ -105,7 +96,7 @@ const Profile = () => {
                 setShelterFavoritesMap({});
             }
         } catch (error) {
-            console.error('❌ Profile: Ошибка загрузки питомцев:', error);
+            console.error('Profile: Ошибка загрузки питомцев:', error);
             setShelterPets([]);
             setShelterFavoritesMap({});
         }
@@ -113,30 +104,24 @@ const Profile = () => {
 
     const loadFavoritePets = async () => {
         try {
-            console.log('🔄 Profile: Загружаем избранных питомцев...');
-            
             if (!user?.id) {
-                console.log('❌ Profile: Нет ID пользователя');
                 setFavoritePets([]);
                 return;
             }
             
-            // Получаем список избранных из API
             const favoriteIds = await favoriteService.getUserFavorites(user.id);
-            console.log('📋 Profile: Избранные ID:', favoriteIds);
             
             if (!favoriteIds || favoriteIds.length === 0) {
                 setFavoritePets([]);
                 return;
             }
 
-            // Загружаем полную информацию о каждом питомце
             const petPromises = favoriteIds.map(async (petId) => {
                 try {
                     const pet = await animalService.getAnimalById(petId);
                     return pet;
                 } catch (error) {
-                    console.error(`❌ Profile: Ошибка загрузки питомца ${petId}:`, error);
+                    console.error(`Profile: Ошибка загрузки питомца ${petId}:`, error);
                     return null;
                 }
             });
@@ -144,16 +129,14 @@ const Profile = () => {
             const results = await Promise.all(petPromises);
             const validPets = results.filter(pet => pet !== null && pet.id);
             
-            console.log(`✅ Profile: Загружено ${validPets.length} избранных питомцев`);
             setFavoritePets(validPets);
             
         } catch (error) {
-            console.error('❌ Profile: Ошибка загрузки избранных питомцев:', error);
+            console.error('Profile: Ошибка загрузки избранных питомцев:', error);
             setFavoritePets([]);
         }
     }
 
-    // Обновляем shelterFavoritesMap при изменении избранного
     useEffect(() => {
         const handleShelterFavoritesUpdate = (event) => {
             const eventUserId = event.detail?.userId;
@@ -176,22 +159,21 @@ const Profile = () => {
 
     const handleAddPet = () => {
         if (shelterInfo) {
-            navigate('/добавить-питомца');
+            navigate('/add-pet');
         } else {
             alert('Сначала зарегистрируйте приют');
         }
     }
 
     const handleRegisterShelter = () => {
-        navigate('/регистрация-приюта');
+        navigate('/register-shelter');
     }
 
     const handleEditProfile = () => {
-        navigate('/личная-информация');
+        navigate('/personal-info');
     }
 
-    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Правильная логика отображения блоков
-    const canManageShelter = isShelterAdminRole(user?.role) || user?.role === 'admin';
+    const canManageShelter = isShelterAdminRole(user?.role);
 
     const shouldShowShelterRegistration = 
         canManageShelter && 
@@ -225,7 +207,7 @@ const Profile = () => {
                             }
                         </p>
                         <button
-                            onClick={activeTab === 'favorites' ? () => navigate('/найти-питомца') : handleAddPet}
+                            onClick={activeTab === 'favorites' ? () => navigate('/find-pet') : handleAddPet}
                             className="px-6 py-2 bg-green-50 text-green-100 font-sf-rounded font-semibold rounded-custom-small hover:bg-green-60 transition-all duration-200"
                         >
                             {activeTab === 'favorites' ? 'Найти питомцев' : 'Добавить питомца'}
@@ -265,7 +247,6 @@ const Profile = () => {
 
     const profileImage = getProfilePhotoUrl();
 
-    // Определяем статус пользователя
     const getUserStatus = () => {
         if (user?.role === 'admin') return 'Администратор системы';
         if (isShelterAdminRole(user?.role)) {
@@ -281,7 +262,6 @@ const Profile = () => {
                 <div className="flex flex-col lg:flex-row gap-8">
                     
                     <main className="flex-1">
-                        {/* Блок регистрации приюта - показывается только администраторам приюта без созданного приюта */}
                         {shouldShowShelterRegistration && (
                             <section className="bg-green-90 rounded-custom p-8 mb-8 border-2 border-green-80">
                                 <div className="text-center">
@@ -306,7 +286,6 @@ const Profile = () => {
                             </section>
                         )}
 
-                        {/* Блок управления приютом - показывается если есть shelter_id и информация о приюте */}
                         {shouldShowShelterManagement && (
                             <section className="bg-green-90 rounded-custom p-6 mb-8 border-2 border-green-50">
                                 <div className="flex items-center justify-between">
@@ -348,7 +327,6 @@ const Profile = () => {
                                     </span>
                                 </div>
                                 
-                                {/* Переключение табов - показывается только если есть приют */}
                                 {shouldShowShelterManagement && (
                                     <div className="flex border border-green-80 rounded-custom-small overflow-hidden">
                                         <button
@@ -402,7 +380,9 @@ const Profile = () => {
                                     </>
                                 ) : (
                                     <div className="w-full h-full bg-green-80 flex items-center justify-center">
-                                        <span className="text-6xl">👤</span>
+                                        <svg className="w-16 h-16 text-green-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
                                     </div>
                                 )}
                                 
@@ -445,6 +425,15 @@ const Profile = () => {
                                         </span>
                                     </div>
                                 </div>
+
+                                <div>
+                                    <span className="text-green-40 font-inter font-medium text-sm">О себе</span>
+                                    <div className="px-4 py-3 bg-green-98 rounded-custom-small border-2 border-green-30 mt-1 min-h-[80px]">
+                                        <span className="font-inter font-regular text-green-20 text-base">
+                                            {user?.bio || user?.personalInfo || "Расскажите о себе в личной информации"}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -456,6 +445,20 @@ const Profile = () => {
                                 Редактировать профиль
                             </button>
                         </div>
+
+                        {!canManageShelter && (
+                            <div className="text-right mt-4">
+                                <p className="text-green-40 font-inter text-xs">
+                                    Вы являетесь представителем приюта? Свяжитесь с нами по{' '}
+                                    <a 
+                                        href="mailto:admin@vladoshkah.ru" 
+                                        className="text-green-50 font-inter font-medium underline hover:text-green-60 transition-colors"
+                                    >
+                                        почте
+                                    </a>
+                                </p>
+                            </div>
+                        )}
                     </aside>
                 </div>
             </div>

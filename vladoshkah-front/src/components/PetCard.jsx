@@ -29,16 +29,13 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
             if (age < 1) return "Меньше года";
             if (age === 1) return "1 год";
             
-            // Правильное склонение: год/года/лет
             const lastDigit = age % 10;
             const lastTwoDigits = age % 100;
             
-            // Исключения: 11, 12, 13, 14 всегда "лет"
             if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
                 return `${age} лет`;
             }
             
-            // 1 -> год, 2-4 -> года, остальные -> лет
             if (lastDigit === 1) {
                 return `${age} год`;
             } else if (lastDigit >= 2 && lastDigit <= 4) {
@@ -98,11 +95,9 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
                 console.log('PetCard: Added to favorites');
             }
             
-            // Обновляем состояние локально
             setIsFavorite(newFavoriteState);
             
 
-            // Отправляем событие для обновления списка избранных на других страницах
             window.dispatchEvent(new CustomEvent('favoritesUpdated', { 
                 detail: { userId: currentUser.id, animalId: id, isFavorite: newFavoriteState } 
             }));
@@ -119,11 +114,8 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
     useEffect(() => {
         let cancelled = false;
 
-        // Если initialFavorite передан, используем его и не делаем запрос к API
         if (initialFavorite !== undefined) {
             setIsFavorite(initialFavorite);
-            // Если initialFavorite передан, не делаем запрос к API
-            // Но все равно слушаем события обновления избранного
             const handleFavoritesUpdated = (event) => {
                 const eventUserId = event.detail?.userId;
                 const eventAnimalId = event.detail?.animalId;
@@ -152,7 +144,6 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
                 return;
             }
 
-            // Если проверка уже выполняется, не повторяем (защита от множественных запросов)
             if (checkInProgressRef.current) {
                 console.log('PetCard: Check already in progress, skipping');
                 return;
@@ -173,28 +164,24 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
             } catch (error) {
                 if (cancelled) return;
                 console.error('PetCard: Error checking favorite status:', error);
-                // При ошибке оставляем текущее состояние или false
                 setIsFavorite(false);
             } finally {
                 checkInProgressRef.current = false;
             }
         };
 
-        // Обработчик события обновления избранного
         const handleFavoritesUpdated = (event) => {
             const eventUserId = event.detail?.userId;
             const eventAnimalId = event.detail?.animalId;
             const eventIsFavorite = event.detail?.isFavorite;
             const currentUser = user || JSON.parse(localStorage.getItem('user') || 'null');
             
-            // Если событие относится к этому питомцу и текущему пользователю
             if (eventAnimalId === id && eventUserId === currentUser?.id && eventIsFavorite !== undefined) {
                 console.log('PetCard: Updating favorite status from event:', eventIsFavorite);
                 setIsFavorite(eventIsFavorite);
             }
         };
 
-        // Всегда проверяем статус при монтировании компонента
         checkFavoriteStatus();
         window.addEventListener('favoritesUpdated', handleFavoritesUpdated);
 
@@ -213,7 +200,6 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
             className="flex flex-col w-full max-w-[320px] h-[420px] bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative"
             aria-label={`Карточка питомца ${name}`}
         >
-            {/* Кнопка удаления (показывается только если передан onDelete) */}
             {onDelete && (
                 <button
                     onClick={(e) => {
@@ -306,7 +292,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
 
             <div className="flex w-full items-center gap-2 px-4 pb-4 pt-1">
                 <Link
-                    to={`/питомец/${id}`}
+                    to={`/pet/${id}`}
                     className="text-green-98 flex items-center justify-center gap-2 px-3 py-2 flex-1 bg-green-60 rounded-custom-small hover:bg-green-50 transition-colors shadow-sm text-[13px]"
                 >
                     Познакомиться

@@ -16,7 +16,7 @@ export const userService = {
             console.log('userService: Updating user data, type:', typeof userData);
             
             if (userData instanceof FormData) {
-                console.log('📋 userService: FormData contents:');
+                console.log('userService: FormData contents:');
                 for (let [key, value] of userData.entries()) {
                     console.log(`  ${key}:`, value instanceof File ? `File: ${value.name}` : value);
                 }
@@ -160,6 +160,44 @@ export const userService = {
             return response.data;
         } catch (error) {
             console.error('userService: Error getting user by ID:', error);
+            throw error;
+        }
+    },
+
+    async getAllUsers() {
+        try {
+            const response = await api.get('/users');
+            return response.data;
+        } catch (error) {
+            console.error('userService: Error getting all users:', error);
+            throw error;
+        }
+    },
+
+    async updateUserById(id, userData) {
+        try {
+            if (userData instanceof FormData) {
+                const response = await api.put(`/users/${id}`, userData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+                return response.data;
+            } else {
+                const response = await api.put(`/users/${id}`, userData);
+                return response.data;
+            }
+        } catch (error) {
+            console.error(`userService: Error updating user ${id}:`, error);
+            throw error;
+        }
+    },
+
+    async deleteUser(id) {
+        try {
+            await api.delete(`/users/${id}`);
+        } catch (error) {
+            console.error(`userService: Error deleting user ${id}:`, error);
             throw error;
         }
     }

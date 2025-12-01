@@ -16,10 +16,10 @@ export const Header = () => {
   const forceScrollToTop = useForceScroll()
   
   const navigationItems = [
-    { id: 1, label: "Найти питомца", path: "/найти-питомца" },
+    { id: 1, label: "Найти питомца", path: "/find-pet" },
     { id: 2, label: "Помочь", path: null, action: () => setIsHelpModalOpen(true) },
-    { id: 3, label: "Приюты", path: "/приюты" },
-    { id: 4, label: "Отдать животное", path: "/отдать-животное" },
+    { id: 3, label: "Приюты", path: "/shelters" },
+    { id: 4, label: "Отдать животное", path: "/give-animal" },
   ];
 
   const handleRefreshUser = async () => {
@@ -101,7 +101,6 @@ export const Header = () => {
     return "https://c.animaapp.com/qqBlbLv1/img/person@2x.png";
   };
 
-  // Проверяем, является ли пользователь админом (любого типа)
   const isAdmin = user?.role === 'admin' || isShelterAdminRole(user?.role);
   
   useEffect(() => {
@@ -234,13 +233,13 @@ export const Header = () => {
                 <div
                   onClick={() => {
                     handleScrollToTop();
-                    if (location.pathname !== '/войти') {
-                      navigate('/войти');
+                    if (location.pathname !== '/login') {
+                      navigate('/login');
                     }
                     setIsMenuOpen(false);
                   }}
                   className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
-                    location.pathname === '/войти' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                    location.pathname === '/login' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
                   }`}
                 >
                   <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
@@ -250,13 +249,13 @@ export const Header = () => {
                 <div
                   onClick={() => {
                     handleScrollToTop();
-                    if (location.pathname !== '/регистрация') {
-                      navigate('/регистрация');
+                    if (location.pathname !== '/register') {
+                      navigate('/register');
                     }
                     setIsMenuOpen(false);
                   }}
                   className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
-                    location.pathname === '/регистрация' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                    location.pathname === '/register' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
                   }`}
                 >
                   <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
@@ -271,18 +270,17 @@ export const Header = () => {
                   <p className="text-green-40 text-xs">{getUserRoleDisplay()}</p>
                 </div>
                 
-                {/* Для админов показываем только одну ссылку - на админский профиль */}
                 {isAdmin ? (
                   <div
                     onClick={() => {
                       handleScrollToTop();
-                      if (location.pathname !== '/профиль') {
-                        navigate('/профиль');
+                      if (location.pathname !== '/profile') {
+                        navigate('/profile');
                       }
                       setIsMenuOpen(false);
                     }}
                     className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
-                      location.pathname === '/профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                      location.pathname === '/profile' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
                     }`}
                   >
                     <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
@@ -290,17 +288,16 @@ export const Header = () => {
                     </span>
                   </div>
                 ) : (
-                  // Для обычных пользователей показываем ссылку на профиль
                   <div
                     onClick={() => {
                       handleScrollToTop();
-                      if (location.pathname !== '/профиль') {
-                        navigate('/профиль');
+                      if (location.pathname !== '/profile') {
+                        navigate('/profile');
                       }
                       setIsMenuOpen(false);
                     }}
                     className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
-                      location.pathname === '/профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                      location.pathname === '/profile' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
                     }`}
                   >
                     <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
@@ -354,8 +351,8 @@ export const Header = () => {
                     <div
                       onClick={() => {
                         handleScrollToTop();
-                        if (location.pathname !== '/войти') {
-                          navigate('/войти');
+                        if (location.pathname !== '/login') {
+                          navigate('/login');
                         }
                         setIsUserMenuOpen(false);
                       }}
@@ -366,8 +363,8 @@ export const Header = () => {
                     <div
                       onClick={() => {
                         handleScrollToTop();
-                        if (location.pathname !== '/регистрация') {
-                          navigate('/регистрация');
+                        if (location.pathname !== '/register') {
+                          navigate('/register');
                         }
                         setIsUserMenuOpen(false);
                       }}
@@ -383,13 +380,12 @@ export const Header = () => {
                       <p className="text-green-40 text-xs">{getUserRoleDisplay()}</p>
                     </div>
                     
-                    {/* Для админов показываем только одну ссылку - на админский профиль */}
                     {isAdmin ? (
                       <div
                         onClick={() => {
                           handleScrollToTop();
-                          if (location.pathname !== '/профиль') {
-                            navigate('/профиль');
+                          if (location.pathname !== '/profile') {
+                            navigate('/profile');
                           }
                           setIsUserMenuOpen(false);
                         }}
@@ -403,12 +399,11 @@ export const Header = () => {
                         {user?.role === 'admin' ? 'Админ панель' : 'Профиль'}
                       </div>
                     ) : (
-                      // Для обычных пользователей показываем ссылку на профиль
                       <div
                         onClick={() => {
                           handleScrollToTop();
-                          if (location.pathname !== '/профиль') {
-                            navigate('/профиль');
+                          if (location.pathname !== '/profile') {
+                            navigate('/profile');
                           }
                           setIsUserMenuOpen(false);
                         }}
@@ -480,13 +475,13 @@ export const Header = () => {
                     <div
                       onClick={() => {
                         handleScrollToTop();
-                        if (location.pathname !== '/войти') {
-                          navigate('/войти');
+                        if (location.pathname !== '/login') {
+                          navigate('/login');
                         }
                         setIsUserMenuOpen(false);
                       }}
                       className={`block w-full text-left px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer ${
-                        location.pathname === '/войти' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                        location.pathname === '/login' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
                       }`}
                     >
                       Войти
@@ -494,13 +489,13 @@ export const Header = () => {
                     <div
                       onClick={() => {
                         handleScrollToTop();
-                        if (location.pathname !== '/регистрация') {
-                          navigate('/регистрация');
+                        if (location.pathname !== '/register') {
+                          navigate('/register');
                         }
                         setIsUserMenuOpen(false);
                       }}
                       className={`block w-full text-left px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer ${
-                        location.pathname === '/регистрация' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                        location.pathname === '/register' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
                       }`}
                     >
                       Зарегистрироваться
@@ -508,34 +503,32 @@ export const Header = () => {
                   </>
                 ) : (
                   <>
-                    {/* Для админов показываем только одну ссылку - на админский профиль */}
                     {isAdmin ? (
                       <div
                         onClick={() => {
                           handleScrollToTop();
-                          if (location.pathname !== '/профиль') {
-                            navigate('/профиль');
+                          if (location.pathname !== '/profile') {
+                            navigate('/profile');
                           }
                           setIsUserMenuOpen(false);
                         }}
                         className={`block px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer ${
-                          location.pathname === '/профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                          location.pathname === '/profile' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
                         }`}
                       >
                         {user?.role === 'admin' ? 'Админ панель' : 'Админ приюта'}
                       </div>
                     ) : (
-                      // Для обычных пользователей показываем ссылку на профиль
                       <div
                         onClick={() => {
                           handleScrollToTop();
-                          if (location.pathname !== '/профиль') {
-                            navigate('/профиль');
+                          if (location.pathname !== '/profile') {
+                            navigate('/profile');
                           }
                           setIsUserMenuOpen(false);
                         }}
                         className={`block px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer ${
-                          location.pathname === '/профиль' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                          location.pathname === '/profile' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
                         }`}
                       >
                         Профиль

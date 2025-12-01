@@ -150,14 +150,14 @@ const AnketaGive = () => {
 
             console.log('Заявка на отдачу успешно создана:', response.data);
             alert('Анкета успешно отправлена! Мы свяжемся с вами в ближайшее время.');
-            navigate('/приюты');
+            navigate('/shelters');
             
         } catch (error) {
             console.error('Ошибка при отправке анкеты:', error);
             
             if (error.response?.status === 401) {
                 alert('Необходима авторизация. Пожалуйста, войдите в систему.');
-                navigate('/войти');
+                navigate('/login');
             } else if (error.response?.data?.message) {
                 alert(`Ошибка: ${error.response.data.message}`);
             } else {

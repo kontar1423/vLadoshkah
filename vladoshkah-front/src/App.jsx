@@ -1,4 +1,3 @@
-// src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext' 
 import Header from './components/Header'
@@ -11,7 +10,7 @@ import GiveAnimal from './pages/GiveAnimal'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import PersonalInfo from './pages/PersonalInfo'
-import ProfileSelector from './pages/ProfileSelector' // Исправленный импорт
+import ProfileSelector from './pages/ProfileSelector'
 import AdminProfile from './pages/AdminProfile'
 import PetProfile from './pages/PetProfile'
 import ShelterProfile from './pages/ShelterProfile'
@@ -30,19 +29,19 @@ function App() {
           <main className="flex-1">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/найти-питомца" element={<FindPet />} />
-              <Route path="/приюты" element={<Shelters />} />
-              <Route path="/отдать-животное" element={<GiveAnimal />} />
-              <Route path="/войти" element={<Login />} />
-              <Route path="/регистрация" element={<Register />} />
-              <Route path="/личная-информация" element={<PersonalInfo />} />
-              <Route path="/профиль" element={<ProfileSelector />} /> {/* Единый маршрут */}
-              <Route path="/админ-профиль" element={<AdminProfile />} />
-              <Route path="/питомец/:id" element={<PetProfile />} />
-              <Route path="/приют/:id" element={<ShelterProfile />} />
-              <Route path="/Anketa_give" element={<AnketaGive />} />
-              <Route path="/регистрация-приюта" element={<ShelterRegister />} />
-              <Route path="/добавить-питомца" element={<AddPetToShelter />} />
+              <Route path="/find-pet" element={<FindPet />} />
+              <Route path="/shelters" element={<Shelters />} />
+              <Route path="/give-animal" element={<GiveAnimal />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/personal-info" element={<PersonalInfo />} />
+              <Route path="/profile" element={<ProfileSelector />} />
+              <Route path="/admin-profile" element={<AdminProfile />} />
+              <Route path="/pet/:id" element={<PetProfile />} />
+              <Route path="/shelter/:id" element={<ShelterProfile />} />
+              <Route path="/application-give" element={<AnketaGive />} />
+              <Route path="/register-shelter" element={<ShelterRegister />} />
+              <Route path="/add-pet" element={<AddPetToShelter />} />
             </Routes>
           </main>
           <Footer />

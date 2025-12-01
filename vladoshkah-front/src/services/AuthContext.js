@@ -25,24 +25,23 @@ export const AuthProvider = ({ children }) => {
         
         if (token) {
             try {
-                console.log('🔄 AuthContext: Загрузка свежих данных пользователя...');
+                console.log('AuthContext: Загрузка свежих данных пользователя...');
                 const userData = await authService.getCurrentUserFromServer();
                 setIsAuthenticated(true);
                 setUser(userData);
                 localStorage.setItem('user', JSON.stringify(userData));
-                console.log('✅ AuthContext: Пользователь аутентифицирован:', userData);
+                console.log('AuthContext: Пользователь аутентифицирован:', userData);
             } catch (error) {
-                console.error('❌ AuthContext: Ошибка загрузки пользователя:', error);
-                // Используем данные из localStorage как fallback
+                console.error('AuthContext: Ошибка загрузки пользователя:', error);
                 const storedUser = localStorage.getItem('user');
                 if (storedUser) {
                     try {
                         const userData = JSON.parse(storedUser);
                         setIsAuthenticated(true);
                         setUser(userData);
-                        console.log('🔄 AuthContext: Используем сохраненные данные:', userData);
+                        console.log('AuthContext: Используем сохраненные данные:', userData);
                     } catch (parseError) {
-                        console.error('❌ AuthContext: Ошибка парсинга данных:', parseError);
+                        console.error('AuthContext: Ошибка парсинга данных:', parseError);
                         setIsAuthenticated(false);
                         setUser(null);
                     }
@@ -61,16 +60,16 @@ export const AuthProvider = ({ children }) => {
     const register = async (userData) => {
         try {
             setLoading(true);
-            console.log('🔄 AuthContext: Регистрация пользователя...');
+            console.log('AuthContext: Регистрация пользователя...');
             
             const result = await authService.register(userData);
-            console.log('✅ AuthContext: Результат регистрации:', result);
+            console.log('AuthContext: Результат регистрации:', result);
             
             if (result.success && result.user) {
                 setIsAuthenticated(true);
                 setUser(result.user);
                 localStorage.setItem('profileComplete', 'false');
-                console.log('✅ AuthContext: Регистрация успешна');
+                console.log('AuthContext: Регистрация успешна');
                 return { success: true, user: result.user };
             } else {
                 return { 
@@ -79,7 +78,7 @@ export const AuthProvider = ({ children }) => {
                 };
             }
         } catch (error) {
-            console.error('❌ AuthContext: Ошибка регистрации:', error);
+            console.error('AuthContext: Ошибка регистрации:', error);
             return { 
                 success: false, 
                 error: 'Неожиданная ошибка при регистрации' 
@@ -106,7 +105,7 @@ export const AuthProvider = ({ children }) => {
                 };
             }
         } catch (error) {
-            console.error('❌ AuthContext: Ошибка входа:', error);
+            console.error('AuthContext: Ошибка входа:', error);
             return { 
                 success: false, 
                 error: 'Неожиданная ошибка при входе' 
@@ -129,33 +128,31 @@ export const AuthProvider = ({ children }) => {
                 const updatedUser = { ...user, ...userData };
                 setUser(updatedUser);
                 localStorage.setItem('user', JSON.stringify(updatedUser));
-                console.log('✅ AuthContext: Данные пользователя обновлены локально', updatedUser);
+                console.log('AuthContext: Данные пользователя обновлены локально', updatedUser);
                 
-                // Загружаем свежие данные с сервера
                 const freshUserData = await authService.getCurrentUserFromServer();
                 setUser(freshUserData);
                 localStorage.setItem('user', JSON.stringify(freshUserData));
-                console.log('✅ AuthContext: Свежие данные загружены с сервера', freshUserData);
+                console.log('AuthContext: Свежие данные загружены с сервера', freshUserData);
             }
         } catch (error) {
-            console.error('❌ AuthContext: Ошибка обновления пользователя:', error);
+            console.error('AuthContext: Ошибка обновления пользователя:', error);
         }
     };
 
     const refreshUser = async () => {
         try {
-            console.log('🔄 AuthContext: Полное обновление данных пользователя...');
+            console.log('AuthContext: Полное обновление данных пользователя...');
             const freshUserData = await authService.getCurrentUserFromServer();
             
-            // Глубокое обновление всех состояний
             setUser(freshUserData);
             setIsAuthenticated(true);
             
             localStorage.setItem('user', JSON.stringify(freshUserData));
-            console.log('✅ AuthContext: Данные пользователя полностью обновлены', freshUserData);
+            console.log('AuthContext: Данные пользователя полностью обновлены', freshUserData);
             return freshUserData;
         } catch (error) {
-            console.error('❌ AuthContext: Ошибка обновления пользователя:', error);
+            console.error('AuthContext: Ошибка обновления пользователя:', error);
             return user;
         }
     };

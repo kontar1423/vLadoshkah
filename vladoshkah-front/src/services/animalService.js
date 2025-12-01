@@ -32,7 +32,6 @@ export const animalService = {
     async getAnimalsByShelter(shelterId, forceRefresh = false) {
         try {
             console.log('Fetching animals for shelter:', shelterId, 'forceRefresh:', forceRefresh);
-            // Используем /animals/filters с параметром shelter_id вместо /animals/shelter/:shelterId
             const params = new URLSearchParams();
             params.append('shelter_id', shelterId);
             if (forceRefresh) {
@@ -68,6 +67,20 @@ export const animalService = {
             return response.data;
         } catch (error) {
             console.error(`Error deleting animal ${animalId}:`, error);
+            throw error;
+        }
+    },
+
+    async updateAnimal(animalId, animalData) {
+        try {
+            const response = await api.put(`/animals/${animalId}`, animalData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error(`Error updating animal ${animalId}:`, error);
             throw error;
         }
     }

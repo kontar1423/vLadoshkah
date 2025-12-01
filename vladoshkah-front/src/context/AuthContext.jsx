@@ -122,13 +122,11 @@ export const AuthProvider = ({ children }) => {
 
   const refreshUserRef = useRef(null)
   const refreshUser = async () => {
-    // Если уже идет обновление, возвращаем существующий промис
     if (refreshUserRef.current) {
       console.log('AuthContext: refreshUser already in progress, returning existing promise')
       return refreshUserRef.current
     }
 
-    // Создаем новый промис для обновления
     refreshUserRef.current = (async () => {
       try {
         const freshUser = normalizeUserRole(await authService.getCurrentUserFromServer())
@@ -141,7 +139,6 @@ export const AuthProvider = ({ children }) => {
         console.error('AuthContext: refreshUser error', error)
         throw error
       } finally {
-        // Очищаем ссылку на промис после завершения
         refreshUserRef.current = null
       }
     })()

@@ -55,14 +55,11 @@ export const applicationService = {
 
     async getApplicationsForAnimal(animalId) {
         try {
-            // Используем endpoint для получения всех заявок на питомца
             const response = await api.get(`/applications/take/animal/${animalId}`);
             console.log('Applications for animal response:', response.data);
-            // Если ответ - массив, возвращаем его, иначе возвращаем пустой массив
             return Array.isArray(response.data) ? response.data : [];
         } catch (error) {
             console.error('Error getting applications for animal:', error);
-            // Если endpoint не существует (404), возвращаем пустой массив
             if (error.response?.status === 404) {
                 console.warn('Endpoint /applications/take/animal/:id not found, returning empty array');
             }

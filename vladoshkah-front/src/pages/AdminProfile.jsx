@@ -1,4 +1,3 @@
-// AdminProfile.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -20,41 +19,35 @@ const AdminProfile = () => {
     const [favoritePets, setFavoritePets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState(null);
-    const [activeTab, setActiveTab] = useState('favorites'); // 'favorites' или 'shelter'
+    const [activeTab, setActiveTab] = useState('favorites');
     const [shelterFavoritesMap, setShelterFavoritesMap] = useState({});
     const lastUserIdRef = useRef(null);
 
 
-    // Проверка роли и загрузка данных
     useEffect(() => {
         const checkRoleAndLoadData = async () => {
             try {
                 setLoading(true);
                 
-                // Используем данные из контекста, если они есть, вместо повторного запроса
                 let freshUser = user;
                 if (!freshUser) {
                     freshUser = await refreshUser();
                 }
                 console.log('AdminProfile: Fresh user data:', freshUser);
                 
-                // Проверяем роль
                 if (!freshUser || (!isShelterAdminRole(freshUser.role) && freshUser.role !== 'admin')) {
                     console.log('AdminProfile: User is not admin, redirecting to profile');
-                    navigate('/профиль');
+                    navigate('/profile');
                     return;
                 }
                 
                 console.log('AdminProfile: User is admin, loading admin data');
                 
-                // Загружаем полные данные пользователя (без повторного refreshUser)
                 await loadUserDataFromServer();
-                // Загружаем данные админа
                 await loadAdminData(freshUser);
                 
             } catch (error) {
                 console.error('AdminProfile: Error in role check:', error);
-                // При ошибке 429 не перенаправляем, используем данные из localStorage
                 if (error.response?.status === 429) {
                     const cachedUser = JSON.parse(localStorage.getItem('user') || 'null');
                     if (cachedUser && (isShelterAdminRole(cachedUser.role) || cachedUser.role === 'admin')) {
@@ -62,14 +55,13 @@ const AdminProfile = () => {
                         return;
                     }
                 }
-                navigate('/профиль');
+                navigate('/profile');
             }
         };
 
         checkRoleAndLoadData();
     }, [navigate]);
     
-    // Обновляем данные при возврате с другой страницы (через location.state)
     useEffect(() => {
         if (location.state?.refresh) {
             console.log('AdminProfile: Refresh flag detected, reloading data');
@@ -77,18 +69,14 @@ const AdminProfile = () => {
             if (currentUser?.id && (isShelterAdminRole(currentUser.role) || currentUser.role === 'admin')) {
                 loadAdminData(currentUser);
             }
-            // Очищаем флаг, чтобы не обновлять при каждом рендере
             navigate(location.pathname, { replace: true, state: {} });
         }
     }, [location.state, user, navigate]);
     
-    // Флаг для предотвращения автоматической перезагрузки сразу после удаления
     const deletionInProgressRef = useRef(false);
 
-    // Обновляем данные при фокусе на странице (возврат с другой страницы)
     useEffect(() => {
         const handleFocus = async () => {
-            // Не перезагружаем, если только что удалили питомца
             if (deletionInProgressRef.current) {
                 console.log('AdminProfile: Skipping refresh on focus - deletion in progress');
                 return;
@@ -98,7 +86,6 @@ const AdminProfile = () => {
             if (currentUser?.id && (isShelterAdminRole(currentUser.role) || currentUser.role === 'admin')) {
                 console.log('AdminProfile: Window focused, refreshing data');
                 try {
-                    // Используем текущие данные пользователя, не делаем новый запрос
                     await loadAdminData(currentUser);
                 } catch (error) {
                     console.error('AdminProfile: Error refreshing on focus:', error);
@@ -112,10 +99,8 @@ const AdminProfile = () => {
         };
     }, [user]);
 
-    // Обновляем данные при возврате на страницу (например, после создания приюта)
     useEffect(() => {
         const handleVisibilityChange = async () => {
-            // Не перезагружаем, если только что удалили питомца
             if (deletionInProgressRef.current) {
                 console.log('AdminProfile: Skipping refresh on visibility - deletion in progress');
                 return;
@@ -126,7 +111,6 @@ const AdminProfile = () => {
                 if (currentUser?.id && (isShelterAdminRole(currentUser.role) || currentUser.role === 'admin')) {
                     console.log('AdminProfile: Page visible, refreshing data');
                     try {
-                        // Используем текущие данные пользователя, не делаем новый запрос
                         await loadAdminData(currentUser);
                     } catch (error) {
                         console.error('AdminProfile: Error refreshing on visibility change:', error);
@@ -147,7 +131,7 @@ const AdminProfile = () => {
             const currentUserId = (userData || user)?.id;
             
             if (!eventUserId || eventUserId === currentUserId) {
-                console.log('🔄 AdminProfile: Custom favorites update, reloading...');
+                console.log('AdminProfile: Custom favorites update, reloading...');
                 loadFavoritePets();
             }
         };
@@ -178,14 +162,12 @@ const AdminProfile = () => {
         try {
             console.log('AdminProfile: Loading fresh user data from server...');
             
-            // Используем данные из контекста, если они есть
             if (user) {
                 console.log('AdminProfile: Using context user data');
                 setUserData(user);
                 return;
             }
             
-            // Если данных нет, пытаемся загрузить с сервера
             try {
                 const serverUserData = refreshUser
                     ? await refreshUser()
@@ -194,7 +176,6 @@ const AdminProfile = () => {
                 setUserData(serverUserData);
                 localStorage.setItem('user', JSON.stringify(serverUserData));
             } catch (refreshError) {
-                // При ошибке 429 используем кэш
                 if (refreshError.response?.status === 429) {
                     const cachedUser = JSON.parse(localStorage.getItem('user') || 'null');
                     if (cachedUser) {
@@ -208,7 +189,6 @@ const AdminProfile = () => {
             
         } catch (error) {
             console.error('AdminProfile: Error loading user data from server:', error);
-            // Используем данные из контекста или localStorage как fallback
             const fallbackUser = user || JSON.parse(localStorage.getItem('user') || 'null');
             if (fallbackUser) {
                 console.log('AdminProfile: Using fallback user data');
@@ -221,10 +201,8 @@ const AdminProfile = () => {
         try {
             console.log('AdminProfile: Loading admin data for user:', currentUser);
             
-            // Загружаем избранные питомцы
             await loadFavoritePets();
             
-            // Если у пользователя есть приют, загружаем его данные
             if (currentUser?.shelter_id) {
                 await loadShelterInfo(currentUser.shelter_id);
                 await loadShelterPets(currentUser.shelter_id);
@@ -271,7 +249,6 @@ const AdminProfile = () => {
     };
 
     const loadShelterPets = async (shelterId, skipIfDeleting = true) => {
-        // Не загружаем, если идет процесс удаления
         if (skipIfDeleting && deletionInProgressRef.current) {
             console.log('AdminProfile: Skipping loadShelterPets - deletion in progress');
             return;
@@ -281,12 +258,10 @@ const AdminProfile = () => {
             console.log('AdminProfile: Loading shelter pets for shelter ID:', shelterId);
             const pets = await animalService.getAnimalsByShelter(shelterId);
             
-            // Обновляем состояние только если удаление не в процессе
             if (!deletionInProgressRef.current) {
                 setShelterPets(pets || []);
                 console.log('AdminProfile: Shelter pets loaded:', pets?.length || 0);
                 
-                // Проверяем избранные для питомцев приюта
                 if (pets && pets.length > 0 && user?.id) {
                     try {
                         const animalIds = pets.map(pet => pet.id);
@@ -300,7 +275,6 @@ const AdminProfile = () => {
                     setShelterFavoritesMap({});
                 }
                 
-                // Если есть приют — по умолчанию открываем вкладку «Питомцы приюта», чтобы их было видно
                 if (pets?.length >= 0) {
                     setActiveTab('shelter');
                 }
@@ -309,7 +283,6 @@ const AdminProfile = () => {
             }
         } catch (error) {
             console.error('AdminProfile: Error loading shelter pets:', error);
-            // Обновляем состояние только если удаление не в процессе
             if (!deletionInProgressRef.current) {
                 setShelterPets([]);
                 setShelterFavoritesMap({});
@@ -328,16 +301,14 @@ const AdminProfile = () => {
                 return;
             }
             
-            // Получаем список избранных из API
             const favoriteIds = await favoriteService.getUserFavorites(currentUser.id);
-            console.log('📋 AdminProfile: Favorite pets IDs for user', currentUser.id, ':', favoriteIds);
+            console.log('AdminProfile: Favorite pets IDs for user', currentUser.id, ':', favoriteIds);
             
             if (!favoriteIds || favoriteIds.length === 0) {
                 setFavoritePets([]);
                 return;
             }
             
-            // Загружаем полную информацию о каждом питомце
             const petPromises = favoriteIds.map(async (petId) => {
                 try {
                     console.log(`AdminProfile: Loading pet ${petId}...`);
@@ -366,7 +337,7 @@ const AdminProfile = () => {
     };
 
     const forceRefreshFavorites = async () => {
-        console.log('🔄 AdminProfile: Force refreshing favorites...');
+        console.log('AdminProfile: Force refreshing favorites...');
         try {
             await loadFavoritePets();
             console.log(' AdminProfile: Favorites force refreshed');
@@ -376,7 +347,7 @@ const AdminProfile = () => {
     };
 
     const forceRefreshShelterPets = async () => {
-        console.log('🔄 AdminProfile: Force refreshing shelter pets...');
+        console.log('AdminProfile: Force refreshing shelter pets...');
         try {
             if (userData?.shelter_id) {
                 await loadShelterPets(userData.shelter_id);
@@ -408,7 +379,6 @@ const AdminProfile = () => {
         return null;
     };
 
-    // Данные пользователя для сайдбара
     const getVolunteerInfo = () => {
         const currentUser = userData || user;
         
@@ -460,12 +430,12 @@ const AdminProfile = () => {
     };
 
     const handleRegisterShelter = () => {
-        navigate('/регистрация-приюта');
+        navigate('/register-shelter');
     };
 
     const handleAddPet = () => {
         if (shelterInfo) {
-            navigate('/добавить-питомца');
+            navigate('/add-pet');
         } else {
             alert('Сначала зарегистрируйте приют');
         }
@@ -479,7 +449,7 @@ const AdminProfile = () => {
 
     const handleEditProfile = () => {
         console.log('AdminProfile: Navigating to edit profile');
-        navigate('/личная-информация');
+        navigate('/personal-info');
     };
 
     const handleDeletePet = async (petId) => {
@@ -487,7 +457,6 @@ const AdminProfile = () => {
             return;
         }
 
-        // Устанавливаем флаг, чтобы предотвратить автоматическую перезагрузку
         deletionInProgressRef.current = true;
 
         try {
@@ -495,8 +464,6 @@ const AdminProfile = () => {
             await animalService.deleteAnimal(petId);
             console.log('AdminProfile: Pet deleted successfully');
             
-            // Немедленно удаляем питомца из состояния для мгновенного обновления UI
-            // Используем строгое сравнение с приведением типов
             const petIdNum = Number(petId);
             setShelterPets(prev => {
                 const filtered = prev.filter(pet => {
@@ -511,7 +478,6 @@ const AdminProfile = () => {
                 return filtered;
             });
             
-            // Также обновляем избранные, если питомец был там
             setFavoritePets(prev => prev.filter(pet => Number(pet.id) !== petIdNum));
             setShelterFavoritesMap(prev => {
                 const updated = { ...prev };
@@ -520,27 +486,21 @@ const AdminProfile = () => {
                 return updated;
             });
             
-            // Отправляем событие об удалении для обновления на других страницах
             window.dispatchEvent(new CustomEvent('petDeleted', { 
                 detail: { petId: petIdNum, shelterId: shelterInfo?.id } 
             }));
             
-            // Сбрасываем флаг через задержку, чтобы избежать перезагрузки
-            // Увеличиваем время до 5 секунд, чтобы дать время кэшу обновиться
             setTimeout(() => {
                 deletionInProgressRef.current = false;
                 console.log('AdminProfile: Deletion flag reset, reloads enabled again');
             }, 5000);
             
-            // НЕ перезагружаем данные с сервера, так как кэш может еще не обновиться
-            // Состояние уже обновлено локально, карточка исчезнет сразу
         } catch (error) {
             console.error('AdminProfile: Error deleting pet:', error);
             alert('Не удалось удалить питомца. Попробуйте еще раз.');
             deletionInProgressRef.current = false;
-            // При ошибке перезагружаем данные, чтобы восстановить корректное состояние
             if (shelterInfo?.id) {
-                await loadShelterPets(shelterInfo.id, false); // Принудительная загрузка при ошибке
+                await loadShelterPets(shelterInfo.id, false);
             }
         }
     };
@@ -552,7 +512,7 @@ const AdminProfile = () => {
                 title: "Нет избранных питомцев",
                 message: "Добавляйте питомцев в избранное, нажимая на сердечко на карточках животных",
                 buttonText: "Найти питомцев",
-                onButtonClick: () => navigate('/найти-питомца')
+                onButtonClick: () => navigate('/find-pet')
             }
             : {
                 title: "Нет питомцев в приюте",
@@ -621,9 +581,7 @@ const AdminProfile = () => {
         <div className="min-h-screen bg-green-95">
             <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-10">
                 <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Основной контент */}
                     <main className="flex-1">
-                        {/* Блок регистрации приюта (показывается только если приюта нет) */}
                         {!shelterInfo && (
                             <section className="bg-green-90 rounded-custom p-8 mb-8 border-2 border-green-80">
                                 <div className="text-center">
@@ -648,7 +606,6 @@ const AdminProfile = () => {
                             </section>
                         )}
 
-                        {/* Блок управления приютом (показывается только если приют есть) */}
                         {shelterInfo && (
                             <section className="bg-green-90 rounded-custom p-6 mb-8 border-2 border-green-50">
                                 <div className="flex items-center justify-between">
@@ -686,7 +643,6 @@ const AdminProfile = () => {
                                     </span>
                                 </div>
                                 
-                                {/* Переключение табов (показывается только если есть приют) */}
                                 {shelterInfo && (
                                     <div className="flex border border-green-80 rounded-custom-small overflow-hidden">
                                         <button
@@ -717,7 +673,6 @@ const AdminProfile = () => {
                         </section>
                     </main>
 
-                    {/* Сайдбар с информацией о пользователе */}
                     <aside className="lg:w-[340px] flex flex-col gap-6">
                         <div className="relative bg-green-90 rounded-custom overflow-hidden">
                             <div className="relative h-64">
@@ -750,7 +705,9 @@ const AdminProfile = () => {
                                         volunteerInfo.image ? 'hidden' : 'flex'
                                     }`}
                                 >
-                                    <span className="text-6xl">👤</span>
+                                    <svg className="w-16 h-16 text-green-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
                                 </div>
                                 
                                 <div className="absolute bottom-6 left-6 right-6">

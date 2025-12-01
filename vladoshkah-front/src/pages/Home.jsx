@@ -60,7 +60,6 @@ const getUniqueDistricts = (shelters) => {
         const animalsData = Array.isArray(data) ? data : [];
         setAnimals(animalsData);
         
-        // Проверяем избранные для всех питомцев одним bulk запросом
         if (animalsData.length > 0 && user?.id) {
           try {
             const animalIds = animalsData.map(pet => pet.id);
@@ -84,7 +83,6 @@ const getUniqueDistricts = (shelters) => {
     loadAnimals();
   }, [user?.id]);
 
-  // Обновляем favoritesMap при изменении избранного
   useEffect(() => {
     const handleFavoritesUpdated = (event) => {
       const eventUserId = event.detail?.userId;
@@ -126,7 +124,6 @@ const getDistrictName = (regionCode) => {
 
   useEffect(() => {
     const loadShelters = async () => {
-      // Защита от множественных одновременных запросов
       if (sheltersLoadingRef.current) {
         console.log('Home: Shelters load already in progress, skipping');
         return;
@@ -347,7 +344,7 @@ const getDistrictName = (regionCode) => {
               <SheltersMap 
                 shelters={shelters}
                 onShelterClick={(shelter) => {
-                  window.location.href = `/приют/${shelter.id}`;
+                  window.location.href = `/shelter/${shelter.id}`;
                 }}
               />
             ) : (

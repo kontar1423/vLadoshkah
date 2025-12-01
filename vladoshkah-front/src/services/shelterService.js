@@ -72,10 +72,8 @@ export const shelterService = {
         }
     },
 
-    // Добавляем метод для получения питомцев приюта
     async getShelterAnimals(shelterId) {
         try {
-            // Используем /animals/filters с параметром shelter_id вместо /animals/shelter/:shelterId
             const response = await api.get(`/animals/filters?shelter_id=${shelterId}`);
             return response.data;
         } catch (error) {
@@ -84,13 +82,25 @@ export const shelterService = {
         }
     },
 
-    // Метод для получения приюта по admin_id (для текущего пользователя)
     async getShelterByAdminId(adminId) {
         try {
             const response = await api.get(`/shelters?admin_id=${adminId}`);
             return response.data.length > 0 ? normalizeShelterData(response.data[0]) : null;
         } catch (error) {
             console.error(`Error fetching shelter for admin ${adminId}:`, error);
+            throw error;
+        }
+    },
+
+    async getUserVote(shelterId) {
+        try {
+            const response = await api.get(`/shelters/${shelterId}/vote`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching user vote for shelter ${shelterId}:`, error);
+            if (error.response?.status === 401 || error.response?.status === 404) {
+                return { vote: null, hasVote: false };
+            }
             throw error;
         }
     }

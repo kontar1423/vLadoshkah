@@ -52,7 +52,7 @@ api.interceptors.request.use(
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('user');
-            window.location.href = '/войти';
+            window.location.href = '/login';
             return Promise.reject(refreshError);
         }
         }

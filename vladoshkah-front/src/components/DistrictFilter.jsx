@@ -414,24 +414,53 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
 
   const handleReset = () => {
     setSelectedDistricts([]);
-    onApplyFilter({ districts: [], districtIds: [] });
-    onClose();
   };
 
   const legendColorFor = (regionId) =>
     legendColors[regionId] || districts.find((district) => district.id === regionId)?.color || '#cce8cf';
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-green-95 rounded-custom w-full max-w-6xl flex flex-col items-start gap-6 p-8 relative max-h-[90vh] overflow-y-auto shadow-xl">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4"
+      style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0,
+        overflowY: 'auto'
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div 
+        className="bg-green-95 rounded-custom w-full max-w-6xl flex flex-col items-start gap-6 p-8 relative my-auto shadow-xl"
+        style={{ 
+          maxHeight: 'calc(100vh - 2rem)',
+          overflowY: 'auto'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <header className="flex items-center justify-between self-stretch w-full gap-4">
           <div>
             <h1 className="text-3xl font-sf-rounded font-bold text-green-30">Выберите округа Москвы</h1>
-            <p className="text-green-40 font-inter mt-1">
-              Карта подключена из файла 2.html и повторяет интерактив из макета map.html.
-            </p>
+            
           </div>
           <button
             onClick={onClose}
@@ -444,18 +473,16 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
           </button>
         </header>
 
-        <div className="w-full bg-white rounded-custom-small p-4 shadow-sm">
+        <div className="w-full bg-green-90 rounded-custom-small p-4 shadow-sm border-2 border-green-40">
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="font-inter text-green-30 font-semibold">Карта округов Москвы</p>
-                <p className="text-green-50 text-sm font-inter">
-                  Источник карты: <code className="bg-green-90 px-2 py-0.5 rounded">/maps/moscow-districts.svg</code>
-                </p>
+                
               </div>
               <div className="flex flex-wrap gap-2">
                 {selectedDistricts.length === 0 ? (
-                  <span className="text-green-50 text-sm font-inter">Нажмите на округ, чтобы выделить его.</span>
+                  <span className="text-green-50 text-sm font-inter"></span>
                 ) : (
                   selectedDistricts.map((regionId) => {
                     const district = districts.find((d) => d.id === regionId);
@@ -475,7 +502,7 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
                           className="text-green-40 hover:text-green-20"
                           aria-label={`Убрать ${district?.name || regionId}`}
                         >
-                          ✕
+                          ×
                         </button>
                       </span>
                     );
@@ -512,8 +539,8 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
                         aria-pressed={isActive}
                         className={`flex items-center gap-2 p-2 rounded-custom-small border text-left transition-colors ${
                           isActive
-                            ? 'bg-green-80 border-green-60 text-green-20 shadow-sm'
-                            : 'bg-white border-green-80 text-green-30 hover:bg-green-90'
+                            ? 'bg-green-30 border-green-20 text-green-100 shadow-sm'
+                            : 'bg-green-95 border-green-30 text-green-30 hover:bg-green-80 hover:border-green-20'
                         }`}
                       >
                         <span
@@ -530,45 +557,13 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
           </div>
         </div>
 
-        <div className="w-full">
-          <h3 className="font-sf-rounded font-bold text-green-30 text-lg mb-3">
-            Округа Москвы ({selectedDistricts.length} выбрано)
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-            {districts.map((district) => {
-              const isActive = selectedDistricts.includes(district.id);
-              const color = legendColorFor(district.id);
-              return (
-                <button
-                  key={district.id}
-                  type="button"
-                  className={`flex items-center gap-2 p-2 rounded-custom-small cursor-pointer transition-colors border ${
-                    isActive ? 'bg-green-80 border-green-60 text-green-20' : 'bg-green-90 border-transparent text-green-30'
-                  }`}
-                  onClick={() => toggleRegion(district.id)}
-                >
-                  <span className="w-4 h-4 rounded-sm border border-green-30" style={{ backgroundColor: color }} />
-                  <span className="font-inter text-green-30 text-sm">{district.name}</span>
-                  {isActive && (
-                    <svg className="w-4 h-4 text-green-40 ml-auto" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      
 
         <div className="flex gap-3 self-stretch justify-end pt-4 border-t border-green-80 w-full">
           <button
             type="button"
             onClick={handleReset}
-            className="px-6 py-3 bg-green-80 rounded-[20px] text-green-40 hover:bg-green-70 font-medium transition-colors"
+            className="px-6 py-3 bg-green-80 rounded-[20px] text-green-20 hover:bg-green-70 font-medium transition-colors"
           >
             Сбросить все
           </button>

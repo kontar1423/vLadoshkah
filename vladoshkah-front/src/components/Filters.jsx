@@ -76,7 +76,6 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
     }, [isOpen, initialFilters]);
 
     const loadShelters = async () => {
-        // Защита от множественных одновременных запросов
         if (loadingRef.current) {
             console.log('Filters: Load already in progress, skipping');
             return;

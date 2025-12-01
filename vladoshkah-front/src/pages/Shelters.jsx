@@ -25,7 +25,6 @@ const Shelters = () => {
   }, []);
 
   const loadShelters = async () => {
-    // Защита от множественных одновременных запросов
     if (loadingRef.current) {
       console.log('Shelters: Load already in progress, skipping');
       return;

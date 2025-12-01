@@ -60,12 +60,10 @@ const ShelterRegister = () => {
     const prepareFormData = () => {
         const formDataToSend = new FormData()
         
-        // Добавляем обязательное поле name
         if (formData.name && formData.name.trim()) {
             formDataToSend.append('name', formData.name.trim());
         }
         
-        // Добавляем опциональные поля только если они не пустые
         if (formData.address && formData.address.trim()) {
             formDataToSend.append('address', formData.address.trim());
         }
@@ -90,7 +88,6 @@ const ShelterRegister = () => {
             formDataToSend.append('region', formData.region.trim());
         }
         
-        // Числовые поля - только если есть значение
         if (formData.capacity && formData.capacity !== '') {
             const capacityNum = parseInt(formData.capacity, 10);
             if (!isNaN(capacityNum) && capacityNum >= 0) {
@@ -98,20 +95,11 @@ const ShelterRegister = () => {
             }
         }
         
-        // Boolean поле
         if (formData.can_adopt !== undefined && formData.can_adopt !== null) {
             formDataToSend.append('can_adopt', formData.can_adopt ? 'true' : 'false');
         }
 
-        // Добавляем admin_id текущего пользователя (не добавляем, так как бекенд устанавливает его автоматически)
-        // if (user?.id) {
-        //     formDataToSend.append('admin_id', user.id.toString());
-        // }
-
-        // Добавляем статус по умолчанию
         formDataToSend.append('status', 'active');
-
-        // Добавляем фото
         photos.forEach((photo) => {
             formDataToSend.append('photos', photo);
         })
@@ -124,11 +112,10 @@ const ShelterRegister = () => {
 
         if (!isShelterAdminRole(user?.role) && user?.role !== 'admin') {
             alert('Регистрация приюта доступна только администраторам приютов');
-            navigate('/профиль');
+            navigate('/profile');
             return;
         }
         
-        // Базовая валидация
         if (!formData.name.trim()) {
             alert('Пожалуйста, введите название приюта');
             return;
@@ -147,32 +134,27 @@ const ShelterRegister = () => {
         setIsSubmitting(true)
 
         try {
-            console.log('🚀 Регистрируем приют...');
+            console.log('Регистрируем приют...');
             
-            // Создаем приют
             const formDataToSend = prepareFormData();
             const shelterResponse = await shelterService.createShelter(formDataToSend);
-            console.log('✅ Приют создан:', shelterResponse);
+            console.log('Приют создан:', shelterResponse);
             
-            // Обновляем контекст аутентификации для получения актуальных данных
-            // Связь приюта с пользователем уже установлена через admin_id в таблице shelters
             if (refreshUser) {
                 await refreshUser();
-                console.log('✅ Данные пользователя обновлены');
+                console.log('Данные пользователя обновлены');
             }
             
             alert('Приют успешно зарегистрирован! Теперь вы можете добавлять питомцев.');
-            // Перенаправляем на админ-профиль для обновления данных
-            navigate('/админ-профиль');
+            navigate('/admin-profile');
             
         } catch (error) {
-            console.error('❌ Ошибка при регистрации приюта:', error);
+            console.error('Ошибка при регистрации приюта:', error);
             
-            // Обрабатываем ошибку "уже есть приют"
             if (error.response?.data?.error === 'Shelter admin can have only one shelter' || 
                 error.response?.data?.message === 'Shelter admin can have only one shelter') {
                 alert('У вас уже зарегистрирован приют. Вы будете перенаправлены в профиль.');
-                navigate('/админ-профиль');
+                navigate('/admin-profile');
                 return;
             }
             

@@ -38,12 +38,12 @@ const AddPetToShelter = () => {
                 if (shelter) {
                     setShelterInfo(shelter);
                 } else {
-                    navigate('/админ-профиль');
+                    navigate('/admin-profile');
                 }
             }
         } catch (error) {
             console.error('Ошибка загрузки приюта:', error);
-            navigate('/админ-профиль');
+            navigate('/admin-profile');
         } finally {
             setLoading(false);
         }
@@ -96,20 +96,16 @@ const AddPetToShelter = () => {
         try {
             const formDataToSend = new FormData();
             
-            // Добавляем данные питомца (только непустые значения)
             Object.keys(formData).forEach(key => {
                 const value = formData[key];
                 if (value !== '' && value !== null && value !== undefined) {
-                    // Преобразуем числа в строки для FormData
                     const stringValue = typeof value === 'number' ? value.toString() : value;
                     formDataToSend.append(key, stringValue);
                 }
             });
 
-            // Добавляем ID приюта
             formDataToSend.append('shelter_id', shelterInfo.id.toString());
 
-            // Добавляем фотографии
             petPhotos.forEach(photo => {
                 formDataToSend.append('photos', photo.file);
             });
@@ -125,17 +121,14 @@ const AddPetToShelter = () => {
 
             alert('Питомец успешно добавлен в приют!');
             
-            // Небольшая задержка для обновления кэша на бекенде
             await new Promise(resolve => setTimeout(resolve, 500));
             
-            // Переходим на админ-профиль с флагом обновления
-            navigate('/админ-профиль', { state: { refresh: true } });
+            navigate('/admin-profile', { state: { refresh: true } });
             
         } catch (error) {
             console.error('Ошибка при добавлении питомца:', error);
             console.error('Детали ошибки:', error.response?.data);
             
-            // Показываем более детальное сообщение об ошибке
             let errorMessage = 'Произошла ошибка при добавлении питомца. Пожалуйста, попробуйте еще раз.';
             
             if (error.response?.data?.error) {
@@ -146,7 +139,6 @@ const AddPetToShelter = () => {
                 errorMessage = error.message;
             }
             
-            // Проверяем, не является ли это ошибкой уникального ограничения
             if (errorMessage.includes('duplicate') || errorMessage.includes('уже') || errorMessage.includes('already')) {
                 errorMessage = 'Питомец с такими данными уже существует в базе. Пожалуйста, проверьте данные или попробуйте добавить другого питомца.';
             }
@@ -171,7 +163,7 @@ const AddPetToShelter = () => {
                 <div className="text-center">
                     <p className="text-green-20 mb-4">Приют не найден</p>
                     <button
-                        onClick={() => navigate('/админ-профиль')}
+                        onClick={() => navigate('/admin-profile')}
                         className="px-6 py-2 bg-green-50 text-green-100 rounded-custom-small hover:bg-green-60"
                     >
                         Вернуться в профиль
@@ -401,7 +393,7 @@ const AddPetToShelter = () => {
                     <div className="flex gap-4 justify-end">
                         <button
                             type="button"
-                            onClick={() => navigate('/админ-профиль')}
+                            onClick={() => navigate('/admin-profile')}
                             className="px-6 py-3 bg-green-80 text-green-40 font-sf-rounded font-semibold rounded-custom-small hover:bg-green-70"
                         >
                             Назад

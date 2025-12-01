@@ -95,7 +95,7 @@ const ShelterCard = ({ shelterData, onShowMap }) => {
 
                 <div className="flex flex-col sm:flex-row gap-3 w-full mt-4">
                     <Link
-                        to={`/приют/${id}`}
+                        to={`/shelter/${id}`}
                         className="all-[unset] box-border flex h-11 items-center justify-center gap-2 px-6 py-3 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer w-full sm:w-auto"
                         aria-label={`Перейти в профиль приюта ${name}`}
                     >

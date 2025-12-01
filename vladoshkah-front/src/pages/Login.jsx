@@ -15,7 +15,7 @@ const Login = () => {
     if (isAuthenticated) {
       const profileComplete = localStorage.getItem('profileComplete');
       console.log('Login: User already authenticated, redirecting...');
-      navigate(profileComplete === 'true' ? '/профиль' : '/личная-информация');
+      navigate(profileComplete === 'true' ? '/profile' : '/personal-info');
     }
   }, [isAuthenticated, navigate]);
 
@@ -31,7 +31,7 @@ const Login = () => {
     setLoading(true)
 
     try {
-      console.log('🔄 Login: Starting submission...')
+      console.log('Login: Starting submission...')
       
       const result = await login(email, password)
       console.log('Login: Auth context result:', result)
@@ -117,7 +117,7 @@ const Login = () => {
             <p className="text-center text-green-30 font-inter font-medium text-sm md:text-base">
               Еще нет аккаунта?{' '}
               <Link
-                to="/регистрация"
+                to="/register"
                 className="text-green-50 hover:text-green-60 font-semibold transition-colors underline"
               >
                 Зарегистрироваться
