@@ -1,5 +1,13 @@
 import { jest } from '@jest/globals';
+
+jest.mock('../src/dao/usersDao.js', () => ({
+  __esModule: true,
+  default: {
+    getById: jest.fn()
+  }
+}));
 import jwt from 'jsonwebtoken';
+import usersDao from '../src/dao/usersDao.js';
 import { authenticateToken, authorize } from '../src/middleware/auth.js';
 import authConfig from '../src/config/auth.js';
 
@@ -9,6 +17,9 @@ describe('Auth middleware', () => {
   let req, res, next;
 
   beforeEach(() => {
+    if (!jest.isMockFunction(usersDao.getById)) {
+      usersDao.getById = jest.fn();
+    }
     req = {
       headers: {},
       user: null
@@ -26,6 +37,12 @@ describe('Auth middleware', () => {
 
   describe('authenticateToken', () => {
     test('пропускает запрос с валидным токеном', (done) => {
+      usersDao.getById.mockResolvedValue({
+        id: 1,
+        email: 'test@example.com',
+        role: 'user'
+      });
+
       const validToken = jwt.sign(
         { userId: 1, email: 'test@example.com', role: 'user' },
         jwtConfig.secret,
@@ -49,6 +66,7 @@ describe('Auth middleware', () => {
     });
 
     test('возвращает 401 если токен отсутствует', () => {
+      usersDao.getById.mockResolvedValue(null);
       authenticateToken(req, res, next);
       
       expect(res.status).toHaveBeenCalledWith(401);
@@ -60,6 +78,7 @@ describe('Auth middleware', () => {
     });
 
     test('возвращает 401 если заголовок Authorization неправильного формата', () => {
+      usersDao.getById.mockResolvedValue(null);
       req.headers['authorization'] = 'InvalidFormat';
       
       authenticateToken(req, res, next);
@@ -94,6 +113,7 @@ describe('Auth middleware', () => {
     });
 
     test('возвращает 401 если токен невалиден', (done) => {
+      usersDao.getById.mockResolvedValue(null);
       req.headers['authorization'] = 'Bearer invalid_token_string';
       
       authenticateToken(req, res, next);
@@ -168,4 +188,3 @@ describe('Auth middleware', () => {
     });
   });
 });
-
