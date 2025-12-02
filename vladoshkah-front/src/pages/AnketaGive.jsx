@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { applicationService } from '../services/applicationService';
-import { cropImageToSquare } from '../utils/imageCrop';
+import ImageCropModal from '../components/ImageCropModal';
 
 const AnketaGive = () => {
     const location = useLocation();
@@ -27,6 +27,9 @@ const AnketaGive = () => {
     const [isFormValid, setIsFormValid] = useState(false);
     const [touchedFields, setTouchedFields] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [cropModalOpen, setCropModalOpen] = useState(false);
+    const [imageToCrop, setImageToCrop] = useState(null);
+    const [pendingFiles, setPendingFiles] = useState([]);
 
     useEffect(() => {
         const requiredFields = [
@@ -65,27 +68,54 @@ const AnketaGive = () => {
         }));
     };
 
-    const handlePhotoUpload = async (e) => {
+    const handlePhotoUpload = (e) => {
         const files = Array.from(e.target.files);
         if (files.length + petPhotos.length > 5) {
             alert('Можно загрузить не более 5 фотографий');
             return;
         }
         
-        try {
-            const croppedFiles = await Promise.all(files.map(file => cropImageToSquare(file)));
-            
-            const newPhotos = croppedFiles.map(file => ({
-                file,
-                preview: URL.createObjectURL(file),
-                name: file.name
-            }));
-            
-            setPetPhotos(prev => [...prev, ...newPhotos]);
-        } catch (error) {
-            console.error('Ошибка при обработке фотографий:', error);
-            alert('Ошибка при обработке фотографий');
+        const fileQueue = files.map(file => {
+            const reader = new FileReader();
+            return new Promise((resolve) => {
+                reader.onload = (e) => resolve({ file, dataUrl: e.target.result });
+                reader.readAsDataURL(file);
+            });
+        });
+        
+        Promise.all(fileQueue).then(results => {
+            setPendingFiles(results);
+            if (results.length > 0) {
+                setImageToCrop(results[0].dataUrl);
+                setCropModalOpen(true);
+            }
+        });
+    };
+
+    const handleCropComplete = (croppedFile) => {
+        const newPhoto = {
+            file: croppedFile,
+            preview: URL.createObjectURL(croppedFile),
+            name: croppedFile.name
+        };
+        
+        setPetPhotos(prev => [...prev, newPhoto]);
+        
+        const remainingFiles = pendingFiles.slice(1);
+        setPendingFiles(remainingFiles);
+        
+        if (remainingFiles.length > 0) {
+            setImageToCrop(remainingFiles[0].dataUrl);
+        } else {
+            setCropModalOpen(false);
+            setImageToCrop(null);
         }
+    };
+
+    const handleCropCancel = () => {
+        setPendingFiles([]);
+        setCropModalOpen(false);
+        setImageToCrop(null);
     };
 
     const removePhoto = (index) => {
@@ -511,6 +541,14 @@ const AnketaGive = () => {
                         </button>
                     </div>
                 </form>
+
+                <ImageCropModal
+                    isOpen={cropModalOpen}
+                    onClose={handleCropCancel}
+                    imageSrc={imageToCrop}
+                    onCropComplete={handleCropComplete}
+                    aspectRatio={1}
+                />
             </div>
         </div>
     );

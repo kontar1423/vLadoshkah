@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { userService } from '../services/userService'
 import { useAuth } from '../context/AuthContext'
-import { cropImageToSquare } from '../utils/imageCrop'
+import ImageCropModal from '../components/ImageCropModal'
 
 const PersonalInfo = () => {
     const [formData, setFormData] = useState({
@@ -17,6 +17,8 @@ const PersonalInfo = () => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const fileInputRef = useRef(null)
+    const [cropModalOpen, setCropModalOpen] = useState(false)
+    const [imageToCrop, setImageToCrop] = useState(null)
     const { user, updateUser } = useAuth()
     const navigate = useNavigate()
 
@@ -85,7 +87,7 @@ const PersonalInfo = () => {
         })
     }
 
-    const handlePhotoChange = async (e) => {
+    const handlePhotoChange = (e) => {
         const file = e.target.files[0]
         if (!file) return
 
@@ -99,19 +101,24 @@ const PersonalInfo = () => {
             return
         }
 
-        try {
-            const croppedFile = await cropImageToSquare(file);
-            const reader = new FileReader()
-            reader.onload = (e) => {
-                setProfilePhoto(croppedFile)
-                setPhotoPreview(e.target.result)
-                setError('')
-            }
-            reader.readAsDataURL(croppedFile)
-        } catch (error) {
-            console.error('Ошибка при обработке фотографии:', error);
-            setError('Ошибка при обработке фотографии')
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            setImageToCrop(e.target.result)
+            setCropModalOpen(true)
         }
+        reader.readAsDataURL(file)
+    }
+
+    const handleCropComplete = (croppedFile) => {
+        setProfilePhoto(croppedFile)
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            setPhotoPreview(e.target.result)
+            setError('')
+        }
+        reader.readAsDataURL(croppedFile)
+        setCropModalOpen(false)
+        setImageToCrop(null)
     }
 
     const handleRemovePhoto = () => {
@@ -378,6 +385,20 @@ const PersonalInfo = () => {
                         </div>
                     </div>
                 </form>
+
+                <ImageCropModal
+                    isOpen={cropModalOpen}
+                    onClose={() => {
+                        setCropModalOpen(false)
+                        setImageToCrop(null)
+                        if (fileInputRef.current) {
+                            fileInputRef.current.value = ''
+                        }
+                    }}
+                    imageSrc={imageToCrop}
+                    onCropComplete={handleCropComplete}
+                    aspectRatio={1}
+                />
             </div>
         </div>
     )

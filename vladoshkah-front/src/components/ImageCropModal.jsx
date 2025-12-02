@@ -24,29 +24,19 @@ const ImageCropModal = ({ isOpen, onClose, imageSrc, onCropComplete, aspectRatio
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
-        const maxSize = Math.max(image.width, image.height);
-        const safeArea = 2 * ((maxSize / 2) * Math.sqrt(2));
-
-        canvas.width = safeArea;
-        canvas.height = safeArea;
-
-        ctx.translate(safeArea / 2, safeArea / 2);
-        ctx.translate(-safeArea / 2, -safeArea / 2);
-
-        ctx.drawImage(
-            image,
-            safeArea / 2 - image.width * 0.5,
-            safeArea / 2 - image.height * 0.5
-        );
-        const data = ctx.getImageData(0, 0, safeArea, safeArea);
-
         canvas.width = pixelCrop.width;
         canvas.height = pixelCrop.height;
 
-        ctx.putImageData(
-            data,
-            Math.round(0 - safeArea / 2 + image.width * 0.5 - pixelCrop.x),
-            Math.round(0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y)
+        ctx.drawImage(
+            image,
+            pixelCrop.x,
+            pixelCrop.y,
+            pixelCrop.width,
+            pixelCrop.height,
+            0,
+            0,
+            pixelCrop.width,
+            pixelCrop.height
         );
 
         return new Promise((resolve) => {

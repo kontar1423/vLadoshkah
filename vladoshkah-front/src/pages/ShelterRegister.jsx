@@ -4,7 +4,7 @@ import { shelterService } from '../services/shelterService'
 import { userService } from '../services/userService'
 import { useAuth } from '../context/AuthContext'
 import { isShelterAdminRole } from '../utils/roleUtils'
-import { cropImageToSquare } from '../utils/imageCrop'
+import ImageCropModal from '../components/ImageCropModal'
 
 const ShelterRegister = () => {
     const navigate = useNavigate()
@@ -25,6 +25,9 @@ const ShelterRegister = () => {
 
     const [photos, setPhotos] = useState([])
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [cropModalOpen, setCropModalOpen] = useState(false)
+    const [imageToCrop, setImageToCrop] = useState(null)
+    const [pendingFiles, setPendingFiles] = useState([])
 
     const regions = [
         { value: '', label: 'Выберите регион' },
@@ -50,15 +53,44 @@ const ShelterRegister = () => {
         }))
     }
 
-    const handlePhotoUpload = async (e) => {
+    const handlePhotoUpload = (e) => {
         const files = Array.from(e.target.files)
-        try {
-            const croppedFiles = await Promise.all(files.map(file => cropImageToSquare(file)))
-            setPhotos(prev => [...prev, ...croppedFiles])
-        } catch (error) {
-            console.error('Ошибка при обработке фотографий:', error)
-            alert('Ошибка при обработке фотографий')
+        
+        const fileQueue = files.map(file => {
+            const reader = new FileReader();
+            return new Promise((resolve) => {
+                reader.onload = (e) => resolve({ file, dataUrl: e.target.result });
+                reader.readAsDataURL(file);
+            });
+        });
+        
+        Promise.all(fileQueue).then(results => {
+            setPendingFiles(results);
+            if (results.length > 0) {
+                setImageToCrop(results[0].dataUrl);
+                setCropModalOpen(true);
+            }
+        });
+    }
+
+    const handleCropComplete = (croppedFile) => {
+        setPhotos(prev => [...prev, croppedFile]);
+        
+        const remainingFiles = pendingFiles.slice(1);
+        setPendingFiles(remainingFiles);
+        
+        if (remainingFiles.length > 0) {
+            setImageToCrop(remainingFiles[0].dataUrl);
+        } else {
+            setCropModalOpen(false);
+            setImageToCrop(null);
         }
+    }
+
+    const handleCropCancel = () => {
+        setPendingFiles([]);
+        setCropModalOpen(false);
+        setImageToCrop(null);
     }
 
     const removePhoto = (index) => {
@@ -183,6 +215,7 @@ const ShelterRegister = () => {
     }
 
     return (
+        <>
         <div className="min-h-screen bg-green-95 flex items-center justify-center px-4 py-10">
             <div className="w-full max-w-6xl bg-green-95 rounded-custom p-8">
                 <div className="flex flex-col lg:flex-row gap-8">
@@ -422,6 +455,15 @@ const ShelterRegister = () => {
                 </div>
             </div>
         </div>
+
+        <ImageCropModal
+            isOpen={cropModalOpen}
+            onClose={handleCropCancel}
+            imageSrc={imageToCrop}
+            onCropComplete={handleCropComplete}
+            aspectRatio={1}
+        />
+        </>
     )
 }
 
