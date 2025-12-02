@@ -1,9 +1,18 @@
 import React from "react";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import PriutPhoto from '../assets/images/priut.jpg';
 
 const ShelterCard = ({ shelterData, onShowMap }) => {
     const { id, name, rating, description, photoUrl } = shelterData;
+    const navigate = useNavigate();
+
+    const handleCardClick = (e) => {
+        // На маленьких экранах карточка кликабельна
+        if (window.innerWidth < 768) {
+            e.preventDefault();
+            navigate(`/shelter/${id}`);
+        }
+    };
 
     // Функция для безопасного преобразования в число
     const safeNumber = (value, defaultValue = 0) => {
@@ -49,7 +58,10 @@ const ShelterCard = ({ shelterData, onShowMap }) => {
     };
 
     return (
-        <article className="relative w-full max-w-[1260px] min-h-[300px] sm:min-h-[350px] md:min-h-[400px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row">
+        <article 
+            onClick={handleCardClick}
+            className="relative w-full max-w-[1260px] min-h-[300px] sm:min-h-[350px] md:min-h-[400px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row cursor-pointer md:cursor-default hover:shadow-xl transition-shadow duration-300"
+        >
             <div className="relative w-full md:w-[350px] h-[150px] sm:h-[180px] md:h-full flex-shrink-0 overflow-hidden">
                 <img 
                     src={photoUrl || PriutPhoto} 
@@ -93,9 +105,10 @@ const ShelterCard = ({ shelterData, onShowMap }) => {
                     </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full mt-3 sm:mt-4">
+                <div className="hidden md:flex flex-col sm:flex-row gap-2 sm:gap-3 w-full mt-3 sm:mt-4">
                     <Link
                         to={`/shelter/${id}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="all-[unset] box-border flex h-9 sm:h-10 md:h-11 items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer w-full sm:w-auto"
                         aria-label={`Перейти в профиль приюта ${name}`}
                     >
@@ -106,7 +119,11 @@ const ShelterCard = ({ shelterData, onShowMap }) => {
                     
                     {onShowMap && (
                         <button
-                            onClick={() => onShowMap(shelterData)}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onShowMap(shelterData);
+                            }}
                             className="all-[unset] box-border flex h-9 sm:h-10 md:h-11 items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-green-60 rounded-custom-small hover:bg-green-50 transition-colors cursor-pointer w-full sm:w-auto"
                             aria-label={`Показать на карте приют ${name}`}
                         >

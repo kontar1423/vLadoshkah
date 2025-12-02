@@ -265,8 +265,8 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
                 )}
             </div>
 
-            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 w-full px-1.5 sm:px-2 md:px-3 lg:px-4 relative -mt-1.5 sm:-mt-4 md:-mt-5 lg:-mt-6 mb-0 sm:mb-1">
-                <div className="px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-0.5 bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0 max-w-[60px] sm:max-w-none">
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 w-full px-1.5 sm:px-2 md:px-3 lg:px-4 relative -mt-1.5 sm:-mt-4 md:-mt-5 lg:-mt-6 mb-0 sm:mb-1 min-w-0">
+                <div className="px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-0.5 bg-green-90 rounded-full border-2 border-green-30 shadow-sm min-w-0 max-w-full overflow-hidden">
                     <span className="font-inter text-green-30 text-[10px] sm:text-xs md:text-sm lg:text-base truncate block">
                         {name}
                     </span>
@@ -283,14 +283,14 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
                 </div>
             </div>
 
-            <div className="flex-1 px-1.5 sm:px-2 md:px-3 lg:px-4 py-0 sm:py-1 md:py-2 lg:py-3 min-h-[15px] sm:min-h-[50px] md:min-h-[55px] lg:min-h-[72px] flex flex-col justify-start">
+            <div className="flex-1 px-1.5 sm:px-2 md:px-3 lg:px-4 py-0 sm:py-1 md:py-2 lg:py-3 flex flex-col justify-start gap-0.5 sm:gap-1 md:gap-1.5">
                 {personality && (
-                    <p className="text-green-40 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter line-clamp-1 sm:line-clamp-2 mb-0 sm:mb-0.5" title={personality}>
-                        {truncatePersonality(personality, 20)}
+                    <p className="text-green-40 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter line-clamp-2" title={personality}>
+                        {personality}
                     </p>
                 )}
                 {shelter_name && (
-                    <p className="text-green-50 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter mt-0 sm:mt-auto truncate">
+                    <p className="text-green-50 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter truncate mt-0 sm:mt-auto">
                         {shelter_name}
                     </p>
                 )}

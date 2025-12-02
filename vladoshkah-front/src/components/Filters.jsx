@@ -240,14 +240,14 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                 onClick={handleClose}
             />
             <div 
-                className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999] bg-green-95 rounded-[40px] w-full max-w-2xl flex flex-col items-start gap-6 p-8 max-h-[90vh] overflow-y-auto animate-fade-up"
+                className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999] bg-green-95 rounded-[20px] sm:rounded-[30px] md:rounded-[40px] w-[calc(100%-32px)] sm:w-[calc(100%-48px)] md:w-full max-w-2xl flex flex-col items-start gap-3 sm:gap-4 md:gap-6 p-4 sm:p-6 md:p-8 max-h-[90vh] overflow-y-auto animate-fade-up"
                 onClick={(e) => e.stopPropagation()}
             >
                 <header className="flex items-center justify-between self-stretch w-full">
-                    <h1 className="text-4xl font-sf-rounded font-bold text-green-30">Фильтры</h1>
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-sf-rounded font-bold text-green-30">Фильтры</h1>
                     <button 
                         onClick={handleClose}
-                        className="relative w-6 h-6 cursor-pointer text-green-40 hover:text-green-20 transition-colors"
+                        className="relative w-5 h-5 sm:w-6 sm:h-6 cursor-pointer text-green-40 hover:text-green-20 transition-colors"
                         aria-label="Закрыть фильтры"
                     >
                         <svg 
@@ -261,22 +261,22 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                     </button>
                 </header>
 
-                <form className="flex flex-col items-start gap-4 self-stretch w-full">
+                <form className="flex flex-col items-start gap-3 sm:gap-4 self-stretch w-full">
                     {filterFields.map((field, index) => {
                         if (index % 2 === 1) {
                             const prevField = filterFields[index - 1];
                             return (
-                                <div key={`row-${index}`} className="flex gap-4 self-stretch w-full">
-                                    <div className="flex-1 flex flex-col gap-2">
-                                        <label htmlFor={prevField.id} className="text-base font-medium text-green-40">
+                                <div key={`row-${index}`} className="flex flex-col sm:flex-row gap-3 sm:gap-4 self-stretch w-full">
+                                    <div className="flex-1 flex flex-col gap-1.5 sm:gap-2">
+                                        <label htmlFor={prevField.id} className="text-sm sm:text-base font-medium text-green-40">
                                             {prevField.label}
                                         </label>
-                                        <div className="h-12 flex items-center justify-between px-4 border-2 border-green-40 rounded-[20px] bg-green-95 relative">
+                                        <div className="h-10 sm:h-12 flex items-center justify-between px-3 sm:px-4 border-2 border-green-40 rounded-[15px] sm:rounded-[20px] bg-green-95 relative">
                                             <select
                                                 id={prevField.id}
                                                 value={prevField.value}
                                                 onChange={(e) => handleFilterChange(prevField.id, e.target.value)}
-                                                className="w-full text-lg appearance-none bg-transparent outline-none pr-8 text-green-40 cursor-pointer"
+                                                className="w-full text-sm sm:text-base md:text-lg appearance-none bg-transparent outline-none pr-6 sm:pr-8 text-green-40 cursor-pointer"
                                             >
                                                 {prevField.options.map(option => (
                                                     <option key={option.value} value={option.value}>
@@ -285,7 +285,7 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                                                 ))}
                                             </select>
                                             <svg 
-                                                className="absolute right-3 w-5 h-5 text-green-40 pointer-events-none"
+                                                className="absolute right-2 sm:right-3 w-4 h-4 sm:w-5 sm:h-5 text-green-40 pointer-events-none"
                                                 fill="none" 
                                                 stroke="currentColor" 
                                                 viewBox="0 0 24 24"
@@ -295,17 +295,17 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                                         </div>
                                     </div>
 
-                                    <div className="flex-1 flex flex-col gap-2">
-                                        <label htmlFor={field.id} className="text-base font-medium text-green-40">
+                                    <div className="flex-1 flex flex-col gap-1.5 sm:gap-2">
+                                        <label htmlFor={field.id} className="text-sm sm:text-base font-medium text-green-40">
                                             {field.label}
                                         </label>
-                                        <div className="h-12 flex items-center justify-between px-4 border-2 border-green-40 rounded-[20px] bg-green-95 relative">
+                                        <div className="h-10 sm:h-12 flex items-center justify-between px-3 sm:px-4 border-2 border-green-40 rounded-[15px] sm:rounded-[20px] bg-green-95 relative">
                                             <select
                                                 id={field.id}
                                                 value={field.value}
                                                 onChange={(e) => handleFilterChange(field.id, e.target.value)}
                                                 disabled={field.id === 'shelter_id' && loading}
-                                                className="w-full text-lg appearance-none bg-transparent outline-none pr-8 text-green-40 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="w-full text-sm sm:text-base md:text-lg appearance-none bg-transparent outline-none pr-6 sm:pr-8 text-green-40 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 {field.options.map(option => (
                                                     <option key={option.value} value={option.value}>
@@ -314,10 +314,10 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                                                 ))}
                                             </select>
                                             {field.id === 'shelter_id' && loading ? (
-                                                <div className="absolute right-3 w-5 h-5 border-2 border-green-40 border-t-transparent rounded-full animate-spin"></div>
+                                                <div className="absolute right-2 sm:right-3 w-4 h-4 sm:w-5 sm:h-5 border-2 border-green-40 border-t-transparent rounded-full animate-spin"></div>
                                             ) : (
                                                 <svg 
-                                                    className="absolute right-3 w-5 h-5 text-green-40 pointer-events-none"
+                                                    className="absolute right-2 sm:right-3 w-4 h-4 sm:w-5 sm:h-5 text-green-40 pointer-events-none"
                                                     fill="none" 
                                                     stroke="currentColor" 
                                                     viewBox="0 0 24 24"
@@ -333,16 +333,16 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
 
                         if (index === filterFields.length - 1 && index % 2 === 0) {
                             return (
-                                <div key={field.id} className="self-stretch w-full flex flex-col gap-2">
-                                    <label htmlFor={field.id} className="text-base font-medium text-green-40">
+                                <div key={field.id} className="self-stretch w-full flex flex-col gap-1.5 sm:gap-2">
+                                    <label htmlFor={field.id} className="text-sm sm:text-base font-medium text-green-40">
                                         {field.label}
                                     </label>
-                                    <div className="h-12 flex items-center justify-between px-4 border-2 border-green-40 rounded-[20px] bg-green-95 relative">
+                                    <div className="h-10 sm:h-12 flex items-center justify-between px-3 sm:px-4 border-2 border-green-40 rounded-[15px] sm:rounded-[20px] bg-green-95 relative">
                                         <select
                                             id={field.id}
                                             value={field.value}
                                             onChange={(e) => handleFilterChange(field.id, e.target.value)}
-                                            className="w-full text-lg appearance-none bg-transparent outline-none pr-8 text-green-40 cursor-pointer"
+                                            className="w-full text-sm sm:text-base md:text-lg appearance-none bg-transparent outline-none pr-6 sm:pr-8 text-green-40 cursor-pointer"
                                         >
                                             {field.options.map(option => (
                                                 <option key={option.value} value={option.value}>
@@ -351,7 +351,7 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                                             ))}
                                         </select>
                                         <svg 
-                                            className="absolute right-3 w-5 h-5 text-green-40 pointer-events-none"
+                                            className="absolute right-2 sm:right-3 w-4 h-4 sm:w-5 sm:h-5 text-green-40 pointer-events-none"
                                             fill="none" 
                                             stroke="currentColor" 
                                             viewBox="0 0 24 24"
@@ -366,8 +366,8 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                         return null;
                     })}
 
-                    <div className="self-stretch w-full flex flex-col gap-4">
-                        <label className="text-base font-medium text-green-40">
+                    <div className="self-stretch w-full flex flex-col gap-2 sm:gap-4">
+                        <label className="text-sm sm:text-base font-medium text-green-40">
                             Возраст питомца: {filters.age_min} - {filters.age_max} лет
                         </label>
                         
@@ -456,7 +456,7 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                                 ></div>
                             </div>
                             
-                            <div className="flex justify-between text-sm text-green-40 mt-6">
+                            <div className="flex justify-between text-xs sm:text-sm text-green-40 mt-4 sm:mt-6">
                                 <span>0 лет</span>
                                 <span>30 лет</span>
                             </div>
@@ -464,18 +464,18 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                     </div>
                 </form>
 
-                <div className="flex gap-3 self-stretch justify-end pt-4">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 self-stretch justify-end pt-2 sm:pt-4">
                     <button
                         type="button"
                         onClick={handleReset}
-                        className="px-6 py-3 bg-green-80 rounded-[20px] text-green-20 hover:bg-green-70 font-medium transition-colors"
+                        className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-green-80 rounded-[15px] sm:rounded-[20px] text-sm sm:text-base text-green-20 hover:bg-green-70 font-medium transition-colors"
                     >
                         Сбросить
                     </button>
                     <button
                         type="button"
                         onClick={handleSubmit}
-                        className="px-6 py-3 bg-green-70 text-green-20 rounded-[20px] font-medium hover:bg-green-60 transition-colors"
+                        className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-green-70 text-green-20 rounded-[15px] sm:rounded-[20px] text-sm sm:text-base font-medium hover:bg-green-60 transition-colors"
                     >
                         Применить фильтры
                     </button>

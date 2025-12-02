@@ -14,6 +14,7 @@ const ShelterRegister = () => {
         address: '',
         phone: '',
         email: '',
+        website: '',
         description: '',
         capacity: '',
         working_hours: '',
@@ -74,6 +75,10 @@ const ShelterRegister = () => {
         
         if (formData.email && formData.email.trim()) {
             formDataToSend.append('email', formData.email.trim());
+        }
+        
+        if (formData.website && formData.website.trim()) {
+            formDataToSend.append('website', formData.website.trim());
         }
         
         if (formData.description && formData.description.trim()) {
@@ -239,6 +244,20 @@ const ShelterRegister = () => {
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 font-sf-rounded placeholder-green-40 focus:border-green-50 focus:outline-none transition-colors"
                                         placeholder="Введите email"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
+                                        Сайт приюта
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="website"
+                                        value={formData.website}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 bg-green-98 border-2 border-green-40 rounded-custom-small text-green-20 font-sf-rounded placeholder-green-40 focus:border-green-50 focus:outline-none transition-colors"
+                                        placeholder="https://example.com"
                                     />
                                 </div>
 

@@ -1,12 +1,24 @@
     import React from 'react';
-    import { Link } from 'react-router-dom';
+    import { Link, useNavigate } from 'react-router-dom';
     import PriutPhoto from '../assets/images/priut.jpg';
 
     const MiniShelterCard = ({ shelter }) => {
-    const { id, name, district, description, photoUrl } = shelter; 
+    const { id, name, district, description, photoUrl } = shelter;
+    const navigate = useNavigate();
+
+    const handleCardClick = (e) => {
+        // На маленьких экранах карточка кликабельна
+        if (window.innerWidth < 768) {
+            e.preventDefault();
+            navigate(`/shelter/${id}`);
+        }
+    }; 
 
     return (
-        <div className="bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 w-full max-w-[180px] sm:max-w-[280px] md:max-w-[380px] h-full flex flex-col">
+        <div 
+            onClick={handleCardClick}
+            className="bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 w-full max-w-[180px] sm:max-w-[280px] md:max-w-[380px] h-full flex flex-col cursor-pointer md:cursor-default hover:shadow-lg transition-shadow duration-300"
+        >
         <div className="relative w-full h-24 sm:h-32 md:h-36 lg:h-40 mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small">
             <img
             src={photoUrl || PriutPhoto}
@@ -37,7 +49,8 @@
             <span className="font-inter text-green-50 text-[9px] sm:text-xs md:text-sm truncate w-full sm:w-auto">{district || 'Москва'}</span>
             <Link
             to={`/shelter/${id}`}
-            className="font-inter font-medium text-green-70 hover:text-green-60 text-[9px] sm:text-xs md:text-sm transition-colors whitespace-nowrap"
+            onClick={(e) => e.stopPropagation()}
+            className="hidden md:inline font-inter font-medium text-green-70 hover:text-green-60 text-[9px] sm:text-xs md:text-sm transition-colors whitespace-nowrap"
             >
             Подробнее →
             </Link>

@@ -184,7 +184,14 @@
                 icon={createCustomIcon(isHighlighted)}
                 >
                 <Popup>
-                    <div className="p-3 min-w-[250px]">
+                    <div 
+                        onClick={() => {
+                            if (window.innerWidth < 768) {
+                                window.location.href = `/shelter/${shelter.id}`;
+                            }
+                        }}
+                        className="p-3 min-w-[250px] cursor-pointer md:cursor-default"
+                    >
                     <h3 className={`font-sf-rounded font-bold text-lg mb-1 ${
                         isHighlighted ? 'text-green-40' : 'text-green-40'
                     }`}>
@@ -216,7 +223,7 @@
                         e.stopPropagation();
                         window.location.href = `/shelter/${shelter.id}`;
                         }}
-                        className="w-full px-3 py-2 bg-green-40 text-green-98 rounded-custom-small text-sm hover:bg-green-40 transition-colors"
+                        className="hidden md:block w-full px-3 py-2 bg-green-40 text-green-98 rounded-custom-small text-sm hover:bg-green-40 transition-colors"
                     >
                         Подробнее
                     </button>

@@ -50,6 +50,7 @@ const ShelterProfile = () => {
       whatsapp: "",
       email: ""
     },
+    website: "",
     acceptsAnimalsFromOwners: false,
     photoUrl: null,
     photos: [],
@@ -209,6 +210,7 @@ const ShelterProfile = () => {
           whatsapp: shelter.whatsapp || "",
           email: shelter.email || ""
         },
+        website: shelter.website || "",
         acceptsAnimalsFromOwners: shelter.can_adopt || shelter.accepts_animals || false,
         photoUrl: shelter.photoUrl || null,
         photos: shelter.photos || [],
@@ -695,15 +697,15 @@ const ShelterProfile = () => {
 
           <div className="flex-1 flex flex-col p-4 md:p-6 md:pl-6 md:pr-6 relative">
             {shelterData.acceptsAnimalsFromOwners && (
-              <div className="absolute top-4 right-4 bg-green-90 bg-opacity-90 border-2 border-green-30 rounded-custom-small px-3 py-2 backdrop-blur-sm max-w-[200px]">
-                <span className="font-inter font-medium text-green-30 text-xs sm:text-sm leading-tight">
+              <div className="absolute top-4 right-4 md:right-4 bg-green-90 bg-opacity-90 border-2 border-green-30 rounded-custom-small px-2 py-1.5 md:px-3 md:py-2 backdrop-blur-sm max-w-[140px] sm:max-w-[160px] md:max-w-[200px] z-10">
+                <span className="font-inter font-medium text-green-30 text-[10px] sm:text-xs md:text-sm leading-tight break-words">
                   Поддерживает возможность отдать питомца
                 </span>
               </div>
             )}
 
             <div className="w-full flex-1">
-              <header className="inline-flex flex-col items-start relative mb-3 md:mb-4 w-full pr-[220px] sm:pr-[240px] md:pr-[260px]">
+              <header className="inline-flex flex-col items-start relative mb-3 md:mb-4 w-full pr-[150px] sm:pr-[180px] md:pr-[260px]">
                 <h1 className="w-fit font-sf-rounded font-bold text-2xl md:text-4xl text-green-30 mb-2">
                   {shelterData.name}
                 </h1>
@@ -740,6 +742,11 @@ const ShelterProfile = () => {
                   {shelterData.contacts.email && (
                     <div className="font-inter font-medium text-green-30 text-sm">
                       Email: {shelterData.contacts.email}
+                    </div>
+                  )}
+                  {shelterData.website && (
+                    <div className="font-inter font-medium text-green-30 text-sm">
+                      Сайт: <a href={shelterData.website} target="_blank" rel="noopener noreferrer" className="text-green-50 hover:text-green-40 underline">{shelterData.website}</a>
                     </div>
                   )}
                 </div>
@@ -799,7 +806,10 @@ const ShelterProfile = () => {
                         size="large"
                       />
                       {!isAuthenticated && (
-                        <span className="font-inter text-green-40 text-sm">
+                        <span 
+                          onClick={() => navigate('/login')}
+                          className="font-inter text-green-40 text-sm cursor-pointer hover:text-green-50 underline transition-colors"
+                        >
                           Войдите в аккаунт, чтобы оценить приют
                         </span>
                       )}

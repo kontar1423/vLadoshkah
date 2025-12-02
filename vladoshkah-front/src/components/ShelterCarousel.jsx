@@ -167,9 +167,8 @@
             return (
                 <div
                 key={uniqueKey}
-                className="absolute transition-all duration-500 ease-out"
+                className="absolute transition-all duration-500 ease-out flex justify-center"
                 style={{
-                    width: `${CARD_WIDTH}px`,
                     left: '50%',
                     top: '50%',
                     transform: `translate(${translateX}, -50%) scale(${scale})`,

@@ -12,6 +12,7 @@ const SheltersManagement = () => {
         address: '',
         phone: '',
         email: '',
+        website: '',
         description: '',
         capacity: '',
         working_hours: '',
@@ -120,6 +121,7 @@ const SheltersManagement = () => {
             address: shelter.address || '',
             phone: shelter.phone || '',
             email: shelter.email || '',
+            website: shelter.website || '',
             description: shelter.description || '',
             capacity: shelter.capacity || '',
             working_hours: shelter.working_hours || '',
@@ -167,6 +169,7 @@ const SheltersManagement = () => {
             address: '',
             phone: '',
             email: '',
+            website: '',
             description: '',
             capacity: '',
             working_hours: '',
@@ -243,6 +246,17 @@ const SheltersManagement = () => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     className="w-full px-4 py-2 bg-green-95 border-2 border-green-30 rounded-custom-small text-green-20"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-green-40 font-inter font-medium mb-2">Сайт приюта</label>
+                                <input
+                                    type="url"
+                                    name="website"
+                                    value={formData.website}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 bg-green-95 border-2 border-green-30 rounded-custom-small text-green-20"
+                                    placeholder="https://example.com"
                                 />
                             </div>
                             <div>
