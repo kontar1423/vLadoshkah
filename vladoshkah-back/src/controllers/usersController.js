@@ -97,7 +97,7 @@ async function create(req, res) {
   } catch (err) {
     const log = req.log || logger;
     log.error(err, 'Controller: error creating user');
-    res.status(400).json({ 
+    res.status(err.status || 400).json({ 
       success: false,
       error: err.message 
     });

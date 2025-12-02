@@ -5,6 +5,24 @@ import { v4 as uuidv4 } from 'uuid';
 import { normalizePhoto, normalizePhotos, toRelativeUploadUrl } from '../utils/urlUtils.js';
 import logger from '../logger.js';
 
+const decodeFilename = (name) => {
+  if (typeof name !== 'string') return name;
+  try {
+    const decoded = Buffer.from(name, 'latin1').toString('utf8');
+    return decoded.includes('\uFFFD') ? name : decoded;
+  } catch {
+    return name;
+  }
+};
+
+// Безопасно готовим значение для HTTP-заголовков (ASCII, без переводов строк)
+const sanitizeHeaderValue = (value, maxLength = 255) => {
+  if (typeof value !== 'string') return undefined;
+  const cleaned = value.replace(/[\r\n]+/g, ' ').trim();
+  if (!cleaned) return undefined;
+  return encodeURIComponent(cleaned).slice(0, maxLength);
+};
+
 // Константы для кэширования
 const CACHE_TTL = 3600; // 1 час
 const CACHE_KEYS = {
@@ -46,22 +64,25 @@ class PhotosService {
 
   async uploadPhoto(file, entity_type, entity_id) {
     try {
-      const fileExtension = file.originalname.split('.').pop();
+      const originalName = decodeFilename(file.originalname);
+      const fileExtension = originalName.split('.').pop();
       const objectName = `${uuidv4()}.${fileExtension}`;
       const bucketName = process.env.MINIO_BUCKET || 'uploads';
 
       logger.debug({
-        originalName: file.originalname,
+        originalName,
         mimetype: file.mimetype,
         size: file.size
       }, 'Uploading file');
 
-      // РЕШЕНИЕ: Передаем метаданные как ОБЪЕКТ, а не строку
       const metaData = {
         'Content-Type': file.mimetype,
-        'X-Amz-Meta-Original-Name': file.originalname,
         'X-Amz-Meta-Uploaded-At': new Date().toISOString()
       };
+      const safeOriginalName = sanitizeHeaderValue(originalName);
+      if (safeOriginalName) {
+        metaData['X-Amz-Meta-Original-Name'] = safeOriginalName;
+      }
 
       // Загружаем с правильными метаданными
       await minioClient.putObject(
@@ -77,7 +98,7 @@ class PhotosService {
       const photoUrl = toRelativeUploadUrl(`http://localhost:9000/${bucketName}/${objectName}`);
 
       const photoData = {
-        original_name: file.originalname,
+        original_name: originalName,
         object_name: objectName,
         bucket: bucketName,
         size: file.size,

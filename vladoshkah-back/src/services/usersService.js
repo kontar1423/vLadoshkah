@@ -10,6 +10,15 @@ const CACHE_KEYS = {
   ALL_USERS: 'users:all',
   USER_BY_ID: (id) => `user:${id}`,
 };
+
+function mapUserDbError(err) {
+  if (err?.code === '23505' && err?.constraint === 'users_email_key') {
+    const conflict = new Error('User with this email already exists');
+    conflict.status = 409;
+    return conflict;
+  }
+  return err;
+}
 async function getAll() {
   try {
 
@@ -105,7 +114,7 @@ async function create(userData, photoFile = null) {
     
   } catch (err) {
     logger.error('Service: error creating user', err);
-    throw err;
+    throw mapUserDbError(err);
   }
 }
 
@@ -151,7 +160,7 @@ async function update(id, data, photoFile = null) {
     return await getById(id);
   } catch (err) {
     logger.error('Service: error updating user', err);
-    throw err;
+    throw mapUserDbError(err);
   }
 }
 
