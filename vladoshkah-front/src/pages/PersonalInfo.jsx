@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { userService } from '../services/userService'
 import { useAuth } from '../context/AuthContext'
+import { cropImageToSquare } from '../utils/imageCrop'
 
 const PersonalInfo = () => {
     const [formData, setFormData] = useState({
@@ -84,7 +85,7 @@ const PersonalInfo = () => {
         })
     }
 
-    const handlePhotoChange = (e) => {
+    const handlePhotoChange = async (e) => {
         const file = e.target.files[0]
         if (!file) return
 
@@ -98,13 +99,19 @@ const PersonalInfo = () => {
             return
         }
 
-        const reader = new FileReader()
-        reader.onload = (e) => {
-            setProfilePhoto(file)
-            setPhotoPreview(e.target.result)
-            setError('')
+        try {
+            const croppedFile = await cropImageToSquare(file);
+            const reader = new FileReader()
+            reader.onload = (e) => {
+                setProfilePhoto(croppedFile)
+                setPhotoPreview(e.target.result)
+                setError('')
+            }
+            reader.readAsDataURL(croppedFile)
+        } catch (error) {
+            console.error('Ошибка при обработке фотографии:', error);
+            setError('Ошибка при обработке фотографии')
         }
-        reader.readAsDataURL(file)
     }
 
     const handleRemovePhoto = () => {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { animalService } from '../services/animalService';
 import { shelterService } from '../services/shelterService';
 import { useAuth } from '../context/AuthContext';
+import { cropImageToSquare } from '../utils/imageCrop';
 
 const AddPetToShelter = () => {
     const navigate = useNavigate();
@@ -52,37 +53,6 @@ const AddPetToShelter = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const cropImageToSquare = (file) => {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const size = Math.min(img.width, img.height);
-                    canvas.width = size;
-                    canvas.height = size;
-                    
-                    const ctx = canvas.getContext('2d');
-                    const x = (img.width - size) / 2;
-                    const y = (img.height - size) / 2;
-                    
-                    ctx.drawImage(img, x, y, size, size, 0, 0, size, size);
-                    
-                    canvas.toBlob((blob) => {
-                        const croppedFile = new File([blob], file.name, {
-                            type: file.type,
-                            lastModified: Date.now()
-                        });
-                        resolve(croppedFile);
-                    }, file.type, 0.95);
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
     };
 
     const handlePhotoUpload = async (e) => {

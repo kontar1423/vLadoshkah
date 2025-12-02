@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { applicationService } from '../services/applicationService';
+import { cropImageToSquare } from '../utils/imageCrop';
 
 const AnketaGive = () => {
     const location = useLocation();
@@ -64,20 +65,27 @@ const AnketaGive = () => {
         }));
     };
 
-    const handlePhotoUpload = (e) => {
+    const handlePhotoUpload = async (e) => {
         const files = Array.from(e.target.files);
         if (files.length + petPhotos.length > 5) {
             alert('Можно загрузить не более 5 фотографий');
             return;
         }
         
-        const newPhotos = files.map(file => ({
-            file,
-            preview: URL.createObjectURL(file),
-            name: file.name
-        }));
-        
-        setPetPhotos(prev => [...prev, ...newPhotos]);
+        try {
+            const croppedFiles = await Promise.all(files.map(file => cropImageToSquare(file)));
+            
+            const newPhotos = croppedFiles.map(file => ({
+                file,
+                preview: URL.createObjectURL(file),
+                name: file.name
+            }));
+            
+            setPetPhotos(prev => [...prev, ...newPhotos]);
+        } catch (error) {
+            console.error('Ошибка при обработке фотографий:', error);
+            alert('Ошибка при обработке фотографий');
+        }
     };
 
     const removePhoto = (index) => {

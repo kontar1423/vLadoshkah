@@ -4,6 +4,7 @@ import { shelterService } from '../services/shelterService'
 import { userService } from '../services/userService'
 import { useAuth } from '../context/AuthContext'
 import { isShelterAdminRole } from '../utils/roleUtils'
+import { cropImageToSquare } from '../utils/imageCrop'
 
 const ShelterRegister = () => {
     const navigate = useNavigate()
@@ -49,9 +50,15 @@ const ShelterRegister = () => {
         }))
     }
 
-    const handlePhotoUpload = (e) => {
+    const handlePhotoUpload = async (e) => {
         const files = Array.from(e.target.files)
-        setPhotos(prev => [...prev, ...files])
+        try {
+            const croppedFiles = await Promise.all(files.map(file => cropImageToSquare(file)))
+            setPhotos(prev => [...prev, ...croppedFiles])
+        } catch (error) {
+            console.error('Ошибка при обработке фотографий:', error)
+            alert('Ошибка при обработке фотографий')
+        }
     }
 
     const removePhoto = (index) => {
