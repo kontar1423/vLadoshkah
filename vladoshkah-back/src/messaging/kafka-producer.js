@@ -1,12 +1,11 @@
-// messaging/kafka-producer.js
+
 import { Kafka } from 'kafkajs';
 import logger from '../logger.js';
 
 class KafkaProducer {
   constructor() {
     const brokers = process.env.KAFKA_BROKERS?.split(',') || ['localhost:9092'];
-    
-    // В тестовом режиме не создаем реальный producer
+
     if (process.env.NODE_ENV === 'test') {
       this.producer = null;
       this.isConnected = false;
@@ -52,7 +51,7 @@ class KafkaProducer {
       logger.info('Kafka Producer connected successfully');
     } catch (error) {
       logger.error({ err: error }, 'Kafka Producer connection failed');
-      // Приложение может работать без Kafka, но с предупреждением
+
       logger.warn('Application running without Kafka messaging');
       this.isConnected = false;
     }
@@ -72,16 +71,10 @@ class KafkaProducer {
     }
   }
 
-  /**
-   * Отправляет событие в Kafka топик
-   * @param {string} topic - Название топика
-   * @param {Object} message - Объект сообщения
-   * @param {string} key - Опциональный ключ для партиционирования
-   * @returns {Promise<void>}
-   */
+  
   async sendEvent(topic, message, key = null) {
     if (process.env.NODE_ENV === 'test' || !this.producer || !this.isConnected) {
-      // В тестовом режиме или если не подключен, просто логируем
+
       logger.debug({ topic, message, key }, 'Kafka event (not sent in test mode or not connected)');
       return;
     }
@@ -101,7 +94,7 @@ class KafkaProducer {
       logger.debug({ topic, messageKey: key }, 'Kafka event sent successfully');
     } catch (error) {
       logger.error({ err: error, topic, message }, 'Error sending Kafka event');
-      // Не пробрасываем ошибку, чтобы не нарушить основной поток
+
     }
   }
 }

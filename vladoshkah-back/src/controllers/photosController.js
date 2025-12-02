@@ -16,7 +16,6 @@ class PhotosController {
                 });
             }
 
-            // Используем сервис для загрузки фото
             const photo = await photosService.uploadPhoto(
                 req.file, 
                 entity_type, 
@@ -46,10 +45,8 @@ class PhotosController {
         try {
             const { objectName } = req.params;
             
-            // Получаем информацию о фото
             const photo = await photosService.getPhotoFileInfo(objectName);
             
-            // Получаем файл из MinIO через сервис
             const dataStream = await photosService.getPhotoFile(objectName);
 
             res.setHeader('Content-Type', photo.mimetype);
@@ -89,7 +86,6 @@ class PhotosController {
         try {
             const { id } = req.params;
             
-            // Используем сервис для удаления (MinIO + БД)
             await photosService.deletePhoto(id);
 
             res.json({ message: 'Photo deleted successfully' });

@@ -5,7 +5,6 @@ const statusField = Joi.string().valid('pending', 'approved', 'rejected', 'cance
     'any.only': 'Статус должен быть одним из: pending, approved, rejected, cancelled'
   });
 
-// "Взять" (take) заявки
 export const createApplicationSchema = Joi.object({
   user_id: Joi.number().integer().positive().optional()
     .messages({
@@ -67,7 +66,6 @@ export const updateApplicationSchema = Joi.object({
   'object.min': 'Должно быть указано хотя бы одно поле для обновления'
 });
 
-// "Отдать" (give) заявки
 export const createGiveApplicationSchema = Joi.object({
   user_id: Joi.number().integer().positive().optional()
     .messages({
@@ -122,7 +120,6 @@ export const updateGiveApplicationSchema = Joi.object({
   'object.min': 'Должно быть указано хотя бы одно поле для обновления'
 });
 
-// Схема для валидации ID (параметр маршрута)
 export const applicationIdSchema = Joi.object({
   id: Joi.number().integer().positive().required()
     .messages({

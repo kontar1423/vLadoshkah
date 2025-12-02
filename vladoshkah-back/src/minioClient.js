@@ -8,7 +8,6 @@ const minioClient = new Client({
   secretKey: process.env.MINIO_SECRET_KEY
 });
 
-// Проверка подключения (пропускаем в тестовом режиме)
 if (process.env.NODE_ENV !== 'test') {
   minioClient.bucketExists(process.env.MINIO_BUCKET)
     .then(exists => {

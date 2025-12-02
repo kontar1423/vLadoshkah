@@ -19,13 +19,10 @@ const AdoptionConfirmationModal = ({ isOpen, onClose, onConfirm, petName, isLoad
 
     return ReactDOM.createPortal(
         <>
-            {/* Overlay */}
             <div 
                 className="fixed inset-0 bg-black bg-opacity-50 z-[9998]"
                 onClick={onClose}
             />
-            
-            {/* Modal Content */}
             <div 
                 className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999] bg-green-95 rounded-custom p-6 max-w-md w-full"
                 onClick={(e) => e.stopPropagation()}

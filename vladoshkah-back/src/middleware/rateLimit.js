@@ -46,9 +46,6 @@ function consumeMemory(key, windowSeconds) {
   return { count, ttl };
 }
 
-/**
- * Простой rate limiter с поддержкой Redis и fallback в память
- */
 function createRateLimiter(options = {}) {
   const {
     windowSeconds = 60,

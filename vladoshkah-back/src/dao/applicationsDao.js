@@ -85,13 +85,11 @@ async function getAllByAnimalId(animalId, type = null) {
 
 async function update(id, applicationData, type = null) {
   try {
-    // Сначала получаем текущие данные заявки
     const currentApp = await getById(id, type);
     if (!currentApp) {
       return null;
     }
 
-    // Объединяем текущие данные с новыми
     const updatedData = {
       user_id: applicationData.user_id !== undefined ? applicationData.user_id : currentApp.user_id,
       shelter_id: applicationData.shelter_id !== undefined ? applicationData.shelter_id : currentApp.shelter_id,

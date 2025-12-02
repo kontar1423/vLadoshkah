@@ -40,7 +40,6 @@ async function createVote({ userId, shelterId, vote }) {
         vote,
       });
 
-  // Пересчитываем рейтинг приюта
   const votes = await getAllVotesOfShelter(shelterId);
   const rating = calculateAverageVote(votes);
   const totalRatings = votes.length;
@@ -49,7 +48,6 @@ async function createVote({ userId, shelterId, vote }) {
     isVoteUpdate ? { rating } : { rating, totalRatings }
   );
 
-  // Инвалидируем кэш приютов
   await Promise.all([
     redisClient.delete(SHELTER_CACHE_KEYS.ALL),
     redisClient.delete(SHELTER_CACHE_KEYS.BY_ID(shelterId)),

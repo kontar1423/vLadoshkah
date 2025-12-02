@@ -18,12 +18,10 @@ function resolveUserIdFromRequest(req, payloadUserId) {
   const tokenUserId = Number(req.user?.userId);
   const payloadId = payloadUserId !== undefined ? Number(payloadUserId) : NaN;
 
-  // Предпочитаем ID из токена
   if (Number.isInteger(tokenUserId)) {
     return tokenUserId;
   }
 
-  // Админ может передать любой user_id
   if (req.user?.role === 'admin' && Number.isInteger(payloadId)) {
     return payloadId;
   }
@@ -81,7 +79,7 @@ async function getMe(req, res) {
 async function create(req, res) {
   try {
     const userData = req.body;
-    const photoFile = req.file; // Фото из multer
+    const photoFile = req.file;
     
     const log = req.log || logger;
     log.info({ hasPhoto: !!photoFile }, 'Controller: creating user');
@@ -112,7 +110,7 @@ async function update(req, res) {
   
   try {
     const userData = req.body;
-    const photoFile = req.file; // Новое фото из multer
+    const photoFile = req.file;
     
     const log = req.log || logger;
     log.info({ id, hasPhoto: !!photoFile }, 'Controller: updating user');
@@ -147,7 +145,7 @@ async function updateMe(req, res) {
   
   try {
     const userData = req.body;
-    const photoFile = req.file; // Новое фото из multer
+    const photoFile = req.file;
     
     const log = req.log || logger;
     log.info({ id, hasPhoto: !!photoFile }, 'Controller: updating user');

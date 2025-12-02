@@ -1,6 +1,5 @@
 import Joi from 'joi';
 
-// Схема для создания приюта
 export const createShelterSchema = Joi.object({
   name: Joi.string().min(2).max(255).required()
     .messages({
@@ -66,7 +65,6 @@ export const createShelterSchema = Joi.object({
     }),
 });
 
-// Схема для обновления приюта (все поля опциональны)
 export const updateShelterSchema = Joi.object({
   name: Joi.string().min(2).max(255).optional()
     .messages({
@@ -133,7 +131,6 @@ export const updateShelterSchema = Joi.object({
   'object.min': 'Должно быть указано хотя бы одно поле для обновления'
 });
 
-// Схема для валидации ID (параметр маршрута)
 export const shelterIdSchema = Joi.object({
   id: Joi.number().integer().positive().required()
     .messages({

@@ -7,14 +7,12 @@ const ShelterCard = ({ shelterData, onShowMap }) => {
     const navigate = useNavigate();
 
     const handleCardClick = (e) => {
-        // На маленьких экранах карточка кликабельна
         if (window.innerWidth < 768) {
             e.preventDefault();
             navigate(`/shelter/${id}`);
         }
     };
 
-    // Функция для безопасного преобразования в число
     const safeNumber = (value, defaultValue = 0) => {
         const num = parseFloat(value);
         return isNaN(num) ? defaultValue : num;

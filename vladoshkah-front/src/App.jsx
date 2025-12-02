@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
+import Favicon from './components/Favicon'
 import Home from './pages/Home'
 import FindPet from './pages/FindPet'
 import Shelters from './pages/Shelters'
@@ -23,6 +24,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <Favicon />
         <ScrollToTop />
         <div className="min-h-screen bg-green-95 flex flex-col">
           <Header />

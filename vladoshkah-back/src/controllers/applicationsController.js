@@ -2,7 +2,6 @@ import applicationsService from '../services/applicationsService.js';
 import applicationsGiveService from '../services/applicationsGiveService.js';
 import logger from '../logger.js';
 
-// TAKE (adopt) applications
 async function createTake(req, res) {
   try {
     if (!req.user?.userId) {
@@ -94,7 +93,6 @@ async function countApprovedTake(req, res) {
   }
 }
 
-// GIVE (surrender) applications
 async function createGive(req, res) {
   try {
     if (!req.user?.userId) {

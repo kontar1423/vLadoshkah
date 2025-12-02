@@ -11,7 +11,7 @@ import pinoHttp from 'pino-http';
 import initMinio from './initMinio.js';
 import cors from 'cors';
 import redisClient from './cache/redis-client.js';
-import pool from './db.js'; // импортируем пул подключений
+import pool from './db.js';
 import kafkaProducer from './messaging/kafka-producer.js';
 import kafkaConsumer from './messaging/kafka-consumer.js';
 import notificationService from './services/notificationService.js';
@@ -70,45 +70,37 @@ async function initializeRedis() {
     info('Redis connected successfully');
   } catch (error) {
     _error(error, 'Redis connection failed');
-    // Приложение может работать без Redis, но с предупреждением
     warn('Application running without Redis cache');
   }
 }
 
 async function initializeKafka() {
   try {
-    // Подключаем producer
     await kafkaProducer.connect();
     
-    // Регистрируем обработчики событий
     kafkaConsumer.registerHandler('user.registered', async (userData) => {
       try {
         await notificationService.sendWelcomeEmail(userData);
       } catch (error) {
         _error(error, 'Error processing user.registered event');
-        // Здесь можно добавить retry логику или отправку в DLQ
       }
     });
     
-    // Запускаем consumer для топика user-notifications
     await kafkaConsumer.start('user-notifications');
     info('Kafka initialized successfully');
   } catch (error) {
     _error(error, 'Kafka initialization failed');
-    // Приложение может работать без Kafka, но с предупреждением
     warn('Application running without Kafka messaging');
   }
 }
 
-// Инициализируем Redis и Kafka при старте приложения (только если не в тестовом режиме)
 if (process.env.NODE_ENV !== 'test') {
   initializeRedis();
   initializeKafka();
 }
 
 app.use(json());
-app.use(express.urlencoded({ extended: true })); // для FormData
-// Structured HTTP logging with request id
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(pinoHttp({
   genReqId: (req, res) => {
@@ -122,12 +114,10 @@ app.use(pinoHttp({
   }
 }));
 
-// Global rate limit (fallback в память, если Redis недоступен)
 if (isGlobalRateLimitEnabled) {
   app.use('/api', globalRateLimiter);
 }
 
-// Routes
 if (isAuthRateLimitEnabled) {
   app.use('/api/auth', authRateLimiter, authRouter);
 } else {
@@ -139,10 +129,8 @@ app.use('/api/users', usersRouter);
 app.use('/api/photos', photosRouter);
 app.use('/api/applications', applicationsRouter);
 
-// Liveness/Readiness probe
 app.get('/healthz', async (req, res) => {
   try {
-    // Проверяем подключение к БД
     await pool.query('SELECT 1');
     res.status(200).json({ 
       status: 'ok', 
@@ -159,13 +147,10 @@ app.get('/healthz', async (req, res) => {
   }
 });
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-// Centralized error handler
-// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const requestId = req.id || (req.log && req.log.bindings && req.log.bindings().req && req.log.bindings().req.id);
   _error({ err, requestId }, 'Unhandled error');
@@ -174,7 +159,6 @@ app.use((err, req, res, next) => {
 });
 
 
-// Функция для проверки подключения к БД с повторными попытками
 async function waitForDatabase() {
   const maxRetries = 10;
   const retryInterval = 3000; // 3 секунды
@@ -198,19 +182,15 @@ async function waitForDatabase() {
   }
 }
 
-// Start server
 async function startServer() {
   try {
     info('Starting server initialization...');
     
-    // 1. Ждем подключения к БД
     await waitForDatabase();
     
-    // 2. Инициализируем MinIO
     await initMinio();
     info('MinIO initialization completed');
     
-    // 3. Запускаем сервер
     app.listen(PORT, '0.0.0.0', () => {
       info({ port: PORT }, 'Server successfully running');
     });
@@ -221,7 +201,6 @@ async function startServer() {
   }
 }
 
-// Graceful shutdown
 async function shutdown() {
   info('Shutting down gracefully...');
   
@@ -245,7 +224,6 @@ async function shutdown() {
   process.exit(0);
 }
 
-// Глобальные обработчики ошибок
 process.on('unhandledRejection', (reason, promise) => {
   _error({ reason, promise }, 'Unhandled Rejection');
   process.exit(1);
@@ -259,7 +237,6 @@ process.on('uncaughtException', (error) => {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
-// Запускаем сервер только если не в test режиме
 if (process.env.NODE_ENV !== 'test') {
   startServer();
 }

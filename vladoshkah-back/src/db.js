@@ -31,8 +31,6 @@ process.on('SIGINT', async () => {
   }
 });
 
-// Добавляем named export query
 export const query = (text, params) => pool.query(text, params);
 
-// Сохраняем default export
 export default pool;

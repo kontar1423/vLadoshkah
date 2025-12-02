@@ -14,7 +14,6 @@ export function toRelativeUploadUrl(url) {
       return pathname + search + hash || '/';
     }
   } catch (err) {
-    // ignore URL parsing errors and fall back to regex replacement below
   }
 
   return url.replace(LOCALHOST_REGEX, '') || '/';

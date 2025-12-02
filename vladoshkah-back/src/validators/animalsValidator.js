@@ -1,6 +1,5 @@
 import Joi from 'joi';
 
-// Схема для создания животного
 export const createAnimalSchema = Joi.object({
   name: Joi.string().min(1).max(100).required()
     .messages({
@@ -62,7 +61,6 @@ export const createAnimalSchema = Joi.object({
     })
 });
 
-// Схема для обновления животного (все поля опциональны)
 export const updateAnimalSchema = Joi.object({
   name: Joi.string().min(1).max(100).optional()
     .messages({
@@ -122,7 +120,6 @@ export const updateAnimalSchema = Joi.object({
   'object.min': 'Должно быть указано хотя бы одно поле для обновления'
 });
 
-// Схема для фильтров поиска животных
 export const animalFiltersSchema = Joi.object({
   type: Joi.string().max(50).optional()
     .messages({
@@ -170,7 +167,6 @@ export const animalFiltersSchema = Joi.object({
     })
 });
 
-// Схема для валидации ID (параметр маршрута)
 export const animalIdSchema = Joi.object({
   id: Joi.number().integer().positive().required()
     .messages({

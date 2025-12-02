@@ -7,7 +7,6 @@
     const navigate = useNavigate();
 
     const handleCardClick = (e) => {
-        // На маленьких экранах карточка кликабельна
         if (window.innerWidth < 768) {
             e.preventDefault();
             navigate(`/shelter/${id}`);

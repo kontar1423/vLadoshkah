@@ -2,7 +2,6 @@ import sheltersService from "../services/sheltersService.js";
 import serviceVotesService from "../services/VotesService.js";
 import logger from '../logger.js';
 
-// Получить все приюты
 async function getAll(req, res) {
   try {
     let limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
@@ -27,7 +26,6 @@ async function getAll(req, res) {
   }
 }
 
-// Получить приют по id
 async function getById(req, res) {
   try {
     const id = Number(req.params.id);
@@ -44,7 +42,6 @@ async function getById(req, res) {
   }
 }
 
-// Получить приют по shelter_admin_id
 async function getByAdminId(req, res) {
   try {
     const adminId = Number(req.params.adminId);
@@ -62,10 +59,8 @@ async function getByAdminId(req, res) {
   }
 }
 
-// Создать приют
 async function create(req, res) {
   try {
-    // Поддерживаем одно фото (photo) и несколько (photos)
     const files = req.files || {};
     const mergedPhotos = [
       ...(files.photo || []),
@@ -85,7 +80,6 @@ async function create(req, res) {
   }
 }
 
-// Обновить приют
 async function update(req, res) {
   try {
     const id = Number(req.params.id);
@@ -102,7 +96,6 @@ async function update(req, res) {
   }
 }
 
-// Удалить приют
 async function remove(req, res) {
   try {
     const id = Number(req.params.id);

@@ -1,4 +1,3 @@
-// services/animalsService.js
 import animalsDao from '../dao/animalsDao.js';
 import sheltersDao from '../dao/sheltersDao.js';
 import photosDao from '../dao/photosDao.js';
@@ -7,8 +6,7 @@ import redisClient from '../cache/redis-client.js';
 import { normalizePhotos, toRelativeUploadUrl } from '../utils/urlUtils.js';
 import logger from '../logger.js';
 
-// Константы для кэширования
-const CACHE_TTL = 3600; // 1 час
+const CACHE_TTL = 3600;
 const CACHE_KEYS = {
   ALL_ANIMALS: 'animals:all',
   ANIMAL_BY_ID: (id) => `animal:${id}`,
@@ -42,7 +40,6 @@ function normalizeAnimalsCollection(animals) {
   return normalizeAnimalPhotos(animals);
 }
 
-// Вспомогательная функция для получения животных с фото
 async function getAnimalsWithPhotos(animals) {
   const allPhotos = normalizePhotos(await photosDao.getByEntityType('animal'));
   
@@ -56,7 +53,6 @@ async function getAnimalsWithPhotos(animals) {
   }));
 }
 
-// Вспомогательная функция для инвалидации кэша
 async function invalidateAnimalCaches(animalId = null) {
   const keysToDelete = [CACHE_KEYS.ALL_ANIMALS];
   
@@ -64,20 +60,15 @@ async function invalidateAnimalCaches(animalId = null) {
     keysToDelete.push(CACHE_KEYS.ANIMAL_BY_ID(animalId));
   }
   
-  // Clear the all animals cache and specific animal cache
   await Promise.all(keysToDelete.map(key => redisClient.delete(key)));
   
-  // Clear shelter-specific caches using pattern
   await redisClient.deleteByPattern('animals:shelter:*');
   
-  // Clear search caches using pattern
   await redisClient.deleteByPattern('animals:search:*');
 }
 
-// Получить всех животных
 async function getAllAnimals(limit = null) {
   try {
-    // Если передан limit — не используем кэш, возвращаем ограниченный список
     if (!limit) {
       const cached = await redisClient.get(CACHE_KEYS.ALL_ANIMALS);
       if (cached) {
@@ -87,13 +78,11 @@ async function getAllAnimals(limit = null) {
       logger.debug('Cache miss: all animals');
     }
     
-    // Два параллельных запроса вместо N+1
     const [animals, allPhotosRaw] = await Promise.all([
       animalsDao.getAll(limit ? Number(limit) : null),
       photosDao.getByEntityType('animal')
     ]);
   
-    // Объединяем в JavaScript
     const allPhotos = normalizePhotos(allPhotosRaw);
     const animalsWithPhotos = animals.map(animal => normalizeAnimalPhotos({
       ...animal,
@@ -104,7 +93,6 @@ async function getAllAnimals(limit = null) {
         }))
     }));
     
-    // Сохраняем в кэш только когда нет лимита
     if (!limit) {
       await redisClient.set(CACHE_KEYS.ALL_ANIMALS, animalsWithPhotos, CACHE_TTL);
     }
@@ -116,12 +104,10 @@ async function getAllAnimals(limit = null) {
   }
 }
 
-// Получить животное по id
 async function getAnimalById(id) {
   try {
     const cacheKey = CACHE_KEYS.ANIMAL_BY_ID(id);
     
-    // Пытаемся получить из кэша
     const cached = await redisClient.get(cacheKey);
     if (cached) {
       logger.debug({ id }, 'Cache hit: animal');
@@ -148,7 +134,6 @@ async function getAnimalById(id) {
       }))
     });
     
-    // Сохраняем в кэш
     await redisClient.set(cacheKey, animalWithPhotos, CACHE_TTL);
     
     return animalWithPhotos;
@@ -158,12 +143,10 @@ async function getAnimalById(id) {
   }
 }
 
-// Получить животных по приюту
 async function getAnimalsByShelterId(shelterId) {
   try {
     const cacheKey = CACHE_KEYS.ANIMALS_BY_SHELTER(shelterId);
     
-    // Пытаемся получить из кэша
     const cached = await redisClient.get(cacheKey);
     if (cached) {
       logger.debug({ shelterId }, 'Cache hit: animals for shelter');
@@ -187,7 +170,6 @@ async function getAnimalsByShelterId(shelterId) {
         }))
     }));
     
-    // Сохраняем в кэш
     await redisClient.set(cacheKey, animalsWithPhotos, CACHE_TTL);
     
     return animalsWithPhotos;
@@ -197,7 +179,6 @@ async function getAnimalsByShelterId(shelterId) {
   }
 }
 
-// Создать животное (с поддержкой фото)
 async function createAnimal(animalData, photoFiles = [], currentUser = null) {
   try {
     const photosArray = Array.isArray(photoFiles)
@@ -224,22 +205,18 @@ async function createAnimal(animalData, photoFiles = [], currentUser = null) {
       }
     }
     
-    // 1. Создаем животное
     const animal = await animalsDao.create(animalData);
-    // Clear the all animals cache and shelter-specific cache since we're adding a new animal
     const shelterId = Number(animalData.shelter_id);
     const cacheKeysToDelete = [
       CACHE_KEYS.ALL_ANIMALS,
       CACHE_KEYS.ANIMAL_BY_ID(animal.id)
     ];
     
-    // Очищаем кэш для конкретного приюта
     if (shelterId) {
       cacheKeysToDelete.push(CACHE_KEYS.ANIMALS_BY_SHELTER(shelterId));
     }
     
     await Promise.all(cacheKeysToDelete.map(key => redisClient.delete(key)));
-    // 2. Если есть фото - загружаем через photosService
     if (photosArray.length > 0) {
       await Promise.all(
         photosArray.map(photoFile =>
@@ -253,10 +230,8 @@ async function createAnimal(animalData, photoFiles = [], currentUser = null) {
       logger.info({ animalId: animal.id, photosCount: photosArray.length }, 'Service: photos uploaded for animal');
     }
     
-    // 3. Инвалидируем кэш
     await invalidateAnimalCaches();
     
-    // 4. Возвращаем животное с фото (будет закэшировано автоматически)
     const animalWithPhotos = await getAnimalById(animal.id);
     return animalWithPhotos;
     
@@ -266,7 +241,6 @@ async function createAnimal(animalData, photoFiles = [], currentUser = null) {
   }
 }
 
-// Обновить животное
 async function updateAnimal(id, data, currentUser = null) {
   try {
     if (currentUser?.role === 'shelter_admin') {
@@ -289,7 +263,6 @@ async function updateAnimal(id, data, currentUser = null) {
       data = { ...data, shelter_id: animal.shelter_id };
     }
 
-    // Clear the specific animal cache since we're updating a single animal
     await Promise.all([
       redisClient.delete(CACHE_KEYS.ALL_ANIMALS),
       redisClient.delete(CACHE_KEYS.ANIMAL_BY_ID(id))
@@ -299,10 +272,8 @@ async function updateAnimal(id, data, currentUser = null) {
       return null;
     }
     
-    // Инвалидируем кэш
     await invalidateAnimalCaches(id);
     
-    // Возвращаем обновленное животное с фото
     return await getAnimalById(id);
   } catch (err) {
     logger.error(err, 'Service: error updating animal');
@@ -310,7 +281,6 @@ async function updateAnimal(id, data, currentUser = null) {
   }
 }
 
-// Удалить животное
 async function removeAnimal(id, currentUser = null) {
   try {
     if (currentUser?.role === 'shelter_admin') {
@@ -327,8 +297,6 @@ async function removeAnimal(id, currentUser = null) {
       }
     }
 
-    // При удалении животного каскадно удалятся его фото
-    // Clear the specific animal cache since we're removing a single animal
     await Promise.all([
       redisClient.delete(CACHE_KEYS.ALL_ANIMALS),
       redisClient.delete(CACHE_KEYS.ANIMAL_BY_ID(id))
@@ -336,7 +304,6 @@ async function removeAnimal(id, currentUser = null) {
     await photosService.deletePhotosOfEntity(id, 'animal');
     const result = await animalsDao.remove(id);
     
-    // Инвалидируем кэш
     await invalidateAnimalCaches(id);
     
     return result;
@@ -346,14 +313,11 @@ async function removeAnimal(id, currentUser = null) {
   }
 }
 
-// Поиск животных с фильтрами
 async function findAnimals(filters) {
   try {
-    // Создаем хэш фильтров для ключа кэша
     const filtersHash = Buffer.from(JSON.stringify(filters)).toString('base64');
     const cacheKey = CACHE_KEYS.ANIMALS_SEARCH(filtersHash);
     
-    // Пытаемся получить из кэша
     const cached = await redisClient.get(cacheKey);
     if (cached) {
       logger.debug('Cache hit: animals search');
@@ -365,8 +329,7 @@ async function findAnimals(filters) {
     const animals = await animalsDao.findAnimals(filters);
     const animalsWithPhotos = await getAnimalsWithPhotos(animals);
     
-    // Кэшируем на меньшее время, т.к. поиск может часто меняться
-    await redisClient.set(cacheKey, animalsWithPhotos, 600); // 10 минут
+    await redisClient.set(cacheKey, animalsWithPhotos, 600);
     
     return animalsWithPhotos;
   } catch (err) {
@@ -375,17 +338,6 @@ async function findAnimals(filters) {
   }
 }
 
-// Дополнительный метод для принудительной инвалидации кэша
-// async function clearCache() {
-//   try {
-//     await invalidateAnimalCaches();
-//     console.log('Animal cache cleared');
-//   } catch (err) {
-//     console.error('Error clearing animal cache', err);
-//     throw err;
-//   }
-// }
-
 export default { 
   getAllAnimals, 
   getAnimalById, 
@@ -393,6 +345,5 @@ export default {
   updateAnimal, 
   removeAnimal, 
   getAnimalsByShelterId,
-  findAnimals,
-  // clearCache
+  findAnimals
 };

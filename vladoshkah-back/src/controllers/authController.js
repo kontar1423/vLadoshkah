@@ -1,9 +1,6 @@
 import authService from '../services/authService.js';
 import logger from '../logger.js';
 
-/**
- * Регистрация нового пользователя
- */
 async function register(req, res) {
   try {
     const userData = req.body;
@@ -25,9 +22,6 @@ async function register(req, res) {
   }
 }
 
-/**
- * Вход пользователя
- */
 async function login(req, res) {
   try {
     const { email, password } = req.body;
@@ -56,9 +50,6 @@ async function login(req, res) {
   }
 }
 
-/**
- * Обновление access токена
- */
 async function refreshToken(req, res) {
   try {
     const { refreshToken } = req.body;

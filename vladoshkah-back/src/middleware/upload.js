@@ -1,10 +1,8 @@
 import multer, { memoryStorage } from 'multer';
 
-// Храним файлы в памяти для загрузки в MinIO
 const storage = memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-  // Проверяем тип файла
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {

@@ -7,17 +7,10 @@ import kafkaProducer from '../messaging/kafka-producer.js';
 const jwtConfig = authConfig.jwt;
 const bcryptConfig = authConfig.bcrypt;
 
-/**
- * Регистрация нового пользователя (минимальная - только email и password)
- * Остальные данные профиля (firstname, lastname, gender, phone, bio) можно дополнить через PUT /api/users/:id
- * @param {Object} userData - Данные пользователя (email - обязательный, password - обязательный, role - опциональный, по умолчанию 'user')
- * @returns {Promise<Object>} - Созданный пользователь (без пароля) и токены (accessToken, refreshToken)
- */
 async function register(userData) {
   try {
     const {email, password, role = 'user'} = userData;
 
-    // Проверяем, не существует ли пользователь с таким email
     const existingUser = await userDAO.getByEmail(email);
     if (existingUser) {
       const err = new Error('User with this email already exists');
@@ -25,14 +18,12 @@ async function register(userData) {
       throw err;
     }
 
-    // Валидация обязательных полей
     if (!email || !password ) {
       const err = new Error('Missing required fields: email, password');
       err.status = 400;
       throw err;
     }
 
-    // Валидация email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       const err = new Error('Invalid email format');
@@ -40,18 +31,14 @@ async function register(userData) {
       throw err;
     }
 
-    // Валидация пароля (минимум 6 символов)
     if (password.length < 6) {
       const err = new Error('Password must be at least 6 characters long');
       err.status = 400;
       throw err;
     }
 
-    // Хешируем пароль
     const hashedPassword = await bcrypt.hash(password, bcryptConfig.saltRounds);
-    
-    // Создаем пользователя только с email и password
-    // Остальные поля (firstname, lastname, gender, phone, bio) можно дополнить позже через PUT /api/users/:id
+
     const user = await userDAO.create({
       email,
       password: hashedPassword,
@@ -63,15 +50,12 @@ async function register(userData) {
       bio: null
     });
 
-    // Удаляем пароль из ответа
     const { password: _, ...userWithoutPassword } = user;
 
-    // Генерируем токены
     const tokens = generateTokens(user.id, user.email, user.role);
 
     logger.info({ userId: user.id, email: user.email }, 'User registered successfully');
 
-    // Отправляем событие в Kafka для асинхронного оповещения
     try {
       await kafkaProducer.sendEvent('user-notifications', {
         eventType: 'user.registered',
@@ -85,7 +69,7 @@ async function register(userData) {
         }
       }, user.id.toString());
     } catch (err) {
-      // Логируем ошибку, но не прерываем регистрацию
+
       logger.error({ err, userId: user.id }, 'Failed to send registration event to Kafka');
     }
 
@@ -99,12 +83,6 @@ async function register(userData) {
   }
 }
 
-/**
- * Вход пользователя
- * @param {string} email - Email пользователя
- * @param {string} password - Пароль пользователя
- * @returns {Promise<Object>} - Пользователь (без пароля) и токены
- */
 async function login(email, password) {
   try {
     if (!email || !password) {
@@ -113,7 +91,6 @@ async function login(email, password) {
       throw err;
     }
 
-    // Находим пользователя по email
     const user = await userDAO.getByEmail(email);
     if (!user) {
       const err = new Error('Invalid email or password');
@@ -121,7 +98,6 @@ async function login(email, password) {
       throw err;
     }
 
-    // Проверяем пароль
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       const err = new Error('Invalid email or password');
@@ -129,10 +105,8 @@ async function login(email, password) {
       throw err;
     }
 
-    // Удаляем пароль из ответа
     const { password: _, ...userWithoutPassword } = user;
 
-    // Генерируем токены
     const tokens = generateTokens(user.id, user.email, user.role);
 
     logger.info({ userId: user.id, email: user.email }, 'User logged in successfully');
@@ -147,11 +121,6 @@ async function login(email, password) {
   }
 }
 
-/**
- * Обновление access токена с помощью refresh токена
- * @param {string} refreshToken - Refresh токен
- * @returns {Promise<Object>} - Новые токены
- */
 async function refreshAccessToken(refreshToken) {
   try {
     if (!refreshToken) {
@@ -160,10 +129,8 @@ async function refreshAccessToken(refreshToken) {
       throw err;
     }
 
-    // Проверяем refresh токен
     const decoded = jwt.verify(refreshToken, jwtConfig.secret);
-    
-    // Находим пользователя
+
     const user = await userDAO.getById(decoded.userId);
     if (!user) {
       const err = new Error('User not found');
@@ -171,7 +138,6 @@ async function refreshAccessToken(refreshToken) {
       throw err;
     }
 
-    // Генерируем новые токены
     const tokens = generateTokens(user.id, user.email, user.role);
 
     return tokens;
@@ -186,13 +152,6 @@ async function refreshAccessToken(refreshToken) {
   }
 }
 
-/**
- * Генерация access и refresh токенов
- * @param {number} userId - ID пользователя
- * @param {string} email - Email пользователя
- * @param {string} role - Роль пользователя
- * @returns {Object} - Объект с accessToken и refreshToken
- */
 function generateTokens(userId, email, role) {
   const payload = {
     userId,

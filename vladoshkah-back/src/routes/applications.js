@@ -15,7 +15,6 @@ const router = express.Router();
 const takeRouter = express.Router();
 const giveRouter = express.Router();
 
-// Multer для фото "отдать" питомца
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage,
@@ -29,7 +28,6 @@ const upload = multer({
   }
 });
 
-// TAKE (adopt) routes
 takeRouter.post('/', authenticateToken, validate(createApplicationSchema), applicationsController.createTake);
 takeRouter.get('/count/approved', applicationsController.countApprovedTake);
 takeRouter.get('/animal/:id', authenticateToken, validate(applicationIdSchema, 'params'), applicationsController.getTakeByAnimalId);
@@ -38,7 +36,6 @@ takeRouter.get('/', authenticateToken, applicationsController.getAllTake);
 takeRouter.put('/:id', authenticateToken, validate(applicationIdSchema, 'params'), validate(updateApplicationSchema), applicationsController.updateTake);
 takeRouter.delete('/:id', authenticateToken, validate(applicationIdSchema, 'params'), applicationsController.removeTake);
 
-// GIVE (surrender) routes
 giveRouter.post('/', authenticateToken, upload.fields([
   { name: 'photo', maxCount: 1 },
   { name: 'photos', maxCount: 1 }
@@ -54,7 +51,6 @@ giveRouter.delete('/:id', authenticateToken, validate(applicationIdSchema, 'para
 router.use('/take', takeRouter);
 router.use('/give', giveRouter);
 
-// Legacy /api/applications/* behaves as /take
 router.use('/', takeRouter);
 
 export default router;

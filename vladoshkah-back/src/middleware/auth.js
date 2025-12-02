@@ -4,7 +4,6 @@ const jwtConfig = authConfig.jwt;
 import logger from '../logger.js';
 import usersDao from '../dao/usersDao.js';
 
-// Поддержка старого алиаса роли admin_shelter
 const normalizeRole = (role) => {
   if (!role) return role;
   const value = String(role).toLowerCase();
@@ -12,15 +11,10 @@ const normalizeRole = (role) => {
   return value;
 };
 
-/**
- * Middleware для проверки JWT токена
- * Добавляет данные пользователя в req.user
- */
 function authenticateToken(req, res, next) {
   try {
-    // Получаем токен из заголовка Authorization
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
       return res.status(401).json({
@@ -29,7 +23,6 @@ function authenticateToken(req, res, next) {
       });
     }
 
-    // Проверяем токен
     jwt.verify(token, jwtConfig.secret, async (err, decoded) => {
       if (err) {
         if (err.name === 'TokenExpiredError') {
@@ -52,7 +45,6 @@ function authenticateToken(req, res, next) {
 
       const tokenRole = normalizeRole(decoded.role);
 
-      // В тестовой среде не дергаем базу, чтобы не усложнять моки
       if (process.env.NODE_ENV === 'test') {
         req.user = {
           userId: decoded.userId,
@@ -63,7 +55,6 @@ function authenticateToken(req, res, next) {
       }
 
       try {
-        // Берем актуальную роль из БД, чтобы обновления ролей применялись без перелогина
         const dbUser = await usersDao.getById(decoded.userId);
         if (!dbUser) {
           return res.status(401).json({
@@ -72,7 +63,6 @@ function authenticateToken(req, res, next) {
           });
         }
 
-        // Добавляем данные пользователя в запрос
         req.user = {
           userId: decoded.userId,
           email: dbUser.email || decoded.email,
@@ -97,10 +87,6 @@ function authenticateToken(req, res, next) {
   }
 }
 
-/**
- * Middleware для проверки роли пользователя
- * @param {...string} allowedRoles - Роли, которым разрешен доступ
- */
 function authorize(...allowedRoles) {
   return (req, res, next) => {
     if (!req.user) {

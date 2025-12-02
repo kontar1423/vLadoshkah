@@ -1,6 +1,5 @@
 import Joi from 'joi';
 
-// Схема для регистрации
 export const registerSchema = Joi.object({
   email: Joi.string().email().max(100).required()
     .messages({
@@ -22,7 +21,6 @@ export const registerSchema = Joi.object({
     })
 });
 
-// Схема для входа
 export const loginSchema = Joi.object({
   email: Joi.string().email().max(100).required()
     .messages({
@@ -38,7 +36,6 @@ export const loginSchema = Joi.object({
     })
 });
 
-// Схема для обновления токена
 export const refreshTokenSchema = Joi.object({
   refreshToken: Joi.string().required()
     .messages({

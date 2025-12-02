@@ -1,4 +1,4 @@
-// initMinio.js
+
 import minioClient from './minioClient.js';
 
 async function setBucketPublic(bucketName) {
@@ -24,7 +24,7 @@ async function setBucketPublic(bucketName) {
     console.log(`Bucket "${bucketName}" set to public access`);
   } catch (error) {
     console.error(`Error setting bucket policy for ${bucketName}:`, error.message);
-    // Если политика уже установлена - это нормально
+
     if (!error.message.includes('PolicyAlreadyExists')) {
       throw error;
     }
@@ -34,20 +34,18 @@ async function setBucketPublic(bucketName) {
 async function initMinio() {
   try {
     const bucketName = process.env.MINIO_BUCKET || 'uploads';
-    
-    // Проверяем существует ли бакет
+
     const bucketExists = await minioClient.bucketExists(bucketName);
     
     if (!bucketExists) {
-      // Создаем бакет
+
       await minioClient.makeBucket(bucketName);
       console.log(`Bucket "${bucketName}" created`);
-      
-      // Сразу устанавливаем публичный доступ
+
       await setBucketPublic(bucketName);
     } else {
       console.log(`Bucket "${bucketName}" already exists`);
-      // Убедимся что политика установлена (на случай перезапуска)
+
       await setBucketPublic(bucketName);
     }
     

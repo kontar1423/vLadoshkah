@@ -18,15 +18,14 @@
     z-index: 100;
   }
 
-  /* Стили выделения текста в цветах палитры сайта */
   ::selection {
-    background-color: #80da88; /* green-80 */
-    color: #00381F; /* green-20 */
+    background-color: #80da88;
+    color: #00381F;
   }
 
   ::-moz-selection {
-    background-color: #80da88; /* green-80 */
-    color: #00381F; /* green-20 */
+    background-color: #80da88;
+    color: #00381F;
   }
 }
 
@@ -142,7 +141,6 @@
     animation: fadeIn 2s ease-in-out forwards;
   }
 
-  /* Новые плавные анимации */
   @keyframes slideInUp {
     0% {
       opacity: 0;
@@ -281,7 +279,6 @@
     animation: wiggle 0.5s ease-in-out;
   }
 
-  /* Плавные hover эффекты */
   .hover-lift {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -307,7 +304,6 @@
     transform: scale(1.05);
   }
 
-  /* Градиентные фоны */
   .gradient-green {
     background: linear-gradient(135deg, #beeebb 0%, #80da88 50%, #44c265 100%);
   }
@@ -316,7 +312,6 @@
     background: linear-gradient(135deg, #ddf8d8 0%, #beeebb 100%);
   }
 
-  /* Плавные тени */
   .shadow-soft {
     box-shadow: 0 4px 20px rgba(74, 124, 89, 0.1);
   }
@@ -329,7 +324,6 @@
     box-shadow: 0 12px 40px rgba(74, 124, 89, 0.2);
   }
 
-  /* Плавные переходы для карточек */
   .card-enter {
     opacity: 0;
     transform: translateY(20px) scale(0.95);
@@ -341,7 +335,6 @@
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Эффект стекла (glassmorphism) */
   .glass-effect {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
@@ -349,7 +342,6 @@
     border: 1px solid rgba(255, 255, 255, 0.3);
   }
 
-  /* Улучшенный glassmorphism для модальных окон */
   .glass-modal {
     background: rgba(221, 248, 216, 0.85);
     backdrop-filter: blur(20px) saturate(180%);
@@ -358,7 +350,6 @@
     box-shadow: 0 8px 32px 0 rgba(0, 56, 31, 0.15);
   }
 
-  /* Shimmer анимация для skeleton */
   @keyframes shimmer {
     0% {
       background-position: -1000px 0;
@@ -379,7 +370,6 @@
     animation: shimmer 2s infinite;
   }
 
-  /* Улучшенная анимация fade-in-up для scroll */
   @keyframes fadeInUpScroll {
     0% {
       opacity: 0;
@@ -396,19 +386,16 @@
     opacity: 0;
   }
 
-  /* Улучшенный backdrop для модальных окон */
   .modal-backdrop {
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
   }
 
-  /* Плавная прокрутка */
   html {
     scroll-behavior: smooth;
   }
 
-  /* Анимация появления с задержкой */
   .stagger-animation {
     animation: slideInUp 0.6s ease-out forwards;
   }

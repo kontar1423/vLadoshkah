@@ -1,18 +1,16 @@
-// services/notificationService.js
+
 import nodemailer from 'nodemailer';
 import logger from '../logger.js';
 
 class NotificationService {
   constructor() {
-    // Настройка email транспорта
-    // Для начала используем консольный вывод или можно настроить реальный SMTP
+
     this.transporter = null;
     this.initTransporter();
   }
 
   initTransporter() {
-    // Если указаны SMTP настройки в env, используем их
-    // Иначе используем тестовый транспортер (логирует в консоль)
+
     if (process.env.SMTP_HOST && process.env.SMTP_PORT) {
       const port = parseInt(process.env.SMTP_PORT) || 587;
       const secure = process.env.SMTP_SECURE === 'true' || port === 465;
@@ -30,24 +28,22 @@ class NotificationService {
         socketTimeout: 30000, // 30 секунд для операций
       };
 
-      // TLS настройки для SMTP
       if (!secure) {
-        // Для STARTTLS (порт 587) - Gmail требует STARTTLS
+
         transportConfig.requireTLS = true;
         transportConfig.tls = {
           rejectUnauthorized: false,
           minVersion: 'TLSv1.2'
         };
-        // Убираем requireStartTLS - nodemailer обработает автоматически
+
       } else {
-        // Для SSL (порт 465)
+
         transportConfig.tls = {
           rejectUnauthorized: false,
           minVersion: 'TLSv1.2'
         };
       }
-      
-      // Для Gmail добавляем дополнительные опции
+
       if (process.env.SMTP_HOST === 'smtp.gmail.com') {
         transportConfig.pool = false; // Отключаем pooling для отладки
         transportConfig.debug = false; // Можно включить для детальных логов
@@ -63,7 +59,7 @@ class NotificationService {
         from: process.env.SMTP_FROM
       }, 'Email transporter configured with SMTP');
     } else {
-      // Тестовый транспортер - только логирует
+
       this.transporter = nodemailer.createTransport({
         streamTransport: true,
         newline: 'unix',
@@ -74,11 +70,7 @@ class NotificationService {
     }
   }
 
-  /**
-   * Отправляет приветственное письмо новому пользователю
-   * @param {Object} userData - Данные пользователя (userId, email, firstname и т.д.)
-   * @returns {Promise<void>}
-   */
+  
   async sendWelcomeEmail(userData) {
     try {
       const { email, firstname, userId } = userData;
@@ -101,8 +93,7 @@ class NotificationService {
         email, 
         messageId: info.messageId 
       }, 'Welcome email sent successfully');
-      
-      // В тестовом режиме логируем содержимое
+
       if (!process.env.SMTP_HOST) {
         logger.info({ email, subject: mailOptions.subject }, 'Email would be sent (test mode)');
       }
@@ -113,12 +104,7 @@ class NotificationService {
     }
   }
 
-  /**
-   * Шаблон приветственного письма
-   * @param {string} name - Имя пользователя
-   * @param {number} userId - ID пользователя
-   * @returns {string} HTML содержимое письма
-   */
+  
   getWelcomeEmailTemplate(name, userId) {
     return `
       <!DOCTYPE html>

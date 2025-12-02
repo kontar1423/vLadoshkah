@@ -1,11 +1,9 @@
-// cache/redis-client.js
 import { createClient } from 'redis';
 
 class RedisClient {
   constructor() {
     const redisUrl = process.env.REDIS_URL || 'redis://redis:6379';
     
-    // В тестовом режиме не создаем реальный клиент
     if (process.env.NODE_ENV === 'test') {
       this.client = null;
       this.isOpen = false;

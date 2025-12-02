@@ -1,6 +1,5 @@
 import Joi from 'joi';
 
-// Схема для создания пользователя
 export const createUserSchema = Joi.object({
   email: Joi.string().email().max(100).required()
     .messages({
@@ -42,7 +41,6 @@ export const createUserSchema = Joi.object({
     })
 });
 
-// Схема для обновления пользователя (все поля опциональны, кроме email - он вообще не должен обновляться через это API)
 export const updateUserSchema = Joi.object({
   password: Joi.string().min(6).max(255).optional()
     .messages({
@@ -77,7 +75,6 @@ export const updateUserSchema = Joi.object({
   'object.min': 'Должно быть указано хотя бы одно поле для обновления'
 });
 
-// Схема для валидации ID (параметр маршрута)
 export const userIdSchema = Joi.object({
   id: Joi.number().integer().positive().required()
     .messages({

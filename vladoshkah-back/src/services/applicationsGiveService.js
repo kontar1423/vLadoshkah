@@ -141,7 +141,6 @@ async function updateGive(id, data, photoFile = null) {
       history: data.history
     };
 
-    // Обновляем животное, если переданы данные
     const shouldUpdateAnimal = Object.values(animalPayload).some((v) => v !== undefined) || photoFile;
     let updatedAnimal = await animalsToGiveService.getById(animalId);
 

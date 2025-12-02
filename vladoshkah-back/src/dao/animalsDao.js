@@ -72,15 +72,13 @@ async function create({ name, age, type, health, gender, color, weight, personal
   } catch (err) {
     error(err, 'DAO: error creating animal');
     
-    // Обрабатываем ошибки уникального ограничения
-    if (err.code === '23505') { // PostgreSQL unique violation
+    if (err.code === '23505') {
       const errMessage = new Error('Питомец с такими данными уже существует в базе');
       errMessage.status = 409;
       throw errMessage;
     }
     
-    // Обрабатываем другие ошибки БД
-    if (err.code && err.code.startsWith('23')) { // PostgreSQL constraint violation
+    if (err.code && err.code.startsWith('23')) {
       const errMessage = new Error('Ошибка при добавлении питомца: нарушение ограничений базы данных');
       errMessage.status = 400;
       throw errMessage;
@@ -132,7 +130,6 @@ async function remove(id) {
   }
 }
 
-// Дополнительные методы по необходимости
 async function getByType(type) {
   try {
     const result = await query(
@@ -181,17 +178,14 @@ async function findAnimals(filters = {}) {
       animal_size,
       health,
       search,
-      // можно добавить любые другие фильтры
     } = filters;
 
-    // Базовый запрос
     let queryString = `
       SELECT a.*, s.name as shelter_name 
       FROM animals a 
       LEFT JOIN shelters s ON a.shelter_id = s.id 
     `;
 
-    // Динамически добавляем условия WHERE
     if (shelter_id) {
       paramCount++;
       whereConditions.push(`a.shelter_id = $${paramCount}`);
@@ -234,7 +228,6 @@ async function findAnimals(filters = {}) {
       queryParams.push(age_max);
     }
 
-    // Поиск по тексту (имя, описание и т.д.)
     if (search) {
       paramCount++;
       whereConditions.push(`(
@@ -247,15 +240,12 @@ async function findAnimals(filters = {}) {
       queryParams.push(`%${search}%`);
     }
 
-    // Добавляем WHERE если есть условия
     if (whereConditions.length > 0) {
       queryString += ` WHERE ${whereConditions.join(' AND ')}`;
     }
 
-    // Сортировка
     queryString += ` ORDER BY a.created_at DESC`;
 
-    // Выполняем запрос
     const result = await query(queryString, queryParams);
     debug({ filters, count: result.rowCount }, 'DAO: found animals with filters');
     return result.rows;
