@@ -150,6 +150,10 @@ const SheltersManagement = () => {
                     }
                 }
             });
+            // Если только фото меняем — добавим название, чтобы было хотя бы одно поле
+            if (photos.length > 0 && Object.keys(jsonPayload).length === 0 && editingShelter?.name) {
+                jsonPayload.name = editingShelter.name;
+            }
 
             if (photos.length > 0) {
                 const formDataToSend = new FormData();
@@ -439,4 +443,3 @@ const SheltersManagement = () => {
 };
 
 export default SheltersManagement;
-

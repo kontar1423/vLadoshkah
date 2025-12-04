@@ -147,6 +147,10 @@ const AnimalsManagement = () => {
                     }
                 }
             });
+            // Если меняем только фото, добавим текущее имя, чтобы бэк увидел хотя бы одно поле
+            if (photos.length > 0 && Object.keys(jsonPayload).length === 0 && editingAnimal?.name) {
+                jsonPayload.name = editingAnimal.name;
+            }
 
             // Если есть новые фото, отправляем FormData, иначе JSON
             if (photos.length > 0) {
