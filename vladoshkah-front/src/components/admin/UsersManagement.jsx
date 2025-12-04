@@ -101,17 +101,28 @@ const UsersManagement = () => {
         if (!editingUser) return;
 
         try {
-            const formDataToSend = new FormData();
-            Object.keys(formData).forEach(key => {
-                if (formData[key] || key === 'role') {
-                    formDataToSend.append(key, formData[key]);
+            const jsonPayload = {};
+            Object.keys(formData).forEach((key) => {
+                if (formData[key]) {
+                    jsonPayload[key] = formData[key];
                 }
             });
-            if (photoFile) {
-                formDataToSend.append('photo', photoFile);
+            // роль должна уходить всегда, даже если единственное поле
+            if (!jsonPayload.role && formData.role) {
+                jsonPayload.role = formData.role;
             }
 
-            await userService.updateUserById(editingUser.id, formDataToSend);
+            if (photoFile) {
+                const formDataToSend = new FormData();
+                Object.entries(jsonPayload).forEach(([key, value]) => {
+                    formDataToSend.append(key, value);
+                });
+                formDataToSend.append('photo', photoFile);
+                await userService.updateUserById(editingUser.id, formDataToSend);
+            } else {
+                await userService.updateUserById(editingUser.id, jsonPayload);
+            }
+
             alert('Пользователь успешно обновлен');
             setEditingUser(null);
             setFormData({
@@ -496,5 +507,4 @@ const UsersManagement = () => {
 };
 
 export default UsersManagement;
-
 
