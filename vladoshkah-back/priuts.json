@@ -1,0 +1,302 @@
+[
+  {
+    "record": {
+      "name": "Муркоша",
+      "address": "Москва, ул. Осташковская 14с4",
+      "phone": null,
+      "email": null,
+      "website": "https://murkosha.ru",
+      "description": "Частный приют для кошек, крупнейший приют России; более 600 подопечных. Источник: murkosha.ru",
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:murkosha",
+      "source": "pet-portal / murkosha.ru"
+    }
+  },
+  {
+    "record": {
+      "name": "Красная сосна",
+      "address": "Москва, ул. Красная Сосна, 32 (ориентировочно)",
+      "phone": null,
+      "email": null,
+      "website": null,
+      "description": "Муниципальный приют для собак — около 300 животных. Источник: pet-portal / municipal shelters list",
+      "capacity": 300,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:krasnaya_sosna",
+      "source": "pet-portal"
+    }
+  },
+  {
+    "record": {
+      "name": "Кожуховский муниципальный приют",
+      "address": "Москва, ВАО, Кожухово (точный адрес публично не указан)",
+      "phone": null,
+      "email": null,
+      "website": "https://vao-priut.org",
+      "description": "Муниципальный приют для безнадзорных животных (собаки и кошки). Источник: mospriut / приют Кожухово", 
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": "ВАО",
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:kozhuhovsky",
+      "source": "mospriut / vao-priut"
+    }
+  },
+  {
+    "record": {
+      "name": "Печатники",
+      "address": "Москва, промышленная зона Курьяново (район Печатники)",
+      "phone": null,
+      "email": null,
+      "website": null,
+      "description": "Муниципальный приют для собак и кошек. Источник: pet-portal / municipal shelters list",
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:pechatniki",
+      "source": "pet-portal"
+    }
+  },
+  {
+    "record": {
+      "name": "Некрасовка",
+      "address": "Москва, Некрасовка (Юго-Восток)",
+      "phone": null,
+      "email": null,
+      "website": null,
+      "description": "Муниципальный приют для собак и кошек. Источник: pet-portal / municipal shelters list",
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:nekrasovka",
+      "source": "pet-portal"
+    }
+  },
+  {
+    "record": {
+      "name": "Солнцево",
+      "address": "Москва, район Солнцево (запад) — ориентировочно",
+      "phone": null,
+      "email": null,
+      "website": null,
+      "description": "Муниципальный приют для собак. Источник: pet-portal / municipal shelters list",
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:solntsevo",
+      "source": "pet-portal"
+    }
+  },
+  {
+    "record": {
+      "name": "Зоорассвет",
+      "address": "Москва, Рассветная аллея 10",
+      "phone": "+7-909-918-58-96",
+      "email": null,
+      "website": null,
+      "description": "Приют для собак и кошек — частный/муниципальный. Источник: Dobrye-ruki / рейтинги приютов",
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:zoorassvet",
+      "source": "dobrye-ruki"
+    }
+  },
+  {
+    "record": {
+      "name": "Бирюлёво",
+      "address": "Москва, Востряковский проезд 10а (ориентировочно)",
+      "phone": null,
+      "email": null,
+      "website": null,
+      "description": "Муниципальный приют для бездомных животных. Источник: rospriut / pet-portal list",
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:biryulevo",
+      "source": "rospriut / pet-portal"
+    }
+  },
+  {
+    "record": {
+      "name": "Дубовая роща",
+      "address": "Москва, проезд Дубовой Рощи, вл. 23-25",
+      "phone": "8-916-127-88-04, 8-926-223-27-16",
+      "email": null,
+      "website": null,
+      "description": "Муниципальный приют для собак. Источник: Dobrye-ruki / pet-portal",
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:dubovaya_roshcha",
+      "source": "dobrye-ruki"
+    }
+  },
+  {
+    "record": {
+      "name": "Dogport",
+      "address": "Москва, район Печатники / Курьяново",
+      "phone": null,
+      "email": null,
+      "website": null,
+      "description": "Частный приют для собак и кошек. Источник: dogpriut.ru / pet-portal",
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:dogport",
+      "source": "dogpriut"
+    }
+  },
+  {
+    "record": {
+      "name": "Верные Друзья",
+      "address": "Москва (по данным публичных каталогов)",
+      "phone": "8(499)972-40-83, 8(499)972-43-22",
+      "email": null,
+      "website": null,
+      "description": "Частный приют / фонд для собак и кошек. Источник: dobrye-ruki / публичные каталоги",
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:vernye_druzya",
+      "source": "dobrye-ruki"
+    }
+  },
+  {
+    "record": {
+      "name": "НИКА",
+      "address": null,
+      "phone": null,
+      "email": null,
+      "website": null,
+      "description": "Частный приют / фонд — содержит собак и кошек. Источник: pet-portal list",
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:nika",
+      "source": "pet-portal"
+    }
+  },
+  {
+    "record": {
+      "name": "Щербинка",
+      "address": "Москва, Щербинка (ЮЗАО)",
+      "phone": null,
+      "email": null,
+      "website": null,
+      "description": "Муниципальный приют Щербинка. Источник: mospriut / pet-portal",
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:sherbinka",
+      "source": "mospriut / pet-portal"
+    }
+  },
+  {
+    "record": {
+      "name": "Приют «Альма»",
+      "address": "Москва, около метро Авиамоторная",
+      "phone": "+7-495-361-46-29, +7-926-658-77-75, +7-916-403-38-78",
+      "email": null,
+      "website": null,
+      "description": "Частный приют «Альма». Источник: pet-portal / dogpriut каталоги",
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:alma",
+      "source": "pet-portal / dogpriut"
+    }
+  },
+  {
+    "record": {
+      "name": "Приют «Бескудниково»",
+      "address": "Москва, район Бескудниково (точный адрес публично не указан)",
+      "phone": null,
+      "email": null,
+      "website": null,
+      "description": "Частный приют для собак. Источник: dogpriut.ru / публичные каталоги приютов",
+      "capacity": null,
+      "working_hours": null,
+      "can_adopt": true,
+      "region": null,
+      "status": "active",
+      "inn": null
+    },
+    "meta": {
+      "external_id": "manual:beskudnikovo",
+      "source": "dogpriut"
+    }
+  }
+]
