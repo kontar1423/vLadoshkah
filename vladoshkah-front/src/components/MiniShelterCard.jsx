@@ -2,7 +2,7 @@
     import { Link, useNavigate } from 'react-router-dom';
     import PriutPhoto from '../assets/images/priut.jpg';
 
-    const MiniShelterCard = ({ shelter }) => {
+const MiniShelterCard = ({ shelter, wideMobile = false }) => {
     const { id, name, district, description, photoUrl } = shelter;
     const navigate = useNavigate();
 
@@ -13,12 +13,20 @@
         }
     }; 
 
+    const sizeClasses = wideMobile
+        ? 'w-[260px] sm:w-full max-w-[260px] sm:max-w-[320px] md:max-w-[380px] h-[340px] sm:h-[360px] md:h-[400px]'
+        : 'w-[220px] sm:w-full max-w-[220px] sm:max-w-[300px] md:max-w-[380px] h-[320px] sm:h-[340px] md:h-[380px]';
+
+    const photoHeightClasses = wideMobile
+        ? 'h-36 sm:h-40 md:h-44 lg:h-48'
+        : 'h-32 sm:h-36 md:h-40 lg:h-44';
+
     return (
         <div 
             onClick={handleCardClick}
-            className="bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 w-[220px] sm:w-full max-w-[220px] sm:max-w-[300px] md:max-w-[380px] h-[320px] sm:h-[340px] md:h-[380px] flex flex-col cursor-pointer md:cursor-default hover:shadow-lg transition-shadow duration-300"
+            className={`bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 ${sizeClasses} flex flex-col cursor-pointer md:cursor-default hover:shadow-lg transition-shadow duration-300`}
         >
-        <div className="relative w-full h-32 sm:h-36 md:h-40 lg:h-44 mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small">
+        <div className={`relative w-full ${photoHeightClasses} mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small`}>
             <img
             src={photoUrl || PriutPhoto}
             alt={name}

@@ -244,7 +244,7 @@ const getDistrictName = (regionCode) => {
         </div>
       </section>
 
-      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-8 sm:py-12">
+      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] pt-4 pb-6 sm:pt-8 sm:pb-12">
         <h2 className="font-sf-rounded font-bold text-green-30 text-3xl md:text-5xl text-center mb-10 animate-slide-in-up">
           Забери нас домой!
         </h2>
@@ -260,7 +260,7 @@ const getDistrictName = (regionCode) => {
         )}
       </section>
 
-<section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-8 sm:py-12">
+<section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] pt-6 pb-8 sm:py-12">
   <div className="bg-green-90 rounded-custom p-8 md:p-12 relative overflow-hidden">
     
     <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-90 overflow-hidden">

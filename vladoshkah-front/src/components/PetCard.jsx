@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { favoriteService } from '../services/favoriteService';
 
-const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
+const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile = false }) => {
     const {
         id,
         name = "Питомец",
@@ -201,9 +201,13 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
         return text.substring(0, maxLength) + '...';
     };
 
+    const mobileSizeClasses = wideMobile
+        ? 'w-[280px] max-w-[280px] h-[300px]'
+        : 'w-[220px] max-w-[220px] h-[260px]';
+
     return (
         <article 
-            className="flex flex-col w-[240px] sm:w-full max-w-[240px] sm:max-w-[280px] md:max-w-[320px] h-[300px] sm:h-[400px] md:h-[420px] bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative"
+            className={`flex flex-col ${mobileSizeClasses} sm:w-full sm:max-w-[300px] md:max-w-[320px] sm:h-[400px] md:h-[420px] bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative`}
             aria-label={`Карточка питомца ${name}`}
         >
             {onDelete && (
@@ -222,7 +226,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
                     </svg>
                 </button>
             )}
-            <div className="relative w-full h-[170px] sm:h-auto sm:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden">
+            <div className="relative w-full h-[180px] sm:h-auto sm:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden">
                 {photoUrl ? (
                     <>
                         <img

@@ -522,17 +522,17 @@ const FindPet = () => {
           </div>
         </section>
 
-        <section id="pets-section" className="w-full max-w-[1260px] mx-auto py-8 md:py-30 mb-25 px-4 md:px-0">
-          <div className="mb-6">
+        <section id="pets-section" className="w-full max-w-[1260px] mx-auto pt-2 pb-6 sm:pt-6 sm:pb-10 md:py-30 mb-10 md:mb-25 px-4 md:px-0">
+          <div className="mb-6 flex justify-center sm:justify-start">
             <div className="bg-green-90 rounded-custom-small px-6 py-3 inline-block">
               <span className="font-inter font-medium text-green-30">
-                {`Найдено ${filteredPets.length} питомцев ${searchTerm && `по запросу "${searchTerm}"`}`}
+                {`Найдено ${filteredPets.length} питомцев${searchTerm ? ` по запросу "${searchTerm}"` : ''}`}
               </span>
             </div>
           </div>
 
           {loading && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 md:gap-7 justify-items-center sm:justify-items-start">
               {[...Array(8)].map((_, index) => (
                 <PetCardSkeleton key={index} />
               ))}
@@ -570,14 +570,15 @@ const FindPet = () => {
             <>
               {filteredPets.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 md:gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 md:gap-7 justify-items-center sm:justify-items-start">
                     {currentPets.map((pet) => (
-                      <PetCard 
-                        key={pet.id}
-                        petData={pet}
-                        initialFavorite={favoritesMap[pet.id] === true}
-                      />
-                    ))}
+                    <PetCard 
+                      key={pet.id}
+                      petData={pet}
+                      initialFavorite={favoritesMap[pet.id] === true}
+                      wideMobile
+                    />
+                  ))}
                   </div>
 
                   <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8">
