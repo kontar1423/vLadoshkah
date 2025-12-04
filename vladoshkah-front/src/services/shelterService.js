@@ -37,10 +37,11 @@ export const shelterService = {
 
     async updateShelter(shelterId, shelterData) {
         try {
+            const isFormData = shelterData instanceof FormData;
             const response = await api.put(`/shelters/${shelterId}`, shelterData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
+                headers: isFormData
+                    ? { 'Content-Type': 'multipart/form-data' }
+                    : { 'Content-Type': 'application/json' }
             });
             return response.data;
         } catch (error) {

@@ -176,17 +176,13 @@ export const userService = {
 
     async updateUserById(id, userData) {
         try {
-            if (userData instanceof FormData) {
-                const response = await api.put(`/users/${id}`, userData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
-                return response.data;
-            } else {
-                const response = await api.put(`/users/${id}`, userData);
-                return response.data;
-            }
+            const isFormData = userData instanceof FormData;
+            const response = await api.put(`/users/${id}`, userData, {
+                headers: isFormData
+                    ? { 'Content-Type': 'multipart/form-data' }
+                    : { 'Content-Type': 'application/json' }
+            });
+            return response.data;
         } catch (error) {
             console.error(`userService: Error updating user ${id}:`, error);
             throw error;
