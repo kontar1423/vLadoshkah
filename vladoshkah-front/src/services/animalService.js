@@ -73,10 +73,11 @@ export const animalService = {
 
     async updateAnimal(animalId, animalData) {
         try {
+            const isFormData = animalData instanceof FormData;
             const response = await api.put(`/animals/${animalId}`, animalData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
+                headers: isFormData
+                    ? { 'Content-Type': 'multipart/form-data' }
+                    : { 'Content-Type': 'application/json' }
             });
             return response.data;
         } catch (error) {
