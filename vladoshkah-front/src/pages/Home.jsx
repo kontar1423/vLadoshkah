@@ -188,7 +188,7 @@ const getDistrictName = (regionCode) => {
   return (
     <div className="min-h-screen bg-green-95">
       <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-16">
-        <div className="bg-green-90 rounded-custom h-[400px] md:h-[500px] w-full relative overflow-hidden">
+        <div className="bg-green-90 rounded-custom h-[320px] sm:h-[380px] md:h-[500px] w-full relative overflow-hidden">
           <div className="absolute -bottom-20 -left-20 -right-20 flex items-start justify-center opacity-70">
             <div className="relative w-full max-w-4xl">
               <img
@@ -213,8 +213,13 @@ const getDistrictName = (regionCode) => {
             </div>
           </div>
           
-          
-          <div className="absolute top-8 left-1/2 transform -translate-x-1/2 w-full max-w-4xl px-4 text-center animate-fade-in">
+          <div className="absolute top-6 left-0 right-0 px-6 text-center sm:hidden">
+            <p className="font-sf-rounded font-bold text-green-30 text-lg leading-tight max-w-[22ch] mx-auto">
+              Настоящая дружба начинается здесь —<br />найди своего пушистого компаньона!
+            </p>
+          </div>
+
+          <div className="absolute top-8 left-1/2 transform -translate-x-1/2 w-full max-w-4xl px-4 text-center animate-fade-in hidden sm:block">
             <LetterByLetter
               text="Настоящая дружба начинается здесь — найди своего пушистого компаньона!"
               delay={15}
@@ -222,22 +227,19 @@ const getDistrictName = (regionCode) => {
             />
           </div>
           
-          
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-3/4 flex items-end">
-            <img
-              src={LudskoePhoto}
-              alt="Руки"
-              className="h-4.1/5 object-contain"
-            />
-          </div>
-          
-          
-          <div className="absolute -bottom-1/5 top-1/2 left-1/2 transform -translate-y-1/2 z-20">
-            <img
-              src={GodpesPhoto}
-              alt="Парящее изображение"
-              className="w-32 h-32 md:w-48 md:h-48 lg:w-64 lg:h-64 object-contain animate-float"
-            />
+          <div className="absolute inset-0 flex items-end justify-center pointer-events-none">
+            <div className="relative w-full flex items-end justify-center h-[95%]">
+              <img
+                src={LudskoePhoto}
+                alt="Руки"
+                className="h-[86%] sm:h-[90%] max-h-none object-contain transform origin-[50%_100%] scale-[1.05] sm:scale-[1.18]"
+              />
+              <img
+                src={GodpesPhoto}
+                alt="Парящее изображение"
+                className="absolute bottom-16 sm:bottom-22 md:bottom-36 lg:bottom-32 left-1/2 -translate-x-[55%] w-36 h-36 sm:w-40 sm:h-40 md:w-52 md:h-52 lg:w-64 lg:h-64 object-contain animate-float"
+              />
+            </div>
           </div>
         </div>
       </section>
