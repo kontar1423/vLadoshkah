@@ -203,7 +203,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
 
     return (
         <article 
-            className="flex flex-col w-full max-w-[180px] sm:max-w-[280px] md:max-w-[320px] h-[200px] sm:h-[400px] md:h-[420px] bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative"
+            className="flex flex-col w-full max-w-[220px] sm:max-w-[280px] md:max-w-[320px] h-[260px] sm:h-[400px] md:h-[420px] bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative"
             aria-label={`Карточка питомца ${name}`}
         >
             {onDelete && (
@@ -222,7 +222,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null }) => {
                     </svg>
                 </button>
             )}
-            <div className="relative w-full h-[90px] sm:h-auto sm:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden">
+            <div className="relative w-full h-[140px] sm:h-auto sm:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden">
                 {photoUrl ? (
                     <>
                         <img

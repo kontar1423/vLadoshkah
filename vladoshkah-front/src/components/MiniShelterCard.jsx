@@ -16,9 +16,9 @@
     return (
         <div 
             onClick={handleCardClick}
-            className="bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 w-full max-w-[180px] sm:max-w-[280px] md:max-w-[380px] h-full flex flex-col cursor-pointer md:cursor-default hover:shadow-lg transition-shadow duration-300"
+            className="bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 w-full max-w-[220px] sm:max-w-[300px] md:max-w-[380px] h-full flex flex-col cursor-pointer md:cursor-default hover:shadow-lg transition-shadow duration-300"
         >
-        <div className="relative w-full h-24 sm:h-32 md:h-36 lg:h-40 mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small">
+        <div className="relative w-full h-32 sm:h-36 md:h-40 lg:h-44 mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small">
             <img
             src={photoUrl || PriutPhoto}
             alt={name}
