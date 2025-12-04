@@ -17,6 +17,7 @@ const AnimalsManagement = () => {
         breed: '',
         gender: '',
         age: '',
+        weight: '',
         color: '',
         animal_size: '',
         health: '',
@@ -71,6 +72,8 @@ const AnimalsManagement = () => {
             if (formData[key] !== '' && formData[key] !== null && formData[key] !== undefined) {
                 if (key === 'age' || key === 'shelter_id') {
                     formDataToSend.append(key, parseInt(formData[key]));
+                } else if (key === 'weight') {
+                    formDataToSend.append(key, parseFloat(formData[key]));
                 } else {
                     formDataToSend.append(key, formData[key]);
                 }
@@ -114,6 +117,7 @@ const AnimalsManagement = () => {
             breed: animal.breed || '',
             gender: animal.gender || '',
             age: animal.age || '',
+            weight: animal.weight || '',
             color: animal.color || '',
             animal_size: animal.animal_size || '',
             health: animal.health || '',
@@ -134,7 +138,13 @@ const AnimalsManagement = () => {
             Object.keys(formData).forEach(key => {
                 const value = formData[key];
                 if (value !== '' && value !== null && value !== undefined) {
-                    jsonPayload[key] = (key === 'age' || key === 'shelter_id') ? parseInt(value) : value;
+                    if (key === 'age' || key === 'shelter_id') {
+                        jsonPayload[key] = parseInt(value);
+                    } else if (key === 'weight') {
+                        jsonPayload[key] = parseFloat(value);
+                    } else {
+                        jsonPayload[key] = value;
+                    }
                 }
             });
 
@@ -182,6 +192,7 @@ const AnimalsManagement = () => {
             breed: '',
             gender: '',
             age: '',
+            weight: '',
             color: '',
             animal_size: '',
             health: '',
@@ -257,6 +268,10 @@ const AnimalsManagement = () => {
                                     <option value="">Выберите тип</option>
                                     <option value="dog">Собака</option>
                                     <option value="cat">Кошка</option>
+                                    <option value="bird">Птица</option>
+                                    <option value="rodent">Грызун</option>
+                                    <option value="fish">Рыба</option>
+                                    <option value="reptile">Рептилия</option>
                                     <option value="other">Другое</option>
                                 </select>
                             </div>
@@ -290,6 +305,18 @@ const AnimalsManagement = () => {
                                     name="age"
                                     value={formData.age}
                                     onChange={handleChange}
+                                    className="w-full px-4 py-2 bg-green-95 border-2 border-green-30 rounded-custom-small text-green-20"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-green-40 font-inter font-medium mb-2">Вес (кг)</label>
+                                <input
+                                    type="number"
+                                    name="weight"
+                                    value={formData.weight}
+                                    onChange={handleChange}
+                                    step="0.1"
+                                    min="0"
                                     className="w-full px-4 py-2 bg-green-95 border-2 border-green-30 rounded-custom-small text-green-20"
                                 />
                             </div>
@@ -453,4 +480,3 @@ const AnimalsManagement = () => {
 };
 
 export default AnimalsManagement;
-

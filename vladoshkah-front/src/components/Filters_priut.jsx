@@ -30,7 +30,8 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                                         initialFilters.type === 'bird' ? 'Птицы' :
                                         initialFilters.type === 'rodent' ? 'Грызуны' :
                                         initialFilters.type === 'fish' ? 'Рыбы' :
-                                        initialFilters.type === 'reptile' ? 'Рептилии' : 'Все';
+                                        initialFilters.type === 'reptile' ? 'Рептилии' :
+                                        initialFilters.type === 'other' ? 'Другое' : 'Все';
                 }
                 if (initialFilters.gender) {
                     updatedFilters.gender = initialFilters.gender === 'male' ? 'Мальчик' : 
@@ -78,7 +79,7 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
             id: "type",
             label: "Кого вы ищете",
             value: filters.type,
-            options: ["Все", "Собаки", "Кошки", "Птицы", "Грызуны", "Рыбы", "Рептилии"],
+            options: ["Все", "Собаки", "Кошки", "Птицы", "Грызуны", "Рыбы", "Рептилии", "Другое"],
             fullWidth: true,
         },
         {
@@ -152,7 +153,8 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                 filters.type === "Птицы" ? "bird" :
                 filters.type === "Грызуны" ? "rodent" :
                 filters.type === "Рыбы" ? "fish" :
-                filters.type === "Рептилии" ? "reptile" : "",
+                filters.type === "Рептилии" ? "reptile" :
+                filters.type === "Другое" ? "other" : "",
             gender: filters.gender === "Мальчик" ? "male" : filters.gender === "Девочка" ? "female" : "",
             animal_size: filters.animal_size === "Маленький" ? "small" : 
                         filters.animal_size === "Средний" ? "medium" : 

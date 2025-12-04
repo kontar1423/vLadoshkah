@@ -260,6 +260,9 @@ const AddPetToShelter = () => {
                                     <option value="dog">Собака</option>
                                     <option value="bird">Птица</option>
                                     <option value="rodent">Грызун</option>
+                                    <option value="fish">Рыба</option>
+                                    <option value="reptile">Рептилия</option>
+                                    <option value="other">Другое</option>
                                 </select>
                             </div>
 

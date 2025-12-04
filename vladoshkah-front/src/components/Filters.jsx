@@ -106,7 +106,8 @@ export const Filters = ({ isOpen, onClose, onApply, initialFilters, onReset }) =
                 { value: "bird", label: "Птицы" },
                 { value: "rodent", label: "Грызуны" },
                 { value: "fish", label: "Рыбы" },
-                { value: "reptile", label: "Рептилии" }
+                { value: "reptile", label: "Рептилии" },
+                { value: "other", label: "Другое" }
             ],
             fullWidth: true,
         },
