@@ -129,8 +129,27 @@ const AnimalsManagement = () => {
         if (!editingAnimal) return;
 
         try {
-            const formDataToSend = prepareFormData();
-            await animalService.updateAnimal(editingAnimal.id, formDataToSend);
+            // Собираем только непустые поля
+            const jsonPayload = {};
+            Object.keys(formData).forEach(key => {
+                const value = formData[key];
+                if (value !== '' && value !== null && value !== undefined) {
+                    jsonPayload[key] = (key === 'age' || key === 'shelter_id') ? parseInt(value) : value;
+                }
+            });
+
+            // Если есть новые фото, отправляем FormData, иначе JSON
+            if (photos.length > 0) {
+                const formDataToSend = new FormData();
+                Object.entries(jsonPayload).forEach(([key, value]) => {
+                    formDataToSend.append(key, value);
+                });
+                photos.forEach(photo => formDataToSend.append('photos', photo));
+                await animalService.updateAnimal(editingAnimal.id, formDataToSend);
+            } else {
+                await animalService.updateAnimal(editingAnimal.id, jsonPayload);
+            }
+
             alert('Животное успешно обновлено');
             setEditingAnimal(null);
             resetForm();
@@ -434,5 +453,4 @@ const AnimalsManagement = () => {
 };
 
 export default AnimalsManagement;
-
 

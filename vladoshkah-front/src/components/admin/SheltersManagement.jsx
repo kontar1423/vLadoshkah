@@ -136,8 +136,32 @@ const SheltersManagement = () => {
         if (!editingShelter) return;
 
         try {
-            const formDataToSend = prepareFormData();
-            await shelterService.updateShelter(editingShelter.id, formDataToSend);
+            // Собираем только непустые поля в JSON
+            const jsonPayload = {};
+            Object.keys(formData).forEach(key => {
+                const value = formData[key];
+                if (value !== '' && value !== null && value !== undefined) {
+                    if (key === 'capacity') {
+                        jsonPayload[key] = parseInt(value);
+                    } else if (key === 'can_adopt') {
+                        jsonPayload[key] = !!value;
+                    } else {
+                        jsonPayload[key] = value;
+                    }
+                }
+            });
+
+            if (photos.length > 0) {
+                const formDataToSend = new FormData();
+                Object.entries(jsonPayload).forEach(([key, value]) => {
+                    formDataToSend.append(key, value);
+                });
+                photos.forEach(photo => formDataToSend.append('photos', photo));
+                await shelterService.updateShelter(editingShelter.id, formDataToSend);
+            } else {
+                await shelterService.updateShelter(editingShelter.id, jsonPayload);
+            }
+
             alert('Приют успешно обновлен');
             setEditingShelter(null);
             resetForm();
@@ -415,5 +439,4 @@ const SheltersManagement = () => {
 };
 
 export default SheltersManagement;
-
 
