@@ -156,12 +156,12 @@
                 zIndex = 30;
             } else if (isLeft) {
                 translateX = `calc(-50% - ${CARD_WIDTH + GAP}px)`;
-                scale = 1;
+                scale = 0.85;
                 opacity = 1;
                 zIndex = 20;
             } else if (isRight) {
                 translateX = `calc(-50% + ${CARD_WIDTH + GAP}px)`;
-                scale = 1;
+                scale = 0.85;
                 opacity = 1;
                 zIndex = 20;
             }
@@ -177,6 +177,8 @@
                     opacity: opacity,
                     zIndex: zIndex,
                     willChange: 'transform, opacity',
+                    width: `${CARD_WIDTH}px`,
+                    maxWidth: '90vw',
                 }}
                 >
                 <PetCard 
