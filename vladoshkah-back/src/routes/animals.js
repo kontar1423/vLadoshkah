@@ -55,9 +55,31 @@ router.post(
   animalsController.create
 );
 
-router.put('/:id', authenticateToken, authorize('admin', 'shelter_admin'), validate(animalIdSchema, 'params'), validate(updateAnimalSchema), animalsController.update);
+router.put(
+  '/:id',
+  authenticateToken,
+  authorize('admin', 'shelter_admin'),
+  validate(animalIdSchema, 'params'),
+  upload.fields([
+    { name: 'photo', maxCount: 1 },
+    { name: 'photos', maxCount: 5 },
+  ]),
+  validate(updateAnimalSchema),
+  animalsController.update
+);
 
-router.patch('/:id', authenticateToken, authorize('admin', 'shelter_admin'), validate(animalIdSchema, 'params'), validate(updateAnimalSchema), animalsController.update);
+router.patch(
+  '/:id',
+  authenticateToken,
+  authorize('admin', 'shelter_admin'),
+  validate(animalIdSchema, 'params'),
+  upload.fields([
+    { name: 'photo', maxCount: 1 },
+    { name: 'photos', maxCount: 5 },
+  ]),
+  validate(updateAnimalSchema),
+  animalsController.update
+);
 
 router.delete('/:id', authenticateToken, authorize('admin', 'shelter_admin'), validate(animalIdSchema, 'params'), animalsController.remove);
 

@@ -189,21 +189,27 @@ const AnimalsManagement = () => {
                     }
                 }
             });
-            // Если меняем только фото, добавим текущее имя, чтобы бэк увидел хотя бы одно поле
-            if (photos.length > 0 && Object.keys(jsonPayload).length === 0 && editingAnimal?.name) {
-                jsonPayload.name = editingAnimal.name;
-            }
 
-            // Если есть новые фото, отправляем FormData, иначе JSON
+            // Если есть новые фото, отправляем FormData (можно только с фото, без других полей)
             if (photos.length > 0) {
                 const formDataToSend = new FormData();
+                // Добавляем только измененные поля в FormData (если они есть)
                 Object.entries(jsonPayload).forEach(([key, value]) => {
-                    formDataToSend.append(key, value);
+                    if (value !== null && value !== undefined) {
+                        formDataToSend.append(key, value);
+                    }
                 });
+                // Добавляем фото
                 photos.forEach(photo => formDataToSend.append('photos', photo));
                 await animalService.updateAnimal(editingAnimal.id, formDataToSend);
             } else {
-                await animalService.updateAnimal(editingAnimal.id, jsonPayload);
+                // Если нет фото, но есть поля для обновления
+                if (Object.keys(jsonPayload).length > 0) {
+                    await animalService.updateAnimal(editingAnimal.id, jsonPayload);
+                } else {
+                    alert('Нет изменений для сохранения');
+                    return;
+                }
             }
 
             alert('Животное успешно обновлено');

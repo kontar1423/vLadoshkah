@@ -8,9 +8,7 @@ export const validate = (schema, source = 'body') => {
       dataToValidate = {};
     }
 
-    // Проверяем наличие файлов - если есть файлы и body пустой, пропускаем валидацию
     if (source === 'body') {
-      // Более надежная проверка файлов
       let hasFiles = false;
       if (req.files) {
         if (req.files.photo) {
@@ -34,12 +32,6 @@ export const validate = (schema, source = 'body') => {
         if (!req.body) {
           req.body = {};
         }
-        // Временное логирование для отладки (можно убрать после исправления)
-        console.log('[Validation] Skipping validation: hasFiles=true, bodyKeys=0', {
-          hasFiles,
-          filesKeys: req.files ? Object.keys(req.files) : null,
-          bodyKeys
-        });
         return next();
       }
     }
@@ -73,12 +65,6 @@ export const validate = (schema, source = 'body') => {
           if (!req.body) {
             req.body = {};
           }
-          // Временное логирование для отладки (можно убрать после исправления)
-          console.log('[Validation] Skipping .min(1) error: hasFiles=true', {
-            hasFiles,
-            filesKeys: req.files ? Object.keys(req.files) : null,
-            errorType: 'object.min'
-          });
           return next();
         }
       }

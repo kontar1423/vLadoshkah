@@ -309,7 +309,7 @@ const Shelters = () => {
 
           {shelters.length > 0 && (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-1 gap-2 sm:gap-4 md:gap-8">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3 md:gap-8">
                 {currentShelters.map((shelter) => (
                   isMobile ? (
                     <MiniShelterCard 

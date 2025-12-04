@@ -116,7 +116,18 @@ async function update(req, res) {
     return res.status(400).json({ error: 'Invalid id' });
   }
   try {
-    const updated = await animalsService.updateAnimal(id, req.body, req.user);
+    const files = req.files || {};
+    const mergedPhotos = [
+      ...(files.photo || []),
+      ...(files.photos || []),
+    ];
+    
+    const updated = await animalsService.updateAnimal(
+      id,
+      req.body,
+      mergedPhotos.length ? mergedPhotos : null,
+      req.user
+    );
     if (!updated) {
       const log = req.log || logger;
       log.warn({ id }, 'Controller: animal to update not found');

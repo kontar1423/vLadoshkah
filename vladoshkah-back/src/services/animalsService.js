@@ -241,7 +241,7 @@ async function createAnimal(animalData, photoFiles = [], currentUser = null) {
   }
 }
 
-async function updateAnimal(id, data, currentUser = null) {
+async function updateAnimal(id, data, photoFiles = null, currentUser = null) {
   try {
     if (currentUser?.role === 'shelter_admin') {
       const animal = await animalsDao.getById(id);
@@ -267,9 +267,21 @@ async function updateAnimal(id, data, currentUser = null) {
       redisClient.delete(CACHE_KEYS.ALL_ANIMALS),
       redisClient.delete(CACHE_KEYS.ANIMAL_BY_ID(id))
     ]);
-    const updatedAnimal = await animalsDao.update(id, data);
-    if (!updatedAnimal) {
-      return null;
+    
+    // Обновляем только если есть данные для обновления (не только фото)
+    if (Object.keys(data).length > 0) {
+      const updatedAnimal = await animalsDao.update(id, data);
+      if (!updatedAnimal) {
+        return null;
+      }
+    }
+    
+    // Обрабатываем фото, если они есть
+    if (photoFiles) {
+      const filesArray = Array.isArray(photoFiles) ? photoFiles : [photoFiles];
+      if (filesArray.length > 0) {
+        await Promise.all(filesArray.map(photoFile => photosService.uploadPhoto(photoFile, 'animal', id)));
+      }
     }
     
     await invalidateAnimalCaches(id);

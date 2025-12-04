@@ -116,8 +116,6 @@ export const updateAnimalSchema = Joi.object({
     .messages({
       'string.max': 'История не должна превышать 1000 символов'
     })
-}).min(1).messages({
-  'object.min': 'Должно быть указано хотя бы одно поле для обновления'
 });
 
 export const animalFiltersSchema = Joi.object({

@@ -62,8 +62,6 @@ export const updateApplicationSchema = Joi.object({
       'string.min': 'Описание должно содержать минимум 10 символов',
       'string.max': 'Описание не должно превышать 5000 символов'
     })
-}).min(1).messages({
-  'object.min': 'Должно быть указано хотя бы одно поле для обновления'
 });
 
 export const createGiveApplicationSchema = Joi.object({
@@ -116,8 +114,6 @@ export const updateGiveApplicationSchema = Joi.object({
   history: Joi.string().max(5000).allow(null, '').optional(),
   status: statusField.optional(),
   description: Joi.string().max(5000).allow(null, '').optional()
-}).min(1).messages({
-  'object.min': 'Должно быть указано хотя бы одно поле для обновления'
 });
 
 export const applicationIdSchema = Joi.object({

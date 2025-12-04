@@ -71,8 +71,6 @@ export const updateUserSchema = Joi.object({
     .messages({
       'string.max': 'Bio не должна превышать 2000 символов'
     })
-}).min(1).messages({
-  'object.min': 'Должно быть указано хотя бы одно поле для обновления'
 });
 
 export const userIdSchema = Joi.object({

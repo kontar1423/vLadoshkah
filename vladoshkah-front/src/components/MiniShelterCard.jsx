@@ -14,12 +14,12 @@ const MiniShelterCard = ({ shelter, wideMobile = false }) => {
     }; 
 
     const sizeClasses = wideMobile
-        ? 'w-[260px] sm:w-full max-w-[260px] sm:max-w-[320px] md:max-w-[380px] h-[340px] sm:h-[360px] md:h-[400px]'
-        : 'w-[220px] sm:w-full max-w-[220px] sm:max-w-[300px] md:max-w-[380px] h-[320px] sm:h-[340px] md:h-[380px]';
+        ? 'w-full max-w-none md:max-w-[320px] lg:max-w-[380px] h-[280px] sm:h-[300px] md:h-[360px]'
+        : 'w-full max-w-none md:max-w-[300px] lg:max-w-[380px] h-[260px] sm:h-[280px] md:h-[340px]';
 
     const photoHeightClasses = wideMobile
-        ? 'h-36 sm:h-40 md:h-44 lg:h-48'
-        : 'h-32 sm:h-36 md:h-40 lg:h-44';
+        ? 'h-28 sm:h-32 md:h-40 lg:h-44'
+        : 'h-24 sm:h-28 md:h-36 lg:h-40';
 
     return (
         <div 
@@ -46,14 +46,14 @@ const MiniShelterCard = ({ shelter, wideMobile = false }) => {
             </div>
         </div>
         
-        <h3 className="font-sf-rounded font-bold text-green-30 text-base sm:text-base md:text-lg lg:text-xl mb-1 sm:mb-1.5 md:mb-2 line-clamp-1">{name}</h3>
+        <h3 className="font-sf-rounded font-bold text-green-30 text-sm sm:text-base md:text-lg lg:text-xl mb-1 sm:mb-1.5 md:mb-2 line-clamp-1">{name}</h3>
         
-        <p className="font-inter text-green-40 text-xs sm:text-xs md:text-sm mb-1.5 sm:mb-2 md:mb-3 line-clamp-2 flex-grow">
+        <p className="font-inter text-green-40 text-[10px] sm:text-xs md:text-sm mb-1 sm:mb-1.5 md:mb-2 line-clamp-2 flex-grow">
             {description}
         </p>
         
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-auto gap-1 sm:gap-2">
-            <span className="font-inter text-green-50 text-xs sm:text-xs md:text-sm truncate w-full sm:w-auto">{district || 'Москва'}</span>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-auto gap-0.5 sm:gap-2">
+            <span className="font-inter text-green-50 text-[10px] sm:text-xs md:text-sm truncate w-full sm:w-auto">{district || 'Москва'}</span>
             <Link
             to={`/shelter/${id}`}
             onClick={(e) => e.stopPropagation()}
