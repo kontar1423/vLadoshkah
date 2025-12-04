@@ -187,7 +187,7 @@ const getDistrictName = (regionCode) => {
 
   return (
     <div className="min-h-screen bg-green-95">
-      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-16">
+      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12 sm:py-16">
         <div className="bg-green-90 rounded-custom h-[320px] sm:h-[380px] md:h-[500px] w-full relative overflow-hidden">
           <div className="absolute -bottom-20 -left-20 -right-20 flex items-start justify-center opacity-70">
             <div className="relative w-full max-w-4xl">
@@ -244,7 +244,7 @@ const getDistrictName = (regionCode) => {
         </div>
       </section>
 
-      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12">
+      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-8 sm:py-12">
         <h2 className="font-sf-rounded font-bold text-green-30 text-3xl md:text-5xl text-center mb-10 animate-slide-in-up">
           Забери нас домой!
         </h2>
@@ -260,7 +260,7 @@ const getDistrictName = (regionCode) => {
         )}
       </section>
 
-<section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12">
+<section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-8 sm:py-12">
   <div className="bg-green-90 rounded-custom p-8 md:p-12 relative overflow-hidden">
     
     <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-90 overflow-hidden">
@@ -310,7 +310,7 @@ const getDistrictName = (regionCode) => {
   </div>
 </section>
 
-      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12">
+      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-8 sm:py-12">
         <h2 className="font-sf-rounded font-bold text-green-30 text-3xl md:text-5xl text-center mb-1 animate-slide-in-up">
           Обратите внимание на эти приюты
         </h2>
@@ -326,7 +326,7 @@ const getDistrictName = (regionCode) => {
         )}
       </section>
 
-      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12 relative z-10">
+      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-8 sm:py-12 relative z-10">
         <div className="text-center mb-8">
           <h2 className="font-sf-rounded font-bold text-green-30 text-3xl md:text-4xl mb-4">
             Приюты на карте
@@ -383,7 +383,7 @@ const getDistrictName = (regionCode) => {
         
       </section>
 
-      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-12">
+      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] py-8 sm:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-8">
             <div className="bg-green-90 rounded-custom p-6 flex items-start gap-6 relative overflow-hidden">

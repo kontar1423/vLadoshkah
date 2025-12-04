@@ -58,7 +58,7 @@
 
         return (
             <div className="relative w-full max-w-xs mx-auto px-2">
-                <div className="relative overflow-hidden flex items-center justify-center min-h-[200px]">
+                <div className="relative overflow-hidden flex items-center justify-center min-h-[260px]">
                     <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center">
                         <MiniShelterCard shelter={currentShelter} />
                     </div>
