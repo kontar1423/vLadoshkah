@@ -202,12 +202,12 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
     };
 
     const mobileSizeClasses = wideMobile
-        ? 'w-[280px] max-w-[280px] h-[300px]'
-        : 'w-[220px] max-w-[220px] h-[260px]';
+        ? 'w-full max-w-none md:max-w-[300px] lg:max-w-[320px] h-[280px] sm:h-[300px] md:h-[400px]'
+        : 'w-full max-w-none md:max-w-[300px] lg:max-w-[320px] h-[260px] sm:h-[280px] md:h-[400px]';
 
     return (
         <article 
-            className={`flex flex-col ${mobileSizeClasses} sm:w-full sm:max-w-[300px] md:max-w-[320px] sm:h-[400px] md:h-[420px] bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative`}
+            className={`flex flex-col ${mobileSizeClasses} bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative`}
             aria-label={`Карточка питомца ${name}`}
         >
             {onDelete && (
@@ -226,7 +226,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
                     </svg>
                 </button>
             )}
-            <div className="relative w-full h-[180px] sm:h-auto sm:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden">
+            <div className="relative w-full h-[140px] sm:h-[160px] md:h-auto md:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden">
                 {photoUrl ? (
                     <>
                         <img
@@ -269,19 +269,19 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
                 )}
             </div>
 
-            <div className="flex items-center gap-1.5 sm:gap-1.5 md:gap-2 w-full px-2 sm:px-2 md:px-3 lg:px-4 relative -mt-2 sm:-mt-4 md:-mt-5 lg:-mt-6 mb-0 sm:mb-1 min-w-0">
-                <div className="px-2 sm:px-2 md:px-2.5 lg:px-3 py-0.5 bg-green-90 rounded-full border-2 border-green-30 shadow-sm min-w-0 max-w-full overflow-hidden">
-                    <span className="font-inter text-green-30 text-sm sm:text-xs md:text-sm lg:text-base truncate block">
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 w-full px-1.5 sm:px-2 md:px-3 lg:px-4 relative -mt-2 sm:-mt-4 md:-mt-5 lg:-mt-6 mb-0 sm:mb-1 min-w-0">
+                <div className="px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-0.5 bg-green-90 rounded-full border-2 border-green-30 shadow-sm min-w-0 max-w-full overflow-hidden">
+                    <span className="font-inter text-green-30 text-[10px] sm:text-xs md:text-sm lg:text-base truncate block">
                         {name}
                     </span>
                 </div>
-                <div className="flex w-6 h-6 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 items-center justify-center bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0">
-                    <span className={`text-sm sm:text-xs md:text-sm ${gender === "male" ? "text-blue-400" : "text-pink-400"}`}>
+                <div className="flex w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 items-center justify-center bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0">
+                    <span className={`text-[10px] sm:text-xs md:text-sm ${gender === "male" ? "text-blue-400" : "text-pink-400"}`}>
                         {gender === "male" ? "♂" : "♀"}
                     </span>
                 </div>
-                <div className="px-1.5 sm:px-1.5 md:px-2 py-0.5 bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0">
-                    <span className="font-inter text-green-30 text-sm sm:text-[10px] md:text-xs lg:text-sm">
+                <div className="px-1 sm:px-1.5 md:px-2 py-0.5 bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0">
+                    <span className="font-inter text-green-30 text-[9px] sm:text-[10px] md:text-xs lg:text-sm">
                         {formatAge(age)}
                     </span>
                 </div>
@@ -289,21 +289,21 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
 
             <div className="flex-1 px-1.5 sm:px-2 md:px-3 lg:px-4 py-0 sm:py-1 md:py-2 lg:py-3 flex flex-col justify-start gap-0.5 sm:gap-1 md:gap-1.5">
                 {personality && (
-                    <p className="text-green-40 text-sm sm:text-[10px] md:text-xs lg:text-sm font-inter line-clamp-2" title={personality}>
+                    <p className="text-green-40 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter line-clamp-2" title={personality}>
                         {personality}
                     </p>
                 )}
                 {shelter_name && (
-                    <p className="text-green-50 text-sm sm:text-[10px] md:text-xs lg:text-sm font-inter truncate mt-0 sm:mt-auto">
+                    <p className="text-green-50 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter truncate mt-0 sm:mt-auto">
                         {shelter_name}
                     </p>
                 )}
             </div>
 
-            <div className="flex flex-row w-full items-center gap-2 sm:gap-1.5 md:gap-2 px-3 sm:px-2 md:px-3 lg:px-4 mt-4 sm:mt-2 md:mt-3 lg:mt-3 pb-4 sm:pb-2 md:pb-2 lg:pb-3 pt-2 sm:pt-1">
+            <div className="flex flex-row w-full items-center gap-1.5 sm:gap-1.5 md:gap-2 px-2 sm:px-2 md:px-3 lg:px-4 mt-2 sm:mt-2 md:mt-3 lg:mt-3 pb-2 sm:pb-2 md:pb-2 lg:pb-3 pt-1 sm:pt-1">
                 <Link
                     to={`/pet/${id}`}
-                    className="text-green-98 flex items-center justify-center gap-1 sm:gap-1 md:gap-1.5 lg:gap-2 px-3 sm:px-2 md:px-2.5 lg:px-3 py-1.5 sm:py-1 md:py-1.5 lg:py-2 flex-1 bg-green-60 rounded-custom-small hover:bg-green-50 transition-colors shadow-sm text-sm sm:text-[10px] md:text-xs lg:text-[13px]"
+                    className="text-green-98 flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2 px-2 sm:px-2 md:px-2.5 lg:px-3 py-1 sm:py-1 md:py-1.5 lg:py-2 flex-1 bg-green-60 rounded-custom-small hover:bg-green-50 transition-colors shadow-sm text-[9px] sm:text-[10px] md:text-xs lg:text-[13px]"
                 >
                     Познакомиться
                 </Link>

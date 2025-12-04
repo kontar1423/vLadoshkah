@@ -32,10 +32,12 @@
     useEffect(() => {
         if (shelters.length <= 1) return;
         const interval = setInterval(() => {
-            if (!isTransitioning) nextShelter();
+            if (!isTransitioning) {
+                setCurrentIndex((prev) => (prev + 1) % shelters.length);
+            }
         }, 5000);
         return () => clearInterval(interval);
-    }, [shelters.length, currentIndex, isTransitioning]);
+    }, [shelters.length, isTransitioning]);
 
     if (shelters.length === 0) {
         return (

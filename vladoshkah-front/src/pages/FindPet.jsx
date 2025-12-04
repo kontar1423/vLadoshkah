@@ -570,7 +570,7 @@ const FindPet = () => {
             <>
               {filteredPets.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 md:gap-7 justify-items-center sm:justify-items-start">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-6 lg:gap-7 justify-items-center sm:justify-items-start">
                     {currentPets.map((pet) => (
                     <PetCard 
                       key={pet.id}
