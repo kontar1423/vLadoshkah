@@ -44,9 +44,31 @@ router.post(
   sheltersController.create
 );
 
-router.put('/:id', authenticateToken, authorize('admin', 'shelter_admin'), validate(shelterIdSchema, 'params'), validate(updateShelterSchema), sheltersController.update);
+router.put(
+  '/:id',
+  authenticateToken,
+  authorize('admin', 'shelter_admin'),
+  validate(shelterIdSchema, 'params'),
+  upload.fields([
+    { name: 'photo', maxCount: 1 },
+    { name: 'photos', maxCount: 10 },
+  ]),
+  validate(updateShelterSchema),
+  sheltersController.update
+);
 
-router.patch('/:id', authenticateToken, authorize('admin', 'shelter_admin'), validate(shelterIdSchema, 'params'), validate(updateShelterSchema), sheltersController.update);
+router.patch(
+  '/:id',
+  authenticateToken,
+  authorize('admin', 'shelter_admin'),
+  validate(shelterIdSchema, 'params'),
+  upload.fields([
+    { name: 'photo', maxCount: 1 },
+    { name: 'photos', maxCount: 10 },
+  ]),
+  validate(updateShelterSchema),
+  sheltersController.update
+);
 
 router.delete('/:id', authenticateToken, authorize('admin', 'shelter_admin'), validate(shelterIdSchema, 'params'), sheltersController.remove);
 

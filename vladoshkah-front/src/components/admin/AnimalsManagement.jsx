@@ -3,6 +3,7 @@ import { animalService } from '../../services/animalService';
 import { shelterService } from '../../services/shelterService';
 import { getPhotoUrl } from '../../utils/photoHelpers';
 import { useNavigate } from 'react-router-dom';
+import ImageCropModal from '../ImageCropModal';
 
 const AnimalsManagement = () => {
     const navigate = useNavigate();
@@ -26,6 +27,9 @@ const AnimalsManagement = () => {
         shelter_id: ''
     });
     const [photos, setPhotos] = useState([]);
+    const [cropModalOpen, setCropModalOpen] = useState(false);
+    const [imageToCrop, setImageToCrop] = useState(null);
+    const [pendingFiles, setPendingFiles] = useState([]);
 
     useEffect(() => {
         loadData();
@@ -59,7 +63,42 @@ const AnimalsManagement = () => {
             alert('Можно загрузить не более 5 фотографий');
             return;
         }
-        setPhotos(prev => [...prev, ...files]);
+        
+        const fileQueue = files.map(file => {
+            const reader = new FileReader();
+            return new Promise((resolve) => {
+                reader.onload = (e) => resolve({ file, dataUrl: e.target.result });
+                reader.readAsDataURL(file);
+            });
+        });
+        
+        Promise.all(fileQueue).then(results => {
+            setPendingFiles(results);
+            if (results.length > 0) {
+                setImageToCrop(results[0].dataUrl);
+                setCropModalOpen(true);
+            }
+        });
+    };
+
+    const handleCropComplete = (croppedFile) => {
+        setPhotos(prev => [...prev, croppedFile]);
+        
+        const remainingFiles = pendingFiles.slice(1);
+        setPendingFiles(remainingFiles);
+        
+        if (remainingFiles.length > 0) {
+            setImageToCrop(remainingFiles[0].dataUrl);
+        } else {
+            setCropModalOpen(false);
+            setImageToCrop(null);
+        }
+    };
+
+    const handleCropCancel = () => {
+        setPendingFiles([]);
+        setCropModalOpen(false);
+        setImageToCrop(null);
     };
 
     const removePhoto = (index) => {
@@ -126,6 +165,9 @@ const AnimalsManagement = () => {
             shelter_id: animal.shelter_id || ''
         });
         setPhotos([]);
+        setCropModalOpen(false);
+        setImageToCrop(null);
+        setPendingFiles([]);
     };
 
     const handleUpdate = async (e) => {
@@ -205,6 +247,9 @@ const AnimalsManagement = () => {
             shelter_id: ''
         });
         setPhotos([]);
+        setCropModalOpen(false);
+        setImageToCrop(null);
+        setPendingFiles([]);
     };
 
     if (loading) {
@@ -479,6 +524,14 @@ const AnimalsManagement = () => {
                     </div>
                 ))}
             </div>
+
+            <ImageCropModal
+                isOpen={cropModalOpen}
+                onClose={handleCropCancel}
+                imageSrc={imageToCrop}
+                onCropComplete={handleCropComplete}
+                aspectRatio={1}
+            />
         </div>
     );
 };

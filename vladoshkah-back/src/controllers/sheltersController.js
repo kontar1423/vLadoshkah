@@ -86,7 +86,19 @@ async function update(req, res) {
     if (!Number.isInteger(id)) {
       return res.status(400).json({ error: 'Invalid id' });
     }
-    const shelter = await sheltersService.updateShelter(id, req.body, req.user);
+    
+    const files = req.files || {};
+    const mergedPhotos = [
+      ...(files.photo || []),
+      ...(files.photos || []),
+    ];
+    
+    const shelter = await sheltersService.updateShelter(
+      id,
+      req.body,
+      mergedPhotos.length ? mergedPhotos : null,
+      req.user
+    );
     if (!shelter) return res.status(404).json({ error: 'Not found' });
     res.json(shelter);
   } catch (err) {

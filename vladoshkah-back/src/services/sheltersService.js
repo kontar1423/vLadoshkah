@@ -198,8 +198,7 @@ async function createShelter(shelterData, photoFiles = null, currentUser = null)
   return await getShelterById(shelter.id);
 }
 
-async function updateShelter(id, data, currentUser = null) {
-
+async function updateShelter(id, data, photoFiles = null, currentUser = null) {
   await Promise.all([
     redisClient.delete(CACHE_KEYS.ALL_SHELTERS),
     redisClient.delete(CACHE_KEYS.SHELTER_BY_ID(id))
@@ -214,9 +213,20 @@ async function updateShelter(id, data, currentUser = null) {
     data = { ...data, admin_id: ownedShelter.admin_id };
   }
   
-  const updatedShelter = await sheltersDao.update(id, data);
-  if (!updatedShelter) {
-    return null;
+  // Обновляем только если есть данные для обновления (не только фото)
+  if (Object.keys(data).length > 0) {
+    const updatedShelter = await sheltersDao.update(id, data);
+    if (!updatedShelter) {
+      return null;
+    }
+  }
+  
+  // Обрабатываем фото, если они есть
+  if (photoFiles) {
+    const filesArray = Array.isArray(photoFiles) ? photoFiles : [photoFiles];
+    if (filesArray.length > 0) {
+      await Promise.all(filesArray.map(photoFile => photosService.uploadPhoto(photoFile, 'shelter', id)));
+    }
   }
   
   return await getShelterById(id);

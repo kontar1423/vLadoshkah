@@ -1,0 +1,114 @@
+2025-09-11|Add proj alpha ver
+2025-09-12|add docker
+2025-10-03|upd docker
+2025-10-03|new columns in animals and shelters
+2025-10-04|add get animalsByShelterId and upd animal gender column
+2025-10-04|add users model
+2025-10-06|add photos model
+2025-10-06|add readme
+2025-10-06|Merge pull request #1 from kontar1423/feature-models
+2025-10-10|upd models for photos add minio to docker
+2025-10-18|feat: add minio
+2025-10-18|feat: add deletion all photos of animal
+2025-10-18|upd README.md
+2025-10-18|chore: upd get animal photo
+2025-10-18|feat: upd getting photo policy
+2025-10-18|feat: add shelter photos support
+2025-10-21|fix: photo content type
+2025-10-21|docs: update API documentation
+2025-10-22|fix: delete diagnostic route
+2025-10-24|feat: add users photo support
+2025-10-24|docs: add .envExample
+2025-10-24|feat: add knex migrations
+2025-10-24|feat: add applications table
+2025-10-26|feat: add html to test api
+2025-10-26|feat: add applications module with Redis caching
+2025-10-26|fix: update services and dependencies
+2025-10-27|fix: upd func
+2025-10-27|fix: cache and photo processing
+2025-10-27|fix: migration
+2025-10-27|Merge pull request #2 from kontar1423/feature-db-models
+2025-10-29|del: knex script
+2025-10-29|Add authentication system with JWT tokens
+2025-10-29|Change application is_active to status and add approved count route
+2025-10-29|feat: add Joi validation for all endpoints
+2025-10-31|feat: add comprehensive test suite with 67% coverage
+2025-10-31|docs: update API documentation with auth and applications sections
+2025-10-31|docs: fix authentication requirements and remove duplicates
+2025-10-31|perf: optimize Docker configuration with multi-stage build and security improvements
+2025-10-31|docs: improve .envExample with better organization and security notes
+2025-10-31|fix: application access
+2025-11-01|feat: add Kafka integration for async email notifications
+2025-11-13|Frontend new version
+2025-11-14|security: prepare for release - remove passwords from API responses and replace console.log with logger
+2025-11-14|docs: fix markdown linter warnings in README
+2025-11-14|chore: update project files
+2025-11-14|Merge pull request #3 from kontar1423/feature/auth
+2025-11-14|test: fixed for new get func
+2025-11-18|Pet finder now works
+2025-11-18|chore: centralize healthcheck interval config
+2025-11-18|feat: enhance structured logging
+2025-11-18|feat: expand shelter management
+2025-11-18|test: keep logger serializers optional
+2025-11-18|refactor: move runtime into src
+2025-11-18|refactor: pre-release version
+2025-11-18|refactor: move html to special folder
+2025-11-18|Merge pull request #4 from kontar1423/feature/connect
+2025-11-19|Small changes
+2025-11-19|Added scroll
+2025-11-20|ref: ready for presentation
+2025-11-20|New hero
+2025-11-20|Added map
+2025-11-20|Fixed maps
+2025-11-20|feat: add rating to shelters
+2025-11-21|feat: add upd_at cr_at to users
+2025-11-21|feat: add rate-limit and few columns
+2025-11-21|ref: move logic to service and tests
+2025-11-21|Add login
+2025-11-21|mda
+2025-11-21|fixed reg/auth and give ankets
+2025-11-21|fixed application
+2025-11-22|fixed fav pets
+2025-11-22|Clean mocks
+2025-11-22|feat: ready to pre-release
+2025-11-22|ref: move to folder
+2025-11-22|feat: move to folder
+2025-11-22|Merge pull request #5 from kontar1423/feature/connect
+2025-11-22|ref: del doubled files
+2025-11-22|Merge branch 'normfron' into stage
+2025-11-22|Rename .env to .envExample
+2025-11-22|fixed new
+2025-11-22|gitignore add
+2025-11-23|fixed modal components
+2025-11-24|add rating
+2025-11-24|incorrect version
+2025-11-24|fixed shelter admin profile
+2025-11-30|РћР±РЅРѕРІР»РµРЅР° Р»РѕРіРёРєР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РєРЅРѕРїРєРё СѓСЃС‹РЅРѕРІР»РµРЅРёСЏ: РґРѕР±Р°РІР»РµРЅР° РїРѕРґРґРµСЂР¶РєР° endpoint /applications/take/animal/:id, СѓР»СѓС‡С€РµРЅР° РїСЂРѕРІРµСЂРєР° Р·Р°СЏРІРѕРє РѕС‚ РІСЃРµС… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№, РѕР±РЅРѕРІР»РµРЅС‹ С‚РµРєСЃС‚С‹ РєРЅРѕРїРѕРє
+2025-11-30|РґРѕР±Р°РІР»РµРЅС‹ РїРѕС…РѕР¶РёРµ
+2025-11-30|РёР·Р±СЂР°РЅРЅС‹Рµ
+2025-11-30|feat: add application/take/animals/:id
+2025-12-01|added shelter admin
+2025-12-01|Merge branch 'stage' of https://github.com/kontar1423/vLadoshkah into stage
+2025-12-01|health
+2025-12-01|feat: add some endpoints
+2025-12-01|fixed shelters
+2025-12-01|Merge remote changes and remove shelter registration check
+2025-12-01|fix: shelter create middleware
+2025-12-01|add admin
+2025-12-01|Merge branch 'stage' of https://github.com/kontar1423/vLadoshkah into stage
+2025-12-01|fix admin panel profile tab styling
+2025-12-01|fixed mistakes
+2025-12-01|new mobile adaptation
+2025-12-01|fixed petcards
+2025-12-01|docs: add readme.md
+2025-12-01|Merge pull request #6 from kontar1423/stage
+2025-12-01|ref: del temp files
+2025-12-01|ref: del .dbstore
+2025-12-01|ref: del dubpicate folder
+2025-12-02|fix: add photo metadata
+2025-12-02|docs: add .vscode to gitignore
+2025-12-02|mobile adaptation fixed
+2025-12-02|fixed problems with cards
+2025-12-02|crop photos for pp
+2025-12-02|another crop fix
+2025-12-02|integrate interactive image crop modal in all upload pages

@@ -127,8 +127,6 @@ export const updateShelterSchema = Joi.object({
     .messages({
       'any.only': 'Регион должен быть одним из: cao, sao, svao, vao, yuvao, yao, yuzao, zao, szao, zelao, tinao, nao'
     }),
-}).min(1).messages({
-  'object.min': 'Должно быть указано хотя бы одно поле для обновления'
 });
 
 export const shelterIdSchema = Joi.object({

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { shelterService } from '../../services/shelterService';
 import { getPhotoUrl } from '../../utils/photoHelpers';
+import ImageCropModal from '../ImageCropModal';
 
 const SheltersManagement = () => {
     const [shelters, setShelters] = useState([]);
@@ -20,6 +21,9 @@ const SheltersManagement = () => {
         can_adopt: true
     });
     const [photos, setPhotos] = useState([]);
+    const [cropModalOpen, setCropModalOpen] = useState(false);
+    const [imageToCrop, setImageToCrop] = useState(null);
+    const [pendingFiles, setPendingFiles] = useState([]);
 
     const regions = [
         { value: '', label: 'Выберите регион' },
@@ -64,7 +68,42 @@ const SheltersManagement = () => {
 
     const handlePhotoUpload = (e) => {
         const files = Array.from(e.target.files);
-        setPhotos(prev => [...prev, ...files]);
+        
+        const fileQueue = files.map(file => {
+            const reader = new FileReader();
+            return new Promise((resolve) => {
+                reader.onload = (e) => resolve({ file, dataUrl: e.target.result });
+                reader.readAsDataURL(file);
+            });
+        });
+        
+        Promise.all(fileQueue).then(results => {
+            setPendingFiles(results);
+            if (results.length > 0) {
+                setImageToCrop(results[0].dataUrl);
+                setCropModalOpen(true);
+            }
+        });
+    };
+
+    const handleCropComplete = (croppedFile) => {
+        setPhotos(prev => [...prev, croppedFile]);
+        
+        const remainingFiles = pendingFiles.slice(1);
+        setPendingFiles(remainingFiles);
+        
+        if (remainingFiles.length > 0) {
+            setImageToCrop(remainingFiles[0].dataUrl);
+        } else {
+            setCropModalOpen(false);
+            setImageToCrop(null);
+        }
+    };
+
+    const handleCropCancel = () => {
+        setPendingFiles([]);
+        setCropModalOpen(false);
+        setImageToCrop(null);
     };
 
     const removePhoto = (index) => {
@@ -129,6 +168,9 @@ const SheltersManagement = () => {
             can_adopt: shelter.can_adopt || false
         });
         setPhotos([]);
+        setCropModalOpen(false);
+        setImageToCrop(null);
+        setPendingFiles([]);
     };
 
     const handleUpdate = async (e) => {
@@ -136,13 +178,17 @@ const SheltersManagement = () => {
         if (!editingShelter) return;
 
         try {
-            // Собираем только непустые поля в JSON
+            // Собираем только измененные или непустые поля
             const jsonPayload = {};
             Object.keys(formData).forEach(key => {
                 const value = formData[key];
+                // Включаем поле, если оно не пустое или если это булево значение
                 if (value !== '' && value !== null && value !== undefined) {
                     if (key === 'capacity') {
-                        jsonPayload[key] = parseInt(value);
+                        const numValue = parseInt(value);
+                        if (!isNaN(numValue)) {
+                            jsonPayload[key] = numValue;
+                        }
                     } else if (key === 'can_adopt') {
                         jsonPayload[key] = !!value;
                     } else {
@@ -150,20 +196,27 @@ const SheltersManagement = () => {
                     }
                 }
             });
-            // Если только фото меняем — добавим название, чтобы было хотя бы одно поле
-            if (photos.length > 0 && Object.keys(jsonPayload).length === 0 && editingShelter?.name) {
-                jsonPayload.name = editingShelter.name;
-            }
 
+            // Если есть фото, отправляем FormData (можно только с фото, без других полей)
             if (photos.length > 0) {
                 const formDataToSend = new FormData();
+                // Добавляем только измененные поля в FormData (если они есть)
                 Object.entries(jsonPayload).forEach(([key, value]) => {
-                    formDataToSend.append(key, value);
+                    if (value !== null && value !== undefined) {
+                        formDataToSend.append(key, typeof value === 'boolean' ? value.toString() : value);
+                    }
                 });
+                // Добавляем фото
                 photos.forEach(photo => formDataToSend.append('photos', photo));
                 await shelterService.updateShelter(editingShelter.id, formDataToSend);
             } else {
-                await shelterService.updateShelter(editingShelter.id, jsonPayload);
+                // Если нет фото, но есть поля для обновления
+                if (Object.keys(jsonPayload).length > 0) {
+                    await shelterService.updateShelter(editingShelter.id, jsonPayload);
+                } else {
+                    alert('Нет изменений для сохранения');
+                    return;
+                }
             }
 
             alert('Приют успешно обновлен');
@@ -172,7 +225,7 @@ const SheltersManagement = () => {
             loadShelters();
         } catch (error) {
             console.error('Ошибка обновления приюта:', error);
-            alert(error.response?.data?.error || 'Не удалось обновить приют');
+            alert(error.response?.data?.error || error.response?.data?.details?.[0]?.message || 'Не удалось обновить приют');
         }
     };
 
@@ -205,6 +258,9 @@ const SheltersManagement = () => {
             can_adopt: true
         });
         setPhotos([]);
+        setCropModalOpen(false);
+        setImageToCrop(null);
+        setPendingFiles([]);
     };
 
     if (loading) {
@@ -438,6 +494,14 @@ const SheltersManagement = () => {
                     </div>
                 ))}
             </div>
+
+            <ImageCropModal
+                isOpen={cropModalOpen}
+                onClose={handleCropCancel}
+                imageSrc={imageToCrop}
+                onCropComplete={handleCropComplete}
+                aspectRatio={1}
+            />
         </div>
     );
 };
