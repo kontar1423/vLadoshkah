@@ -41,10 +41,15 @@ jobs:
           cache: 'npm'
           cache-dependency-path: vladoshkah-front/package-lock.json
 
-      - name: Frontend npm install (if deps changed)
-        if: steps.changes.outputs.frontend_deps == 'true'
+      - name: Frontend install (deps changed or first run)
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.frontend_deps == 'true'
         working-directory: vladoshkah-front
-        run: npm install
+        run: |
+          if [ ! -d node_modules ] || [ "${{ steps.changes.outputs.frontend_deps }}" = "true" ]; then
+            npm ci
+          else
+            echo "Skip install: node_modules present and deps unchanged"
+          fi
 
       - name: Frontend build (if code changed)
         if: steps.changes.outputs.frontend == 'true'
