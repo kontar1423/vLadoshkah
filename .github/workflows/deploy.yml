@@ -1,0 +1,57 @@
+name: Deploy
+
+on:
+  push:
+    branches: ["main"]
+
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: Checkout (keep local env files)
+        uses: actions/checkout@v4
+        with:
+          clean: false
+
+      - name: Detect changed parts
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            backend:
+              - 'vladoshkah-back/**'
+            backend_deps:
+              - 'vladoshkah-back/package.json'
+              - 'vladoshkah-back/package-lock.json'
+            frontend:
+              - 'vladoshkah-front/**'
+            frontend_deps:
+              - 'vladoshkah-front/package.json'
+              - 'vladoshkah-front/package-lock.json'
+
+      - name: Setup Node.js
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.frontend_deps == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: vladoshkah-front/package-lock.json
+
+      - name: Frontend npm install (if deps changed)
+        if: steps.changes.outputs.frontend_deps == 'true'
+        working-directory: vladoshkah-front
+        run: npm install
+
+      - name: Frontend build (if code changed)
+        if: steps.changes.outputs.frontend == 'true'
+        working-directory: vladoshkah-front
+        run: npm run build
+
+      - name: Restart backend (docker compose)
+        if: steps.changes.outputs.backend == 'true'
+        working-directory: vladoshkah-back
+        run: docker compose up --build -d
