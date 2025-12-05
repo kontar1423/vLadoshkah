@@ -32,10 +32,12 @@
     useEffect(() => {
         if (pets.length <= 1) return;
         const interval = setInterval(() => {
-            if (!isTransitioning) nextPet();
+            if (!isTransitioning) {
+                setCurrentIndex((prev) => (prev + 1) % pets.length);
+            }
         }, 5000);
         return () => clearInterval(interval);
-    }, [pets.length, currentIndex, isTransitioning]);
+    }, [pets.length, isTransitioning]);
 
     if (pets.length === 0) {
         return (
@@ -178,13 +180,14 @@
                     zIndex: zIndex,
                     willChange: 'transform, opacity',
                     width: `${CARD_WIDTH}px`,
-                    maxWidth: '90vw',
                 }}
                 >
-                <PetCard 
-                    petData={pet} 
-                    initialFavorite={favoritesMap[pet.id] === true}
-                />
+                <div style={{ width: '100%', maxWidth: `${CARD_WIDTH}px` }}>
+                    <PetCard 
+                        petData={pet} 
+                        initialFavorite={favoritesMap[pet.id] === true}
+                    />
+                </div>
                 </div>
             );
             })}

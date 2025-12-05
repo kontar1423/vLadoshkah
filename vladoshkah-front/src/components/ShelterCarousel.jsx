@@ -177,9 +177,12 @@
                     opacity: opacity,
                     zIndex: zIndex,
                     willChange: 'transform, opacity',
+                    width: `${CARD_WIDTH}px`,
                 }}
                 >
-                <MiniShelterCard shelter={shelter} />
+                <div style={{ width: '100%', maxWidth: `${CARD_WIDTH}px` }}>
+                    <MiniShelterCard shelter={shelter} />
+                </div>
                 </div>
             );
             })}

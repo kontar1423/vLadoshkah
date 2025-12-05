@@ -436,15 +436,26 @@ export const Header = () => {
           <div className="relative md:hidden">
             <button
               className="relative w-10 h-10 aspect-[1] cursor-pointer flex-shrink-0 hover:opacity-80 transition-opacity flex items-center justify-center"
-              aria-label="Toggle menu and user options"
+              aria-label="Toggle menu"
               type="button"
-              onClick={handleUserMenuToggle}
+              onClick={handleMobileMenuToggle}
             >
-              <img
-                className="w-6 h-6 rounded-full object-cover"
-                alt="User menu"
-                src={getProfilePhoto()}
-              />
+              <svg 
+                className="w-6 h-6 text-green-30" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d={isMenuOpen 
+                    ? "M6 18L18 6M6 6l12 12" 
+                    : "M4 6h16M4 12h16M4 18h16"
+                  } 
+                />
+              </svg>
             </button>
 
             {isUserMenuOpen && (

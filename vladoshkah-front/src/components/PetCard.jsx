@@ -202,8 +202,8 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
     };
 
     const mobileSizeClasses = wideMobile
-        ? 'w-full max-w-none md:max-w-[300px] lg:max-w-[320px] h-[280px] sm:h-[300px] md:h-[400px]'
-        : 'w-full max-w-none md:max-w-[300px] lg:max-w-[320px] h-[260px] sm:h-[280px] md:h-[400px]';
+        ? 'w-full max-w-[320px] h-[280px] sm:h-[300px] md:h-[400px]'
+        : 'w-full max-w-[320px] h-[260px] sm:h-[280px] md:h-[400px]';
 
     return (
         <article 
@@ -226,7 +226,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
                     </svg>
                 </button>
             )}
-            <div className="relative w-full h-[140px] sm:h-[160px] md:h-auto md:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden">
+            <div className="relative w-full h-[140px] sm:h-[160px] md:h-auto md:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden flex-shrink-0">
                 {photoUrl ? (
                     <>
                         <img
