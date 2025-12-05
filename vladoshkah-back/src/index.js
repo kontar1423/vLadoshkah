@@ -6,6 +6,7 @@ import usersRouter from './routes/users.js';
 import photosRouter from './routes/photos.js';
 import applicationsRouter from './routes/applications.js';
 import authRouter from './routes/auth.js';
+import geocodingRouter from './routes/geocoding.js';
 import logger, { error as _error, info, warn, debug } from './logger.js';
 import pinoHttp from 'pino-http';
 import initMinio from './initMinio.js';
@@ -128,6 +129,7 @@ app.use('/api/shelters', sheltersRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/photos', photosRouter);
 app.use('/api/applications', applicationsRouter);
+app.use('/api/geocoding', geocodingRouter);
 
 app.get('/healthz', async (req, res) => {
   try {

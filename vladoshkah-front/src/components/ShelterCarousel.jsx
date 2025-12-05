@@ -59,10 +59,12 @@
         const currentShelter = shelters[currentIndex];
 
         return (
-            <div className="relative w-full max-w-xs mx-auto px-2">
-                <div className="relative overflow-hidden flex items-center justify-center min-h-[260px]">
-                    <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center">
-                        <MiniShelterCard shelter={currentShelter} />
+            <div className="relative w-full max-w-[160px] mx-auto px-2">
+                <div className="relative overflow-hidden flex items-center justify-center min-h-[220px]">
+                    <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center w-full">
+                        <div className="w-full max-w-[160px]">
+                            <MiniShelterCard shelter={currentShelter} />
+                        </div>
                     </div>
                 </div>
 
@@ -71,7 +73,7 @@
                         <button
                             onClick={prevShelter}
                             disabled={isTransitioning}
-                            className={`absolute left-0 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-300 ${
+                            className={`absolute -left-6 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-300 ${
                                 isTransitioning
                                     ? 'opacity-50 cursor-not-allowed'
                                     : 'hover:bg-green-60 hover:scale-110 shadow-xl'
@@ -86,7 +88,7 @@
                         <button
                             onClick={nextShelter}
                             disabled={isTransitioning}
-                            className={`absolute right-0 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-300 ${
+                            className={`absolute -right-6 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-300 ${
                                 isTransitioning
                                     ? 'opacity-50 cursor-not-allowed'
                                     : 'hover:bg-green-60 hover:scale-110 shadow-xl'
@@ -193,7 +195,7 @@
             <button
                 onClick={prevShelter}
                 disabled={isTransitioning}
-                className={`absolute left-0 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-12 h-12 flex items-center justify-center transition-all duration-300 ${
+                className={`absolute -left-6 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-12 h-12 flex items-center justify-center transition-all duration-300 ${
                 isTransitioning
                     ? 'opacity-50 cursor-not-allowed'
                     : 'hover:bg-green-60 hover:scale-110 shadow-xl'
@@ -208,7 +210,7 @@
             <button
                 onClick={nextShelter}
                 disabled={isTransitioning}
-                className={`absolute right-0 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-12 h-12 flex items-center justify-center transition-all duration-300 ${
+                className={`absolute -right-6 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-12 h-12 flex items-center justify-center transition-all duration-300 ${
                 isTransitioning
                     ? 'opacity-50 cursor-not-allowed'
                     : 'hover:bg-green-60 hover:scale-110 shadow-xl'

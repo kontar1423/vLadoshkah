@@ -14,8 +14,8 @@ const MiniShelterCard = ({ shelter, wideMobile = false }) => {
     }; 
 
     const sizeClasses = wideMobile
-        ? 'w-full max-w-[380px] h-[280px] sm:h-[300px] md:h-[360px]'
-        : 'w-full max-w-[380px] h-[260px] sm:h-[280px] md:h-[340px]';
+        ? 'w-full max-w-[160px] sm:max-w-[320px] md:max-w-[380px] h-[220px] sm:h-[300px] md:h-[360px]'
+        : 'w-full max-w-[160px] sm:max-w-[300px] md:max-w-[380px] h-[200px] sm:h-[280px] md:h-[340px]';
 
     const photoHeightClasses = wideMobile
         ? 'h-28 sm:h-32 md:h-40 lg:h-44'

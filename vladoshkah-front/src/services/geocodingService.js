@@ -3,15 +3,14 @@
     export const geocodingService = {
     async getCoordinates(address) {
         try {
-        const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`
-        );
-        const data = await response.json();
+        const response = await api.get('/geocoding/coordinates', {
+            params: { address }
+        });
         
-        if (data && data.length > 0) {
+        if (response.data && response.data.lat && response.data.lng) {
             return {
-            lat: parseFloat(data[0].lat),
-            lng: parseFloat(data[0].lon)
+            lat: response.data.lat,
+            lng: response.data.lng
             };
         }
         return null;

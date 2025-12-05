@@ -202,8 +202,8 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
     };
 
     const mobileSizeClasses = wideMobile
-        ? 'w-full max-w-[320px] h-[280px] sm:h-[300px] md:h-[400px]'
-        : 'w-full max-w-[320px] h-[260px] sm:h-[280px] md:h-[400px]';
+        ? 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] h-[240px] sm:h-[300px] md:h-[400px]'
+        : 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] h-[220px] sm:h-[280px] md:h-[400px]';
 
     return (
         <article 
@@ -226,7 +226,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
                     </svg>
                 </button>
             )}
-            <div className="relative w-full h-[140px] sm:h-[160px] md:h-auto md:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden flex-shrink-0">
+            <div className="relative w-full h-[100px] sm:h-[140px] md:h-auto md:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden flex-shrink-0">
                 {photoUrl ? (
                     <>
                         <img
@@ -300,17 +300,17 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
                 )}
             </div>
 
-            <div className="flex flex-row w-full items-center gap-1.5 sm:gap-1.5 md:gap-2 px-2 sm:px-2 md:px-3 lg:px-4 mt-2 sm:mt-2 md:mt-3 lg:mt-3 pb-2 sm:pb-2 md:pb-2 lg:pb-3 pt-1 sm:pt-1">
+            <div className="flex flex-row w-full items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 sm:px-2 md:px-3 lg:px-4 mt-auto sm:mt-2 md:mt-3 lg:mt-3 pb-1.5 sm:pb-2 md:pb-2 lg:pb-3 pt-0.5 sm:pt-1">
                 <Link
                     to={`/pet/${id}`}
-                    className="text-green-98 flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2 px-2 sm:px-2 md:px-2.5 lg:px-3 py-1 sm:py-1 md:py-1.5 lg:py-2 flex-1 bg-green-60 rounded-custom-small hover:bg-green-50 transition-colors shadow-sm text-[9px] sm:text-[10px] md:text-xs lg:text-[13px]"
+                    className="text-green-98 flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2 px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-0.5 sm:py-1 md:py-1.5 lg:py-2 flex-1 bg-green-60 rounded-custom-small hover:bg-green-50 transition-colors shadow-sm text-[8px] sm:text-[10px] md:text-xs lg:text-[13px]"
                 >
                     Познакомиться
                 </Link>
                 <button
                     onClick={handleFavoriteClick}
                     disabled={favoriteLoading}
-                    className={`flex w-7 h-7 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 items-center justify-center rounded-custom-small transition-colors shadow-sm flex-shrink-0 ${
+                    className={`flex w-6 h-6 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 items-center justify-center rounded-custom-small transition-colors shadow-sm flex-shrink-0 ${
                         isFavorite 
                         ? 'bg-red-50 text-red-300 hover:bg-red-100' 
                         : 'bg-green-60 text-green-98 hover:bg-green-50'

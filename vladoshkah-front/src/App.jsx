@@ -28,7 +28,7 @@ function App() {
         <ScrollToTop />
         <div className="min-h-screen bg-green-95 flex flex-col">
           <Header />
-          <main className="flex-1">
+          <main className="flex-1 pt-[60px] md:pt-0">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/find-pet" element={<FindPet />} />

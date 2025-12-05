@@ -143,7 +143,7 @@ export const Header = () => {
   return (
     <>
       <header
-        className="flex w-full min-h-[60px] md:min-h-[78px] items-center justify-between px-[20px] md:px-[40px] lg:px-[60px] xl:px-[80px] 2xl:px-[120px] py-2.5 sticky top-0 z-50 bg-[#ddf8d8cc] backdrop-blur-sm transition-all duration-300 shadow-soft"
+        className="flex w-full min-h-[60px] md:min-h-[78px] items-center justify-between px-[20px] md:px-[40px] lg:px-[60px] xl:px-[80px] 2xl:px-[120px] py-2.5 fixed md:sticky top-0 left-0 right-0 z-50 bg-[#ddf8d8cc] backdrop-blur-sm transition-all duration-300 shadow-soft"
         role="banner"
       >
         <div className="gap-[15px] md:gap-[30px] lg:gap-[50px] xl:gap-[60px] 2xl:gap-[70px] flex items-center relative flex-1 flex-wrap md:flex-nowrap">
@@ -199,127 +199,162 @@ export const Header = () => {
           <nav
             className={`${
               isMenuOpen ? 'flex' : 'hidden'
-            } absolute top-full left-0 right-0 bg-green-95 flex-col gap-0 px-[20px] py-4 z-50 border-t border-green-80 md:hidden`}
+            } absolute top-full left-0 right-0 mx-[20px] my-2 bg-green-95 flex-col gap-0 rounded-custom-small z-50 border-2 border-green-40 shadow-lg md:hidden max-h-[calc(100vh-100px)] overflow-y-auto`}
             role="navigation"
             aria-label="Mobile navigation"
           >
-            {navigationItems.map((item) => (
-              <div key={item.id}>
-                {item.path ? (
-                  <button
-                    onClick={() => handleNavButtonClick(item)}
-                    className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 ${
-                      location.pathname === item.path ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
-                    }`}
-                  >
-                    <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
-                      {item.label}
-                    </span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleNavButtonClick(item)}
-                    className="inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 text-green-20"
-                  >
-                    <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
-                      {item.label}
-                    </span>
-                  </button>
-                )}
-              </div>
-            ))}
-            {!isAuthenticated ? (
-              <>
-                <div
-                  onClick={() => {
-                    handleScrollToTop();
-                    if (location.pathname !== '/login') {
-                      navigate('/login');
-                    }
-                    setIsMenuOpen(false);
-                  }}
-                  className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
-                    location.pathname === '/login' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
-                  }`}
-                >
-                  <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
-                    Войти
-                  </span>
+            <div className="px-4 py-2">
+              {navigationItems.map((item, index) => (
+                <div key={item.id}>
+                  {item.path ? (
+                    <button
+                      onClick={() => handleNavButtonClick(item)}
+                      className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity ${
+                        index < navigationItems.length - 1 ? 'border-b border-green-80' : ''
+                      } ${
+                        location.pathname === item.path ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                      }`}
+                    >
+                      <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                        {item.label}
+                      </span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleNavButtonClick(item)}
+                      className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity ${
+                        index < navigationItems.length - 1 ? 'border-b border-green-80' : ''
+                      } text-green-20`}
+                    >
+                      <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                        {item.label}
+                      </span>
+                    </button>
+                  )}
                 </div>
-                <div
-                  onClick={() => {
-                    handleScrollToTop();
-                    if (location.pathname !== '/register') {
-                      navigate('/register');
-                    }
-                    setIsMenuOpen(false);
-                  }}
-                  className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
-                    location.pathname === '/register' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
-                  }`}
-                >
-                  <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
-                    Зарегистрироваться
-                  </span>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="px-4 py-3 border-b border-green-80 bg-green-90">
-                  <p className="text-green-30 font-semibold text-sm">{getUserDisplayName()}</p>
-                  <p className="text-green-40 text-xs">{getUserRoleDisplay()}</p>
-                </div>
-                
-                {isAdmin ? (
+              ))}
+            </div>
+            <div className="border-t-2 border-green-40 my-2"></div>
+            <div className="px-4 pb-2">
+              {!isAuthenticated ? (
+                <>
                   <div
                     onClick={() => {
                       handleScrollToTop();
-                      if (location.pathname !== '/profile') {
-                        navigate('/profile');
+                      if (location.pathname !== '/login') {
+                        navigate('/login');
                       }
                       setIsMenuOpen(false);
                     }}
                     className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
-                      location.pathname === '/profile' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                      location.pathname === '/login' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
                     }`}
                   >
                     <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
-                      {user?.role === 'admin' ? 'Админ панель' : 'Админ приюта'}
+                      Войти
                     </span>
                   </div>
-                ) : (
                   <div
                     onClick={() => {
                       handleScrollToTop();
-                      if (location.pathname !== '/profile') {
-                        navigate('/profile');
+                      if (location.pathname !== '/register') {
+                        navigate('/register');
                       }
                       setIsMenuOpen(false);
                     }}
-                    className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
-                      location.pathname === '/profile' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                    className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity cursor-pointer ${
+                      location.pathname === '/register' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
                     }`}
                   >
                     <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
-                      Профиль
+                      Зарегистрироваться
                     </span>
                   </div>
-                )}
-                
-                <button
-                  onClick={handleLogout}
-                  className="inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:bg-green-90 transition-colors border-b border-green-80 text-green-30"
-                >
-                  <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
-                    Выйти
-                  </span>
-                </button>
-              </>
-            )}
+                </>
+              ) : (
+                <>
+                  <div className="px-4 py-3 border-b border-green-80 bg-green-90 rounded-t-custom-small -mx-4 mb-2">
+                    <p className="text-green-30 font-semibold text-sm">{getUserDisplayName()}</p>
+                    <p className="text-green-40 text-xs">{getUserRoleDisplay()}</p>
+                  </div>
+                  
+                  {isAdmin ? (
+                    <div
+                      onClick={() => {
+                        handleScrollToTop();
+                        if (location.pathname !== '/profile') {
+                          navigate('/profile');
+                        }
+                        setIsMenuOpen(false);
+                      }}
+                      className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
+                        location.pathname === '/profile' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                      }`}
+                    >
+                      <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                        {user?.role === 'admin' ? 'Админ панель' : 'Админ приюта'}
+                      </span>
+                    </div>
+                  ) : (
+                    <div
+                      onClick={() => {
+                        handleScrollToTop();
+                        if (location.pathname !== '/profile') {
+                          navigate('/profile');
+                        }
+                        setIsMenuOpen(false);
+                      }}
+                      className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
+                        location.pathname === '/profile' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                      }`}
+                    >
+                      <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                        Профиль
+                      </span>
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:bg-green-90 transition-colors border-b border-green-80 text-green-30"
+                  >
+                    <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                      Выйти
+                    </span>
+                  </button>
+                </>
+              )}
+            </div>
           </nav>
         </div>
 
-        <div className="flex items-center gap-4 md:gap-2 relative" ref={userMenuRef}>
+        <div className="flex items-center gap-4 md:gap-2 relative flex-shrink-0" ref={userMenuRef}>
+          <div className="relative md:hidden">
+            <button
+              className="relative w-10 h-10 aspect-[1] cursor-pointer flex-shrink-0 hover:opacity-80 transition-opacity flex items-center justify-center"
+              aria-label="Toggle menu"
+              type="button"
+              onClick={handleMobileMenuToggle}
+            >
+              <svg 
+                className="w-6 h-6 text-green-30" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d={isMenuOpen 
+                    ? "M6 18L18 6M6 6l12 12" 
+                    : "M4 6h16M4 12h16M4 18h16"
+                  } 
+                />
+              </svg>
+            </button>
+          </div>
+
           <div className="relative hidden md:block">
             <button
               className="relative flex items-center gap-2 cursor-pointer flex-shrink-0 transition-all duration-300 p-2 rounded-custom-small hover:bg-green-90"
@@ -425,131 +460,6 @@ export const Header = () => {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                       </svg>
-                      Выйти
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="relative md:hidden">
-            <button
-              className="relative w-10 h-10 aspect-[1] cursor-pointer flex-shrink-0 hover:opacity-80 transition-opacity flex items-center justify-center"
-              aria-label="Toggle menu"
-              type="button"
-              onClick={handleMobileMenuToggle}
-            >
-              <svg 
-                className="w-6 h-6 text-green-30" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d={isMenuOpen 
-                    ? "M6 18L18 6M6 6l12 12" 
-                    : "M4 6h16M4 12h16M4 18h16"
-                  } 
-                />
-              </svg>
-            </button>
-
-            {isUserMenuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-64 bg-green-98 border border-green-80 rounded-custom-small shadow-lg z-50 overflow-hidden">
-                {isAuthenticated && (
-                  <div className="px-4 py-3 bg-green-95 border-b border-green-80">
-                    <p className="text-green-30 font-semibold text-sm">{getUserDisplayName()}</p>
-                    <p className="text-green-40 text-xs">{getUserRoleDisplay()}</p>
-                  </div>
-                )}
-                
-                <div className="border-b border-green-80">
-                  {navigationItems.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleNavButtonClick(item)}
-                      className={`block w-full text-left px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors ${
-                        location.pathname === item.path ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-                
-                {!isAuthenticated ? (
-                  <>
-                    <div
-                      onClick={() => {
-                        handleScrollToTop();
-                        if (location.pathname !== '/login') {
-                          navigate('/login');
-                        }
-                        setIsUserMenuOpen(false);
-                      }}
-                      className={`block w-full text-left px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer ${
-                        location.pathname === '/login' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
-                      }`}
-                    >
-                      Войти
-                    </div>
-                    <div
-                      onClick={() => {
-                        handleScrollToTop();
-                        if (location.pathname !== '/register') {
-                          navigate('/register');
-                        }
-                        setIsUserMenuOpen(false);
-                      }}
-                      className={`block w-full text-left px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors cursor-pointer ${
-                        location.pathname === '/register' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
-                      }`}
-                    >
-                      Зарегистрироваться
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {isAdmin ? (
-                      <div
-                        onClick={() => {
-                          handleScrollToTop();
-                          if (location.pathname !== '/profile') {
-                            navigate('/profile');
-                          }
-                          setIsUserMenuOpen(false);
-                        }}
-                        className={`block px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer ${
-                          location.pathname === '/profile' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
-                        }`}
-                      >
-                        {user?.role === 'admin' ? 'Админ панель' : 'Админ приюта'}
-                      </div>
-                    ) : (
-                      <div
-                        onClick={() => {
-                          handleScrollToTop();
-                          if (location.pathname !== '/profile') {
-                            navigate('/profile');
-                          }
-                          setIsUserMenuOpen(false);
-                        }}
-                        className={`block px-4 py-3 font-inter font-medium hover:bg-green-90 transition-colors border-t border-green-80 cursor-pointer ${
-                          location.pathname === '/profile' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
-                        }`}
-                      >
-                        Профиль
-                      </div>
-                    )}
-                    
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-3 text-green-30 font-inter font-medium hover:bg-green-90 transition-colors"
-                    >
                       Выйти
                     </button>
                   </>
