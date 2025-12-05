@@ -24,3 +24,7 @@
 - Логика сборки: код синхронизируется в `/etc/webapp`; при изменениях в `vladoshkah-back/**` выполняется `docker compose up --build -d` в `/etc/webapp/vladoshkah-back`; при изменении `vladoshkah-front/package*.json` или первой сборке выполняется `npm ci`; при изменении `vladoshkah-front/**` выполняется `npm run build` в `/etc/webapp/vladoshkah-front`.
 - Self-hosted runner: установите GitHub Actions runner на сервере (GitHub → Settings → Actions → Runners → New self-hosted runner, OS Linux), запустите его как сервис. Раннер должен иметь лейбл `self-hosted` (используется в workflow).
 - Настройка окружения: храните `.env` в `/etc/webapp/vladoshkah-back/.env` (и при необходимости `/etc/webapp/vladoshkah-front/.env`); при синхронизации `rsync` пропускает `.env` и `node_modules`.
+
+## Бэкапы
+- Скрипт `scripts/backup.sh` делает архив кода из `/etc/webapp` (без `node_modules`), дамп Postgres из Docker Compose сервиса `db`, архивы MinIO и Redis volumes (если найдены) в `/var/backups/vladoshkah/<timestamp>`.
+- Запуск (нужны права на Docker): `sudo APP_ROOT=/etc/webapp BACKUP_DIR=/var/backups/vladoshkah ./scripts/backup.sh`. Можно добавить в cron, используя путь до репозитория на сервере (например, `/opt/actions-runner/_work/vLadoshkah/vLadoshkah/scripts/backup.sh`).
