@@ -55,8 +55,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-          cache-dependency-path: ${{ env.TARGET_PATH }}/vladoshkah-front/package-lock.json
 
       - name: Frontend install (deps changed or first run)
         if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.frontend_deps == 'true'
