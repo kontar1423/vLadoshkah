@@ -507,7 +507,7 @@ const AnimalsManagement = () => {
                         key={animal.id}
                         className="bg-green-90 rounded-custom-small border-2 border-green-80 shadow-lg overflow-hidden flex flex-col transition-transform duration-200 hover:-translate-y-1"
                     >
-                        <div className="relative w-full aspect-square bg-green-80">
+                        <div className="relative w-full aspect-square bg-green-80 overflow-hidden">
                             {animal.photoUrl || (animal.photos && animal.photos.length > 0) ? (
                                 <img
                                     src={getPhotoUrl(animal.photoUrl ? { url: animal.photoUrl } : animal.photos[0])}
@@ -520,6 +520,7 @@ const AnimalsManagement = () => {
                                     <span className="text-green-40">Нет фото</span>
                                 </div>
                             )}
+                            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-green-90 via-green-90/70 to-transparent pointer-events-none"></div>
                         </div>
                         <div className="p-3 flex-1 flex flex-col gap-1.5">
                             <div className="flex items-start justify-between gap-2">
