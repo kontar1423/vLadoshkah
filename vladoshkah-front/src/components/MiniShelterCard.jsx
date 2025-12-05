@@ -14,8 +14,8 @@ const MiniShelterCard = ({ shelter, wideMobile = false }) => {
     }; 
 
     const sizeClasses = wideMobile
-        ? 'w-full max-w-[160px] sm:max-w-[320px] md:max-w-[380px] h-[220px] sm:h-[300px] md:h-[360px]'
-        : 'w-full max-w-[160px] sm:max-w-[300px] md:max-w-[380px] h-[200px] sm:h-[280px] md:h-[340px]';
+        ? 'w-full max-w-none md:max-w-[320px] lg:max-w-[380px] h-[280px] sm:h-[300px] md:h-[360px]'
+        : 'w-full max-w-none md:max-w-[300px] lg:max-w-[380px] h-[260px] sm:h-[280px] md:h-[340px]';
 
     const photoHeightClasses = wideMobile
         ? 'h-28 sm:h-32 md:h-40 lg:h-44'
@@ -26,11 +26,11 @@ const MiniShelterCard = ({ shelter, wideMobile = false }) => {
             onClick={handleCardClick}
             className={`bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 ${sizeClasses} flex flex-col cursor-pointer md:cursor-default hover:shadow-lg transition-shadow duration-300`}
         >
-        <div className={`relative w-full ${photoHeightClasses} mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small flex-shrink-0`}>
+        <div className={`relative w-full ${photoHeightClasses} mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small`}>
             <img
             src={photoUrl || PriutPhoto}
             alt={name}
-            className="w-full h-full object-cover flex-shrink-0"
+            className="w-full h-full object-cover"
             onError={(e) => {
                 e.target.style.display = 'none';
                 const fallback = document.getElementById(`shelter-fallback-${id}`);

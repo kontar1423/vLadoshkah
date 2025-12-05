@@ -63,7 +63,7 @@
 
         return (
             <div className="relative w-full max-w-[180px] mx-auto px-2">
-                <div className="relative overflow-hidden flex items-center justify-center min-h-[220px]">
+                <div className="relative overflow-visible flex items-center justify-center min-h-[280px]">
                     <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center w-full">
                         <div className="w-full max-w-[180px]">
                             <PetCard 

@@ -202,12 +202,13 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
     };
 
     const mobileSizeClasses = wideMobile
-        ? 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] h-[240px] sm:h-[300px] md:h-[400px]'
-        : 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] h-[220px] sm:h-[280px] md:h-[400px]';
+        ? 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] h-[300px] sm:h-[300px] md:h-[400px]'
+        : 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] h-[280px] sm:h-[280px] md:h-[400px]';
 
     return (
         <article 
             className={`flex flex-col ${mobileSizeClasses} bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative`}
+            style={{ minHeight: 'fit-content' }}
             aria-label={`Карточка питомца ${name}`}
         >
             {onDelete && (
@@ -287,9 +288,9 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
                 </div>
             </div>
 
-            <div className="flex-1 px-1.5 sm:px-2 md:px-3 lg:px-4 py-0 sm:py-1 md:py-2 lg:py-3 flex flex-col justify-start gap-0.5 sm:gap-1 md:gap-1.5 min-h-0 max-h-[40px] sm:max-h-[60px] overflow-hidden">
+            <div className="flex-1 px-1.5 sm:px-2 md:px-3 lg:px-4 py-1 sm:py-1 md:py-2 lg:py-3 flex flex-col justify-start gap-1 sm:gap-1 md:gap-1.5">
                 {personality && (
-                    <p className="text-green-40 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter line-clamp-1 sm:line-clamp-2 overflow-hidden" title={personality}>
+                    <p className="text-green-40 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter line-clamp-2" title={personality}>
                         {personality}
                     </p>
                 )}
@@ -300,7 +301,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
                 )}
             </div>
 
-            <div className="flex flex-row w-full items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 sm:px-2 md:px-3 lg:px-4 mt-auto pb-1.5 sm:pb-2 md:pb-2 lg:pb-3 pt-0.5 sm:pt-1 flex-shrink-0">
+            <div className="flex flex-row w-full items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 sm:px-2 md:px-3 lg:px-4 pb-1.5 sm:pb-2 md:pb-2 lg:pb-3 pt-0.5 sm:pt-1 flex-shrink-0">
                 <Link
                     to={`/pet/${id}`}
                     className="text-green-98 flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2 px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-0.5 sm:py-1 md:py-1.5 lg:py-2 flex-1 bg-green-60 rounded-custom-small hover:bg-green-50 transition-colors shadow-sm text-[8px] sm:text-[10px] md:text-xs lg:text-[13px]"
