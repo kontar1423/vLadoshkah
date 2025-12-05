@@ -111,6 +111,10 @@ const UsersManagement = () => {
             if (!jsonPayload.role && formData.role) {
                 jsonPayload.role = formData.role;
             }
+            // если меняем только фото, подкинем email чтобы бэк увидел поле
+            if (photoFile && Object.keys(jsonPayload).length === 0 && editingUser?.email) {
+                jsonPayload.email = editingUser.email;
+            }
 
             if (photoFile) {
                 const formDataToSend = new FormData();
@@ -507,4 +511,3 @@ const UsersManagement = () => {
 };
 
 export default UsersManagement;
-
