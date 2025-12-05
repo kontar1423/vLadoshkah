@@ -50,17 +50,11 @@ jobs:
               - 'vladoshkah-front/package.json'
               - 'vladoshkah-front/package-lock.json'
 
-      - name: Ensure npm cache dir
-        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.frontend_deps == 'true'
-        run: mkdir -p ~/.npm
-
       - name: Setup Node.js
         if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.frontend_deps == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-          cache-dependency-path: ${{ github.workspace }}/vladoshkah-front/package-lock.json
 
       - name: Frontend install (deps changed or first run)
         if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.frontend_deps == 'true'
