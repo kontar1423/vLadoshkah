@@ -5,6 +5,18 @@ import { getPhotoUrl } from '../../utils/photoHelpers';
 import { useNavigate } from 'react-router-dom';
 import ImageCropModal from '../ImageCropModal';
 
+const ANIMAL_TYPE_LABELS = {
+    dog: 'Собака',
+    cat: 'Кошка',
+    bird: 'Птица',
+    rodent: 'Грызун',
+    fish: 'Рыба',
+    reptile: 'Рептилия',
+    other: 'Другое'
+};
+
+const getAnimalTypeLabel = (type) => ANIMAL_TYPE_LABELS[type] || 'Питомец';
+
 const AnimalsManagement = () => {
     const navigate = useNavigate();
     const [animals, setAnimals] = useState([]);
@@ -489,40 +501,47 @@ const AnimalsManagement = () => {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {animals.map((animal) => (
-                    <div key={animal.id} className="bg-green-90 rounded-custom p-4 border-2 border-green-80">
-                        <div className="mb-4">
+                    <div
+                        key={animal.id}
+                        className="bg-green-90 rounded-custom-small border-2 border-green-80 shadow-lg overflow-hidden flex flex-col transition-transform duration-200 hover:-translate-y-1"
+                    >
+                        <div className="relative w-full aspect-square bg-green-80">
                             {animal.photoUrl || (animal.photos && animal.photos.length > 0) ? (
                                 <img
                                     src={getPhotoUrl(animal.photoUrl ? { url: animal.photoUrl } : animal.photos[0])}
                                     alt={animal.name}
-                                    className="w-full h-48 object-cover rounded-custom-small mb-2 cursor-pointer"
+                                    className="w-full h-full object-cover cursor-pointer"
                                     onClick={() => navigate(`/pet/${animal.id}`)}
                                 />
                             ) : (
-                                <div className="w-full h-48 bg-green-80 rounded-custom-small mb-2 flex items-center justify-center">
+                                <div className="w-full h-full bg-green-80 flex items-center justify-center">
                                     <span className="text-green-40">Нет фото</span>
                                 </div>
                             )}
-                            <h3 className="text-green-30 font-sf-rounded font-bold text-xl mb-2">{animal.name}</h3>
-                            <p className="text-green-20 font-inter text-sm mb-1">
-                                {animal.type === 'dog' ? 'Собака' : animal.type === 'cat' ? 'Кошка' : animal.type}
-                            </p>
-                            <p className="text-green-20 font-inter text-sm">
+                        </div>
+                        <div className="p-3 flex-1 flex flex-col gap-1.5">
+                            <div className="flex items-start justify-between gap-2">
+                                <h3 className="text-green-30 font-sf-rounded font-bold text-lg">{animal.name}</h3>
+                                <span className="px-2 py-0.5 bg-green-80 text-green-20 rounded-full border border-green-70 text-[11px] font-inter whitespace-nowrap">
+                                    {getAnimalTypeLabel(animal.type)}
+                                </span>
+                            </div>
+                            <p className="text-green-20 font-inter text-xs">
                                 Приют: {shelters.find(s => s.id === animal.shelter_id)?.name || 'Не указан'}
                             </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 px-3 pb-3 mt-auto">
                             <button
                                 onClick={() => handleEdit(animal)}
-                                className="flex-1 px-4 py-2 bg-green-30 text-green-100 font-sf-rounded font-semibold text-sm rounded-custom-small hover:bg-green-20 transition-all"
+                                className="flex-1 px-3 py-2 bg-green-30 text-green-100 font-sf-rounded font-semibold text-sm rounded-custom-small hover:bg-green-20 transition-all"
                             >
                                 Редактировать
                             </button>
                             <button
                                 onClick={() => handleDelete(animal.id)}
-                                className="flex-1 px-4 py-2 bg-green-80 text-green-30 font-sf-rounded font-semibold text-sm rounded-custom-small hover:bg-green-70 transition-all"
+                                className="flex-1 px-3 py-2 bg-green-80 text-green-30 font-sf-rounded font-semibold text-sm rounded-custom-small hover:bg-green-70 transition-all"
                             >
                                 Удалить
                             </button>
