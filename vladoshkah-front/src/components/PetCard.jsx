@@ -195,7 +195,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
     const mainPhoto = photos.length > 0 ? photos[0] : null;
     const photoUrl = mainPhoto ? getPhotoUrl(mainPhoto) : null;
 
-    const truncatePersonality = (text, maxLength = 20) => {
+    const truncatePersonality = (text, maxLength = 30) => {
         if (!text) return '';
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
@@ -287,20 +287,20 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
                 </div>
             </div>
 
-            <div className="flex-1 px-1.5 sm:px-2 md:px-3 lg:px-4 py-0 sm:py-1 md:py-2 lg:py-3 flex flex-col justify-start gap-0.5 sm:gap-1 md:gap-1.5">
+            <div className="flex-1 px-1.5 sm:px-2 md:px-3 lg:px-4 py-0 sm:py-1 md:py-2 lg:py-3 flex flex-col justify-start gap-0.5 sm:gap-1 md:gap-1.5 min-h-0 max-h-[40px] sm:max-h-[60px] overflow-hidden">
                 {personality && (
-                    <p className="text-green-40 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter line-clamp-2" title={personality}>
+                    <p className="text-green-40 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter line-clamp-1 sm:line-clamp-2 overflow-hidden" title={personality}>
                         {personality}
                     </p>
                 )}
                 {shelter_name && (
-                    <p className="text-green-50 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter truncate mt-0 sm:mt-auto">
+                    <p className="text-green-50 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter truncate">
                         {shelter_name}
                     </p>
                 )}
             </div>
 
-            <div className="flex flex-row w-full items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 sm:px-2 md:px-3 lg:px-4 mt-auto sm:mt-2 md:mt-3 lg:mt-3 pb-1.5 sm:pb-2 md:pb-2 lg:pb-3 pt-0.5 sm:pt-1">
+            <div className="flex flex-row w-full items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 sm:px-2 md:px-3 lg:px-4 mt-auto pb-1.5 sm:pb-2 md:pb-2 lg:pb-3 pt-0.5 sm:pt-1 flex-shrink-0">
                 <Link
                     to={`/pet/${id}`}
                     className="text-green-98 flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2 px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-0.5 sm:py-1 md:py-1.5 lg:py-2 flex-1 bg-green-60 rounded-custom-small hover:bg-green-50 transition-colors shadow-sm text-[8px] sm:text-[10px] md:text-xs lg:text-[13px]"

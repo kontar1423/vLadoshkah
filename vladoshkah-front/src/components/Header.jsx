@@ -199,34 +199,53 @@ export const Header = () => {
           <nav
             className={`${
               isMenuOpen ? 'flex' : 'hidden'
-            } absolute top-full left-0 right-0 mx-[20px] my-2 bg-green-95 flex-col gap-0 rounded-custom-small z-50 border-2 border-green-40 shadow-lg md:hidden max-h-[calc(100vh-100px)] overflow-y-auto`}
+            } absolute top-full left-0 right-0 mx-[20px] my-2 bg-green-98 flex-col gap-0 rounded-custom-small z-50 border-2 border-green-50 shadow-2xl md:hidden max-h-[calc(100vh-100px)] overflow-y-auto backdrop-blur-sm`}
             role="navigation"
             aria-label="Mobile navigation"
           >
-            <div className="px-4 py-2">
+            <div className="px-0 py-2">
               {navigationItems.map((item, index) => (
                 <div key={item.id}>
                   {item.path ? (
                     <button
                       onClick={() => handleNavButtonClick(item)}
-                      className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity ${
-                        index < navigationItems.length - 1 ? 'border-b border-green-80' : ''
+                      className={`inline-flex items-center justify-start gap-3 relative w-full px-4 py-3.5 transition-all duration-200 ${
+                        index < navigationItems.length - 1 ? 'border-b border-green-70' : ''
                       } ${
-                        location.pathname === item.path ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                        location.pathname === item.path 
+                          ? 'text-green-20 font-bold bg-gradient-to-r from-green-90 to-green-80' 
+                          : 'text-green-30 hover:bg-green-90 hover:text-green-20'
                       }`}
                     >
-                      <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {item.path === '/find-pet' && (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        )}
+                        {item.path === '/shelters' && (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        )}
+                        {item.path === '/give-animal' && (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        )}
+                        {!item.path && (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        )}
+                      </svg>
+                      <span className="relative w-fit font-inter font-semibold text-base tracking-wide">
                         {item.label}
                       </span>
                     </button>
                   ) : (
                     <button
                       onClick={() => handleNavButtonClick(item)}
-                      className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity ${
-                        index < navigationItems.length - 1 ? 'border-b border-green-80' : ''
-                      } text-green-20`}
+                      className={`inline-flex items-center justify-start gap-3 relative w-full px-4 py-3.5 transition-all duration-200 ${
+                        index < navigationItems.length - 1 ? 'border-b border-green-70' : ''
+                      } text-green-30 hover:bg-green-90 hover:text-green-20`}
                     >
-                      <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      <span className="relative w-fit font-inter font-semibold text-base tracking-wide">
                         {item.label}
                       </span>
                     </button>
@@ -234,8 +253,8 @@ export const Header = () => {
                 </div>
               ))}
             </div>
-            <div className="border-t-2 border-green-40 my-2"></div>
-            <div className="px-4 pb-2">
+            <div className="border-t-2 border-green-50 my-2"></div>
+            <div className="px-0 pb-2">
               {!isAuthenticated ? (
                 <>
                   <div
@@ -246,11 +265,16 @@ export const Header = () => {
                       }
                       setIsMenuOpen(false);
                     }}
-                    className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
-                      location.pathname === '/login' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                    className={`inline-flex items-center justify-start gap-3 relative w-full px-4 py-3.5 transition-all duration-200 border-b border-green-70 cursor-pointer ${
+                      location.pathname === '/login' 
+                        ? 'text-green-20 font-bold bg-gradient-to-r from-green-90 to-green-80' 
+                        : 'text-green-30 hover:bg-green-90 hover:text-green-20'
                     }`}
                   >
-                    <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    <span className="relative w-fit font-inter font-semibold text-base tracking-wide">
                       Войти
                     </span>
                   </div>
@@ -262,20 +286,25 @@ export const Header = () => {
                       }
                       setIsMenuOpen(false);
                     }}
-                    className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity cursor-pointer ${
-                      location.pathname === '/register' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-20'
+                    className={`inline-flex items-center justify-start gap-3 relative w-full px-4 py-3.5 transition-all duration-200 cursor-pointer ${
+                      location.pathname === '/register' 
+                        ? 'text-green-20 font-bold bg-gradient-to-r from-green-90 to-green-80' 
+                        : 'text-green-30 hover:bg-green-90 hover:text-green-20'
                     }`}
                   >
-                    <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                    <span className="relative w-fit font-inter font-semibold text-base tracking-wide">
                       Зарегистрироваться
                     </span>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="px-4 py-3 border-b border-green-80 bg-green-90 rounded-t-custom-small -mx-4 mb-2">
-                    <p className="text-green-30 font-semibold text-sm">{getUserDisplayName()}</p>
-                    <p className="text-green-40 text-xs">{getUserRoleDisplay()}</p>
+                  <div className="px-4 py-3.5 border-b-2 border-green-50 bg-gradient-to-r from-green-70 to-green-60 -mx-0 mb-2 rounded-t-custom-small">
+                    <p className="text-green-98 font-bold text-base mb-0.5">{getUserDisplayName()}</p>
+                    <p className="text-green-95 font-medium text-xs">{getUserRoleDisplay()}</p>
                   </div>
                   
                   {isAdmin ? (
@@ -287,11 +316,16 @@ export const Header = () => {
                         }
                         setIsMenuOpen(false);
                       }}
-                      className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
-                        location.pathname === '/profile' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                      className={`inline-flex items-center justify-start gap-3 relative w-full px-4 py-3.5 transition-all duration-200 border-b border-green-70 cursor-pointer ${
+                        location.pathname === '/profile' 
+                          ? 'text-green-20 font-bold bg-gradient-to-r from-green-90 to-green-80' 
+                          : 'text-green-30 hover:bg-green-90 hover:text-green-20'
                       }`}
                     >
-                      <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      <span className="relative w-fit font-inter font-semibold text-base tracking-wide">
                         {user?.role === 'admin' ? 'Админ панель' : 'Админ приюта'}
                       </span>
                     </div>
@@ -304,11 +338,16 @@ export const Header = () => {
                         }
                         setIsMenuOpen(false);
                       }}
-                      className={`inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:opacity-80 transition-opacity border-b border-green-80 cursor-pointer ${
-                        location.pathname === '/profile' ? 'text-green-30 font-semibold bg-green-90' : 'text-green-30'
+                      className={`inline-flex items-center justify-start gap-3 relative w-full px-4 py-3.5 transition-all duration-200 border-b border-green-70 cursor-pointer ${
+                        location.pathname === '/profile' 
+                          ? 'text-green-20 font-bold bg-gradient-to-r from-green-90 to-green-80' 
+                          : 'text-green-30 hover:bg-green-90 hover:text-green-20'
                       }`}
                     >
-                      <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <span className="relative w-fit font-inter font-semibold text-base tracking-wide">
                         Профиль
                       </span>
                     </div>
@@ -316,9 +355,12 @@ export const Header = () => {
                   
                   <button
                     onClick={handleLogout}
-                    className="inline-flex items-center justify-start gap-2.5 relative w-full py-3 hover:bg-green-90 transition-colors border-b border-green-80 text-green-30"
+                    className="inline-flex items-center justify-start gap-3 relative w-full px-4 py-3.5 transition-all duration-200 hover:bg-red-50 hover:text-red-300 text-green-30"
                   >
-                    <span className="relative w-fit font-inter font-medium text-base tracking-[0] leading-[normal]">
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span className="relative w-fit font-inter font-semibold text-base tracking-wide">
                       Выйти
                     </span>
                   </button>
