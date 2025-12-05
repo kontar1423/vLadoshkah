@@ -21,6 +21,6 @@
 ## CI/CD на сервер
 - Workflow `.github/workflows/deploy.yml` срабатывает на пуш в `main`, запускается на self-hosted runner (на вашем сервере) и собирает только изменившиеся части.
 - Требования к серверу: Linux, Docker + Docker Compose, Node.js >= 20 и npm >= 10.
-- Логика сборки: при изменениях в `vladoshkah-back/**` выполняется `docker compose up --build -d` в `vladoshkah-back`; при изменении `vladoshkah-front/package*.json` выполняется `npm install`; при изменении `vladoshkah-front/**` выполняется `npm run build`.
-- Self-hosted runner: установите GitHub Actions runner на сервере (GitHub → Settings → Actions → Runners → New self-hosted runner, OS Linux), запустите его как сервис. Раннер должен иметь дефолтный лейбл `self-hosted` (используется в workflow).
-- Настройка окружения: после первой сборки положите `.env` файлы в рабочую директорию раннера `~/actions-runner/_work/<repo>/<repo>/vladoshkah-back/.env` (и при необходимости `vladoshkah-front/.env`), они сохраняются между запусками (`clean: false` в checkout).
+- Логика сборки: код синхронизируется в `/etc/webapp`; при изменениях в `vladoshkah-back/**` выполняется `docker compose up --build -d` в `/etc/webapp/vladoshkah-back`; при изменении `vladoshkah-front/package*.json` или первой сборке выполняется `npm ci`; при изменении `vladoshkah-front/**` выполняется `npm run build` в `/etc/webapp/vladoshkah-front`.
+- Self-hosted runner: установите GitHub Actions runner на сервере (GitHub → Settings → Actions → Runners → New self-hosted runner, OS Linux), запустите его как сервис. Раннер должен иметь лейбл `self-hosted` (используется в workflow).
+- Настройка окружения: храните `.env` в `/etc/webapp/vladoshkah-back/.env` (и при необходимости `/etc/webapp/vladoshkah-front/.env`); при синхронизации `rsync` пропускает `.env` и `node_modules`.
