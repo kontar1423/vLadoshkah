@@ -28,3 +28,8 @@
 ## Бэкапы
 - Скрипт `scripts/backup.sh` делает архив кода из `/etc/webapp` (без `node_modules`), дамп Postgres из Docker Compose сервиса `db`, архивы MinIO и Redis volumes (если найдены) в `/var/backups/vladoshkah/<timestamp>`.
 - Запуск (нужны права на Docker): `sudo APP_ROOT=/etc/webapp BACKUP_DIR=/var/backups/vladoshkah ./scripts/backup.sh`. Можно добавить в cron, используя путь до репозитория на сервере (например, `/opt/actions-runner/_work/vLadoshkah/vLadoshkah/scripts/backup.sh`).
+
+## Команда
+- Ефремова Анастасия — тимлид, фронтенд
+- Тарасенко Константин — бэкэнд
+- Ширанков Максим — дизайнер, DevOps
