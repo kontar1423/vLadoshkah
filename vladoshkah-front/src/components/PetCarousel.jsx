@@ -1,7 +1,7 @@
-    import React, { useState, useEffect, useRef } from 'react';
-    import PetCard from './PetCard';
+import React, { useState, useEffect, useRef } from 'react';
+import PetCard from './PetCard';
 
-    const PetCarousel = ({ pets = [], favoritesMap = {} }) => {
+const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -60,15 +60,25 @@
 
     if (isMobile && pets.length > 0) {
         const currentPet = pets[currentIndex];
+        const mobileContainerClass = isHomePage ? 'max-w-[300px]' : 'max-w-[230px]';
+        const mobileMinHeightClass = isHomePage ? 'min-h-[380px]' : 'min-h-[340px]';
+        const mobileCardWidthClass = isHomePage ? 'max-w-[320px]' : 'max-w-[230px]';
+        const mobileCardShiftClass = isHomePage ? 'translate-x-6' : '';
+        const arrowOffsetLeft = isHomePage ? '-left-8' : '-left-12';
+        const arrowOffsetRight = isHomePage ? '-right-8' : '-right-12';
+        const arrowSizeClass = isHomePage ? 'w-11 h-11' : 'w-10 h-10';
+        const arrowIconSize = isHomePage ? 'w-5 h-5' : 'w-4 h-4';
 
         return (
-            <div className="relative w-full max-w-[180px] mx-auto px-2">
-                <div className="relative overflow-visible flex items-center justify-center min-h-[280px]">
+            <div className={`relative w-full ${mobileContainerClass} mx-auto px-2`}>
+                <div className={`relative overflow-visible flex items-center justify-center ${mobileMinHeightClass}`}>
                     <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center w-full">
-                        <div className="w-full max-w-[180px]">
+                        <div className={`w-full ${mobileCardWidthClass} ${mobileCardShiftClass}`}>
                             <PetCard 
                                 petData={currentPet} 
                                 initialFavorite={favoritesMap[currentPet.id] === true}
+                                wideMobile
+                                mobileLarge={isHomePage}
                             />
                         </div>
                     </div>
@@ -79,14 +89,14 @@
                         <button
                             onClick={prevPet}
                             disabled={isTransitioning}
-                            className={`absolute -left-6 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-300 ${
+                            className={`absolute ${arrowOffsetLeft} top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full ${arrowSizeClass} flex items-center justify-center transition-all duration-300 ${
                                 isTransitioning
                                     ? 'opacity-50 cursor-not-allowed'
                                     : 'hover:bg-green-60 hover:scale-110 shadow-xl'
                             }`}
                             aria-label="Предыдущий питомец"
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className={`${arrowIconSize}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                         </button>
@@ -94,14 +104,14 @@
                         <button
                             onClick={nextPet}
                             disabled={isTransitioning}
-                            className={`absolute -right-6 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-300 ${
+                            className={`absolute ${arrowOffsetRight} top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full ${arrowSizeClass} flex items-center justify-center transition-all duration-300 ${
                                 isTransitioning
                                     ? 'opacity-50 cursor-not-allowed'
                                     : 'hover:bg-green-60 hover:scale-110 shadow-xl'
                             }`}
                             aria-label="Следующий питомец"
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className={`${arrowIconSize}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                         </button>

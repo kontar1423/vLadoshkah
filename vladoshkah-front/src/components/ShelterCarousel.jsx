@@ -16,8 +16,8 @@
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    const CARD_WIDTH = 380;
-    const GAP = 10;
+    const CARD_WIDTH = 320;
+    const GAP = 20;
 
     const navigateTo = (newIndex) => {
         if (isTransitioning || shelters.length <= 1) return;
@@ -59,10 +59,10 @@
         const currentShelter = shelters[currentIndex];
 
         return (
-            <div className="relative w-full max-w-[160px] mx-auto px-2">
-                <div className="relative overflow-hidden flex items-center justify-center min-h-[220px]">
+            <div className="relative w-full max-w-[230px] mx-auto px-2">
+                <div className="relative overflow-hidden flex items-center justify-center min-h-[340px]">
                     <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center w-full">
-                        <div className="w-full max-w-[160px]">
+                        <div className="w-full max-w-[230px]">
                             <MiniShelterCard shelter={currentShelter} />
                         </div>
                     </div>
@@ -73,7 +73,7 @@
                         <button
                             onClick={prevShelter}
                             disabled={isTransitioning}
-                            className={`absolute -left-6 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-300 ${
+                            className={`absolute -left-12 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-10 h-10 flex items-center justify-center transition-all duration-300 ${
                                 isTransitioning
                                     ? 'opacity-50 cursor-not-allowed'
                                     : 'hover:bg-green-60 hover:scale-110 shadow-xl'
@@ -88,7 +88,7 @@
                         <button
                             onClick={nextShelter}
                             disabled={isTransitioning}
-                            className={`absolute -right-6 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-300 ${
+                            className={`absolute -right-12 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-10 h-10 flex items-center justify-center transition-all duration-300 ${
                                 isTransitioning
                                     ? 'opacity-50 cursor-not-allowed'
                                     : 'hover:bg-green-60 hover:scale-110 shadow-xl'
@@ -136,10 +136,10 @@
     const items = getCarouselItems();
 
     return (
-        <div className="relative w-full max-w-7xl mx-auto px-4">
+        <div className="relative w-full max-w-6xl mx-auto px-4">
         <div
             ref={containerRef}
-            className="relative h-[520px] flex items-center justify-center overflow-visible"
+            className="relative h-[460px] flex items-center justify-center overflow-visible"
         >
             {items.map(({ shelter, position, uniqueKey }) => {
             const isActive = position === 0;
@@ -158,12 +158,12 @@
                 zIndex = 30;
             } else if (isLeft) {
                 translateX = `calc(-50% - ${CARD_WIDTH + GAP}px)`;
-                scale = 0.87;
+                scale = 0.85;
                 opacity = 1;
                 zIndex = 20;
             } else if (isRight) {
                 translateX = `calc(-50% + ${CARD_WIDTH + GAP}px)`;
-                scale = 0.87;
+                scale = 0.85;
                 opacity = 1;
                 zIndex = 20;
             }

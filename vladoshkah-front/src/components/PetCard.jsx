@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { favoriteService } from '../services/favoriteService';
 
-const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile = false }) => {
+const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile = false, mobileLarge = false }) => {
     const {
         id,
         name = "Питомец",
@@ -201,13 +201,15 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
         return text.substring(0, maxLength) + '...';
     };
 
-    const mobileSizeClasses = wideMobile
-        ? 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] h-[300px] sm:h-[300px] md:h-[400px]'
-        : 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] h-[280px] sm:h-[280px] md:h-[400px]';
+    const mobileSizeClasses = mobileLarge
+        ? 'w-full max-w-[230px] sm:max-w-[330px] md:max-w-[360px] min-h-[420px] sm:min-h-[460px] md:min-h-[520px] h-auto'
+        : wideMobile
+            ? 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] min-h-[400px] sm:min-h-[420px] md:min-h-[520px] h-auto'
+            : 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] min-h-[380px] sm:min-h-[400px] md:min-h-[520px] h-auto';
 
     return (
         <article 
-            className={`flex flex-col ${mobileSizeClasses} bg-green-90 rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative`}
+            className={`flex flex-col ${mobileSizeClasses} rounded-custom-small shadow-lg overflow-hidden transform transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl relative`}
             style={{ minHeight: 'fit-content' }}
             aria-label={`Карточка питомца ${name}`}
         >
@@ -227,7 +229,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
                     </svg>
                 </button>
             )}
-            <div className="relative w-full h-[100px] sm:h-[140px] md:h-auto md:aspect-square bg-gray-100 rounded-t-custom-small overflow-hidden flex-shrink-0">
+            <div className="relative w-full aspect-square min-h-[180px] sm:min-h-[200px] bg-gray-100 rounded-t-custom-small overflow-hidden flex-shrink-0">
                 {photoUrl ? (
                     <>
                         <img
@@ -253,7 +255,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
                                 </span>
                             )}
                         </div>
-                        <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-green-90 to-transparent"></div>
+                        <div className="absolute bottom-0 left-0 w-full h-6 sm:h-5 md:h-6 lg:h-8 bg-gradient-to-t from-green-90 to-transparent pointer-events-none"></div>
                     </>
                 ) : (
                     <div className="w-full h-full bg-gradient-to-br from-green-70 to-green-60 flex items-center justify-center flex-col p-4 text-center">
@@ -270,67 +272,69 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
                 )}
             </div>
 
-            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 w-full px-1.5 sm:px-2 md:px-3 lg:px-4 relative -mt-2 sm:-mt-4 md:-mt-5 lg:-mt-6 mb-0 sm:mb-1 min-w-0">
-                <div className="px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-0.5 bg-green-90 rounded-full border-2 border-green-30 shadow-sm min-w-0 max-w-full overflow-hidden">
-                    <span className="font-inter text-green-30 text-[10px] sm:text-xs md:text-sm lg:text-base truncate block">
-                        {name}
-                    </span>
+            <div className="flex flex-col flex-1 bg-green-90 rounded-b-custom-small mt-0 sm:mt-0 md:mt-0 lg:mt-0 xl:mt-0 pt-4 sm:pt-6 md:pt-7 lg:pt-8 xl:pt-9">
+                <div className="relative z-10 flex items-center gap-1.5 sm:gap-1.5 md:gap-2 w-full px-2 sm:px-2 md:px-3 lg:px-4 pb-1.5 sm:pb-1.5 min-w-0">
+                    <div className="px-2 sm:px-2 md:px-2.5 lg:px-3 py-1 bg-green-90 rounded-full border-2 border-green-30 shadow-sm min-w-0 max-w-full overflow-hidden">
+                        <span className="font-inter text-green-30 text-xs sm:text-xs md:text-sm lg:text-base truncate block">
+                            {name}
+                        </span>
+                    </div>
+                    <div className="flex w-6 h-6 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 items-center justify-center bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0">
+                        <span className={`text-[12px] sm:text-xs md:text-sm ${gender === "male" ? "text-blue-400" : "text-pink-400"}`}>
+                            {gender === "male" ? "♂" : "♀"}
+                        </span>
+                    </div>
+                    <div className="px-1.5 sm:px-1.5 md:px-2 py-0.5 bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0">
+                        <span className="font-inter text-green-30 text-[11px] sm:text-[10px] md:text-xs lg:text-sm">
+                            {formatAge(age)}
+                        </span>
+                    </div>
                 </div>
-                <div className="flex w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 items-center justify-center bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0">
-                    <span className={`text-[10px] sm:text-xs md:text-sm ${gender === "male" ? "text-blue-400" : "text-pink-400"}`}>
-                        {gender === "male" ? "♂" : "♀"}
-                    </span>
-                </div>
-                <div className="px-1 sm:px-1.5 md:px-2 py-0.5 bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0">
-                    <span className="font-inter text-green-30 text-[9px] sm:text-[10px] md:text-xs lg:text-sm">
-                        {formatAge(age)}
-                    </span>
-                </div>
-            </div>
 
-            <div className="flex-1 px-1.5 sm:px-2 md:px-3 lg:px-4 py-1 sm:py-1 md:py-2 lg:py-3 flex flex-col justify-start gap-1 sm:gap-1 md:gap-1.5">
-                {personality && (
-                    <p className="text-green-40 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter line-clamp-2" title={personality}>
-                        {personality}
-                    </p>
-                )}
-                {shelter_name && (
-                    <p className="text-green-50 text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-inter truncate">
-                        {shelter_name}
-                    </p>
-                )}
-            </div>
-
-            <div className="flex flex-row w-full items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 sm:px-2 md:px-3 lg:px-4 pb-1.5 sm:pb-2 md:pb-2 lg:pb-3 pt-0.5 sm:pt-1 flex-shrink-0">
-                <Link
-                    to={`/pet/${id}`}
-                    className="text-green-98 flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2 px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-0.5 sm:py-1 md:py-1.5 lg:py-2 flex-1 bg-green-60 rounded-custom-small hover:bg-green-50 transition-colors shadow-sm text-[8px] sm:text-[10px] md:text-xs lg:text-[13px]"
-                >
-                    Познакомиться
-                </Link>
-                <button
-                    onClick={handleFavoriteClick}
-                    disabled={favoriteLoading}
-                    className={`flex w-6 h-6 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 items-center justify-center rounded-custom-small transition-colors shadow-sm flex-shrink-0 ${
-                        isFavorite 
-                        ? 'bg-red-50 text-red-300 hover:bg-red-100' 
-                        : 'bg-green-60 text-green-98 hover:bg-green-50'
-                    } ${favoriteLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    aria-label={isFavorite ? "Удалить из избранного" : "Добавить в избранное"}
-                >
-                    {favoriteLoading ? (
-                        <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 border-2 border-green-98 border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                        <svg 
-                            className={`w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 ${isFavorite ? 'fill-current' : 'stroke-current'}`}
-                            fill={isFavorite ? "currentColor" : "none"}
-                            strokeWidth={isFavorite ? 0 : 2}
-                            viewBox="0 0 24 24"
-                        >
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                        </svg>
+                <div className="relative z-10 flex-1 px-2 sm:px-2 md:px-3 lg:px-4 pt-1.5 sm:pt-3 md:pt-4 lg:pt-5 pb-1 sm:pb-1 md:pb-2 lg:pb-3 flex flex-col justify-start gap-1.5 sm:gap-1 md:gap-1.5">
+                    {personality && (
+                        <p className="text-green-40 text-[11px] sm:text-[10px] md:text-xs lg:text-sm font-inter line-clamp-2" title={personality}>
+                            {personality}
+                        </p>
                     )}
-                </button>
+                    {shelter_name && (
+                        <p className="text-green-50 text-[11px] sm:text-[10px] md:text-xs lg:text-sm font-inter truncate">
+                            {shelter_name}
+                        </p>
+                    )}
+                </div>
+
+                <div className="relative z-10 flex flex-row w-full items-center gap-1.5 sm:gap-1.5 md:gap-2 px-2 sm:px-2 md:px-3 lg:px-4 pb-1.5 sm:pb-2 md:pb-2 lg:pb-3 pt-1 sm:pt-1 flex-shrink-0">
+                    <Link
+                        to={`/pet/${id}`}
+                        className="text-green-98 flex items-center justify-center gap-1 sm:gap-1 md:gap-1.5 lg:gap-2 px-2.5 sm:px-2 md:px-2.5 lg:px-3 py-1 sm:py-1 md:py-1.5 lg:py-2 flex-1 bg-green-60 rounded-custom-small hover:bg-green-50 transition-colors shadow-sm text-[11px] sm:text-[10px] md:text-xs lg:text-[13px]"
+                    >
+                        Познакомиться
+                    </Link>
+                    <button
+                        onClick={handleFavoriteClick}
+                        disabled={favoriteLoading}
+                        className={`flex w-7 h-7 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 items-center justify-center rounded-custom-small transition-colors shadow-sm flex-shrink-0 ${
+                            isFavorite 
+                            ? 'bg-red-50 text-red-300 hover:bg-red-100' 
+                            : 'bg-green-60 text-green-98 hover:bg-green-50'
+                        } ${favoriteLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        aria-label={isFavorite ? "Удалить из избранного" : "Добавить в избранное"}
+                    >
+                        {favoriteLoading ? (
+                            <div className="w-4 h-4 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 border-2 border-green-98 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                                <svg 
+                                    className={`w-4 h-4 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 ${isFavorite ? 'fill-current' : 'stroke-current'}`}
+                                fill={isFavorite ? "currentColor" : "none"}
+                                strokeWidth={isFavorite ? 0 : 2}
+                                viewBox="0 0 24 24"
+                            >
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                            </svg>
+                        )}
+                    </button>
+                </div>
             </div>
         </article>
     );

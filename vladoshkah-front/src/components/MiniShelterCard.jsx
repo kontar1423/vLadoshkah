@@ -14,19 +14,18 @@ const MiniShelterCard = ({ shelter, wideMobile = false }) => {
     }; 
 
     const sizeClasses = wideMobile
-        ? 'w-full max-w-none md:max-w-[320px] lg:max-w-[380px] h-[280px] sm:h-[300px] md:h-[360px]'
-        : 'w-full max-w-none md:max-w-[300px] lg:max-w-[380px] h-[260px] sm:h-[280px] md:h-[340px]';
-
-    const photoHeightClasses = wideMobile
-        ? 'h-28 sm:h-32 md:h-40 lg:h-44'
-        : 'h-24 sm:h-28 md:h-36 lg:h-40';
+        ? 'w-full max-w-none md:max-w-[320px] lg:max-w-[380px] min-h-[340px] sm:min-h-[360px] md:min-h-[400px] h-auto'
+        : 'w-full max-w-none md:max-w-[300px] lg:max-w-[380px] min-h-[320px] sm:min-h-[340px] md:min-h-[380px] h-auto';
 
     return (
         <div 
             onClick={handleCardClick}
             className={`bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 ${sizeClasses} flex flex-col cursor-pointer md:cursor-default hover:shadow-lg transition-shadow duration-300`}
         >
-        <div className={`relative w-full ${photoHeightClasses} mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small`}>
+        <div
+            className="relative w-full aspect-square min-h-[200px] sm:min-h-[230px] md:min-h-[260px] mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small"
+            style={{ aspectRatio: '1 / 1' }}
+        >
             <img
             src={photoUrl || PriutPhoto}
             alt={name}

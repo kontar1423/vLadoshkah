@@ -256,7 +256,7 @@ const getDistrictName = (regionCode) => {
             ))}
           </div>
         ) : (
-          <PetCarousel pets={animals} favoritesMap={favoritesMap} />
+          <PetCarousel pets={animals} favoritesMap={favoritesMap} isHomePage />
         )}
       </section>
 
