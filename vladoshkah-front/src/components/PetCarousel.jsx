@@ -5,11 +5,14 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [isCompactLayout, setIsCompactLayout] = useState(false);
     const containerRef = useRef(null);
 
     useEffect(() => {
         const checkMobile = () => {
-            setIsMobile(window.innerWidth < 640);
+            const width = window.innerWidth;
+            setIsMobile(width < 640);
+            setIsCompactLayout(width < 1024);
         };
         checkMobile();
         window.addEventListener('resize', checkMobile);
@@ -58,16 +61,24 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
         );
     }
 
-    if (isMobile && pets.length > 0) {
+    if (isCompactLayout && pets.length > 0) {
         const currentPet = pets[currentIndex];
-        const mobileContainerClass = isHomePage ? 'max-w-[300px]' : 'max-w-[230px]';
-        const mobileMinHeightClass = isHomePage ? 'min-h-[380px]' : 'min-h-[340px]';
-        const mobileCardWidthClass = isHomePage ? 'max-w-[320px]' : 'max-w-[230px]';
-        const mobileCardShiftClass = isHomePage ? 'translate-x-6' : '';
-        const arrowOffsetLeft = isHomePage ? '-left-8' : '-left-12';
-        const arrowOffsetRight = isHomePage ? '-right-8' : '-right-12';
-        const arrowSizeClass = isHomePage ? 'w-11 h-11' : 'w-10 h-10';
-        const arrowIconSize = isHomePage ? 'w-5 h-5' : 'w-4 h-4';
+        const isTablet = !isMobile;
+
+        const mobileContainerClass = isHomePage
+            ? (isTablet ? 'max-w-[380px]' : 'max-w-[300px]')
+            : (isTablet ? 'max-w-[320px]' : 'max-w-[230px]');
+        const mobileMinHeightClass = isHomePage
+            ? (isTablet ? 'min-h-[460px]' : 'min-h-[380px]')
+            : (isTablet ? 'min-h-[420px]' : 'min-h-[340px]');
+        const mobileCardWidthClass = isHomePage
+            ? (isTablet ? 'max-w-[360px]' : 'max-w-[320px]')
+            : (isTablet ? 'max-w-[300px]' : 'max-w-[230px]');
+        const mobileCardShiftClass = isHomePage && !isTablet ? 'translate-x-6' : '';
+        const arrowOffsetLeft = isHomePage ? '-left-8' : isTablet ? '-left-10' : '-left-12';
+        const arrowOffsetRight = isHomePage ? '-right-8' : isTablet ? '-right-10' : '-right-12';
+        const arrowSizeClass = isHomePage || isTablet ? 'w-11 h-11' : 'w-10 h-10';
+        const arrowIconSize = isHomePage || isTablet ? 'w-5 h-5' : 'w-4 h-4';
 
         return (
             <div className={`relative w-full ${mobileContainerClass} mx-auto px-2`}>
@@ -78,7 +89,7 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
                                 petData={currentPet} 
                                 initialFavorite={favoritesMap[currentPet.id] === true}
                                 wideMobile
-                                mobileLarge={isHomePage}
+                                mobileLarge={isHomePage || isTablet}
                             />
                         </div>
                     </div>

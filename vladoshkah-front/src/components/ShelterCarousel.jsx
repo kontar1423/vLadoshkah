@@ -5,11 +5,14 @@
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [isCompactLayout, setIsCompactLayout] = useState(false);
     const containerRef = useRef(null);
 
     useEffect(() => {
         const checkMobile = () => {
-            setIsMobile(window.innerWidth < 640);
+            const width = window.innerWidth;
+            setIsMobile(width < 640);
+            setIsCompactLayout(width < 1024);
         };
         checkMobile();
         window.addEventListener('resize', checkMobile);
@@ -55,14 +58,20 @@
         );
     }
 
-    if (isMobile && shelters.length > 0) {
+    if (isCompactLayout && shelters.length > 0) {
         const currentShelter = shelters[currentIndex];
+        const isTablet = !isMobile;
+        const containerWidthClass = isTablet ? 'max-w-[320px]' : 'max-w-[230px]';
+        const minHeightClass = isTablet ? 'min-h-[420px]' : 'min-h-[340px]';
+        const arrowOffset = isTablet ? '-left-10' : '-left-12';
+        const arrowSizeClass = isTablet ? 'w-11 h-11' : 'w-10 h-10';
+        const arrowIconSize = isTablet ? 'w-5 h-5' : 'w-4 h-4';
 
         return (
-            <div className="relative w-full max-w-[230px] mx-auto px-2">
-                <div className="relative overflow-hidden flex items-center justify-center min-h-[340px]">
+            <div className={`relative w-full ${containerWidthClass} mx-auto px-2`}>
+                <div className={`relative overflow-hidden flex items-center justify-center ${minHeightClass}`}>
                     <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center w-full">
-                        <div className="w-full max-w-[230px]">
+                        <div className={`w-full ${containerWidthClass}`}>
                             <MiniShelterCard shelter={currentShelter} />
                         </div>
                     </div>
@@ -73,14 +82,14 @@
                         <button
                             onClick={prevShelter}
                             disabled={isTransitioning}
-                            className={`absolute -left-12 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-10 h-10 flex items-center justify-center transition-all duration-300 ${
+                            className={`absolute ${arrowOffset} top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full ${arrowSizeClass} flex items-center justify-center transition-all duration-300 ${
                                 isTransitioning
                                     ? 'opacity-50 cursor-not-allowed'
                                     : 'hover:bg-green-60 hover:scale-110 shadow-xl'
                             }`}
                             aria-label="Предыдущий приют"
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className={arrowIconSize} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                         </button>
@@ -88,14 +97,14 @@
                         <button
                             onClick={nextShelter}
                             disabled={isTransitioning}
-                            className={`absolute -right-12 top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full w-10 h-10 flex items-center justify-center transition-all duration-300 ${
+                            className={`absolute ${arrowOffset.replace('left', 'right')} top-1/2 -translate-y-1/2 z-40 bg-green-70 text-green-20 rounded-full ${arrowSizeClass} flex items-center justify-center transition-all duration-300 ${
                                 isTransitioning
                                     ? 'opacity-50 cursor-not-allowed'
                                     : 'hover:bg-green-60 hover:scale-110 shadow-xl'
                             }`}
                             aria-label="Следующий приют"
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className={arrowIconSize} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                         </button>
