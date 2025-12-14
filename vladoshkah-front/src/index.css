@@ -403,75 +403,164 @@
   .stagger-animation:nth-child(1) { animation-delay: 0.1s; opacity: 0; }
   .stagger-animation:nth-child(2) { animation-delay: 0.2s; opacity: 0; }
   .stagger-animation:nth-child(3) { animation-delay: 0.3s; opacity: 0; }
-  .stagger-animation:nth-child(4) { animation-delay: 0.4s; opacity: 0; }
-  .stagger-animation:nth-child(5) { animation-delay: 0.5s; opacity: 0; }
-  .stagger-animation:nth-child(6) { animation-delay: 0.6s; opacity: 0; }
+.stagger-animation:nth-child(4) { animation-delay: 0.4s; opacity: 0; }
+.stagger-animation:nth-child(5) { animation-delay: 0.5s; opacity: 0; }
+.stagger-animation:nth-child(6) { animation-delay: 0.6s; opacity: 0; }
 }
 
-.leaflet-container {
+.yamap-container {
   background: #f8faf9;
-  font-family: 'Inter', sans-serif;
   border-radius: 12px;
   position: relative !important;
   z-index: 1 !important;
+  overflow: hidden;
 }
 
-.leaflet-map-pane {
-  z-index: 1 !important;
-}
-
-.leaflet-popup-content-wrapper {
+.yamap-balloon {
+  font-family: 'Inter', sans-serif;
   background: #f8faf9;
+  color: #0f1d1c;
+  border: 2px solid #4a7c59;
   border-radius: 12px;
-  border: 2px solid #4a7c59;
+  padding: 12px;
+  min-width: 240px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 1000 !important;
 }
 
-.leaflet-popup-content {
-  margin: 0;
-  padding: 0;
-  font-family: 'Inter', sans-serif;
-  z-index: 1000 !important;
+.yamap-balloon--highlighted {
+  border-color: #0f9f6e;
 }
 
-.leaflet-popup-tip {
-  background: #f8faf9;
-  border: 2px solid #4a7c59;
-  z-index: 1000 !important;
+.yamap-balloon h3 {
+  margin: 0 0 8px;
+  font-family: 'SF Pro Display', 'SF Pro Rounded', 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #2f6b43;
 }
 
-.leaflet-popup-close-button {
-  color: #4a7c59 !important;
-  font-size: 18px !important;
-  padding: 8px !important;
-  right: 8px !important;
-  top: 8px !important;
-  z-index: 1001 !important;
+.yamap-balloon p {
+  margin: 4px 0;
+  font-size: 14px;
 }
 
-.leaflet-popup-close-button:hover {
-  color: #3a6347 !important;
-  background: none !important;
+.yamap-balloon strong {
+  color: #2f6b43;
 }
 
-.leaflet-container-custom {
-  font-family: 'Inter', sans-serif;
+.yamap-balloon__link {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #4a7c59;
+  color: #f8faf9;
+  text-decoration: none;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.yamap-balloon__link:hover {
+  background: #3a6347;
+}
+
+/* Yandex balloon container tweaks */
+.ymaps-2-1-79-balloon,
+.ymaps-2-1-79-balloon__layout,
+.ymaps-2-1-79-balloon__content {
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ymaps-2-1-79-balloon__content {
+  padding: 0 !important;
+}
+
+.ymaps-2-1-79-balloon__close,
+.ymaps-2-1-79-balloon__close-button {
+  display: none !important;
+}
+
+.ymaps-2-1-79-balloon__tail {
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px #0c6f3a !important; /* dark green outline */
+}
+
+.yamap-balloon-card {
   position: relative;
-  z-index: 1;
-  isolation: isolate;
+  background: #ffffff;
+  border: 2px solid #0c6f3a;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 20px 20px 16px;
+  min-width: 320px;
+  color: #0c6f3a;
 }
 
-.leaflet-control-zoom a {
-  background: #f8faf9 !important;
-  color: #4a7c59 !important;
-  border: 2px solid #4a7c59 !important;
-  z-index: 1000 !important;
+.yamap-balloon-card__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
-.leaflet-control-zoom a:hover {
-  background: #4a7c59 !important;
-  color: #f8faf9 !important;
+.yamap-balloon-card__close::before,
+.yamap-balloon-card__close::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 9px;
+  width: 2px;
+  height: 12px;
+  background: #0c6f3a;
+  border-radius: 2px;
+}
+
+.yamap-balloon-card__close::before {
+  transform: rotate(45deg);
+}
+
+.yamap-balloon-card__close::after {
+  transform: rotate(-45deg);
+}
+
+.yamap-balloon-card__title {
+  margin: 0 0 10px;
+  font-family: 'SF Pro Rounded', 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0c6f3a;
+}
+
+.yamap-balloon-card__body p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #0c6f3a;
+}
+
+.yamap-balloon-card__body strong {
+  color: #0c6f3a;
+}
+
+.yamap-balloon-card__cta {
+  display: block;
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #0c6f3a;
+  color: #ffffff;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.yamap-balloon-card__cta:hover {
+  background: #0a5a2c;
 }
 
 .min-h-screen {
