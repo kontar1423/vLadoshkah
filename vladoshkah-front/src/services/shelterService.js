@@ -98,10 +98,12 @@ export const shelterService = {
             const response = await api.get(`/shelters/${shelterId}/vote`);
             return response.data;
         } catch (error) {
-            console.error(`Error fetching user vote for shelter ${shelterId}:`, error);
+            // 404 и 401 - это нормальные ситуации (пользователь еще не оценил приют или не авторизован)
             if (error.response?.status === 401 || error.response?.status === 404) {
                 return { vote: null, hasVote: false };
             }
+            // Выводим ошибку только для других статусов
+            console.error(`Error fetching user vote for shelter ${shelterId}:`, error);
             throw error;
         }
     }
