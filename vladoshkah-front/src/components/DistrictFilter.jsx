@@ -433,16 +433,16 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-2 sm:p-4"
-      style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
         bottom: 0,
         overflowY: 'auto',
-        paddingTop: '80px'
+        paddingTop: '80px',
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -450,18 +450,20 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
         }
       }}
     >
-      <div 
+      <div
         className="bg-green-95 rounded-custom w-full max-w-6xl flex flex-col items-start gap-3 sm:gap-4 md:gap-6 p-4 sm:p-6 md:p-8 relative my-auto shadow-xl"
-        style={{ 
+        style={{
           maxHeight: 'calc(100vh - 100px)',
           overflowY: 'auto',
-          position: 'relative'
+          position: 'relative',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         <header className="flex items-center justify-between self-stretch w-full gap-2 sm:gap-4 sticky top-0 bg-green-95 z-50 pb-2 border-b-2 border-green-80">
           <div className="flex-shrink-0 min-w-0">
-            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-sf-rounded font-bold text-green-30 whitespace-nowrap">Выберите округа Москвы</h1>
+            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-sf-rounded font-bold text-green-30 whitespace-nowrap">
+              Выберите округа Москвы
+            </h1>
           </div>
           <button
             onClick={onClose}
@@ -528,8 +530,7 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
                     );
                   })}
                 </div>
-                </aside>
-              </div>
+              </aside>
             </div>
 
             {selectedDistricts.length > 0 && (
@@ -564,8 +565,6 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
             )}
           </div>
         </div>
-
-      
 
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 self-stretch justify-end pt-3 sm:pt-4 border-t border-green-80 w-full">
           <button
