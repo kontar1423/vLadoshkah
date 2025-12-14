@@ -481,6 +481,7 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
               <div>
                 <p className="font-inter text-green-30 font-semibold text-xs sm:text-sm md:text-base">Карта округов Москвы</p>
               </div>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-3 sm:gap-4 items-start">
               <div className="rounded-custom-small border border-green-80 bg-green-95 overflow-hidden aspect-[4/3] min-h-[240px] sm:min-h-[300px] md:min-h-[360px]">
@@ -527,9 +528,10 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
                     );
                   })}
                 </div>
-              </aside>
+                </aside>
+              </div>
             </div>
-            
+
             {selectedDistricts.length > 0 && (
               <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t-2 border-green-80">
                 <p className="font-inter text-green-30 font-semibold text-xs sm:text-sm md:text-base mb-2">Выбранные округа:</p>
