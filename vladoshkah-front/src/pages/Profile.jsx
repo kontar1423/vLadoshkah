@@ -257,28 +257,28 @@ const Profile = ({ isInAdminPanel = false }) => {
 
     return (
         <div className={`min-h-screen ${isInAdminPanel ? 'bg-transparent' : 'bg-green-95'}`}>
-            <div className="max-w-container mx-auto px-4 md:px-8 lg:px-16 py-10">
+            <div className="max-w-container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 py-6 sm:py-8 md:py-10">
                 
-                <div className="flex flex-col lg:flex-row gap-8">
+                <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
                     
                     <main className="flex-1">
                         {shouldShowShelterRegistration && (
-                            <section className="bg-green-90 rounded-custom p-8 mb-8 border-2 border-green-80">
+                            <section className="bg-green-90 rounded-custom p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 border-2 border-green-80">
                                 <div className="text-center">
-                                    <div className="w-20 h-20 bg-green-80 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg className="w-10 h-10 text-green-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-80 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                        <svg className="w-8 h-8 sm:w-10 sm:h-10 text-green-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                         </svg>
                                     </div>
-                                    <h2 className="font-sf-rounded font-bold text-green-30 text-2xl mb-4">
+                                    <h2 className="font-sf-rounded font-bold text-green-30 text-xl sm:text-2xl mb-3 sm:mb-4">
                                         Зарегистрируйте приют
                                     </h2>
-                                    <p className="font-inter text-green-40 text-base mb-6 max-w-md mx-auto">
+                                    <p className="font-inter text-green-40 text-sm sm:text-base mb-4 sm:mb-6 max-w-md mx-auto">
                                         Внесите корректные данные о приюте, чьим представителем вы являетесь
                                     </p>
                                     <button
                                         onClick={handleRegisterShelter}
-                                        className="px-8 py-4 bg-green-70 text-green-100 font-sf-rounded font-semibold text-lg rounded-custom-small hover:bg-green-60 transition-colors shadow-lg"
+                                        className="px-6 sm:px-8 py-3 sm:py-4 bg-green-70 text-green-100 font-sf-rounded font-semibold text-sm sm:text-base md:text-lg rounded-custom-small hover:bg-green-60 transition-colors shadow-lg"
                                     >
                                         Зарегистрировать приют
                                     </button>
@@ -287,27 +287,27 @@ const Profile = ({ isInAdminPanel = false }) => {
                         )}
 
                         {shouldShowShelterManagement && (
-                            <section className="bg-green-90 rounded-custom p-6 mb-8 border-2 border-green-50">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h2 className="font-sf-rounded font-bold text-green-30 text-2xl mb-2">
+                            <section className="bg-green-90 rounded-custom p-4 sm:p-6 mb-6 sm:mb-8 border-2 border-green-50">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                                    <div className="flex-1">
+                                        <h2 className="font-sf-rounded font-bold text-green-30 text-xl sm:text-2xl mb-2">
                                             Ваш приют: {shelterInfo.name}
                                         </h2>
                                         {shelterInfo.address && (
-                                            <p className="font-inter text-green-40 text-sm mt-1">
+                                            <p className="font-inter text-green-40 text-xs sm:text-sm mt-1">
                                                 Адрес: {shelterInfo.address}
                                             </p>
                                         )}
                                         {shelterInfo.rating && (
-                                            <p className="font-inter text-green-40 text-sm mt-1">
+                                            <p className="font-inter text-green-40 text-xs sm:text-sm mt-1">
                                                 Рейтинг: {shelterInfo.rating} ★ ({shelterInfo.total_ratings} оценок)
                                             </p>
                                         )}
                                     </div>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-3 w-full sm:w-auto">
                                         <button
                                             onClick={handleAddPet}
-                                            className="px-6 py-3 bg-green-50 text-green-100 font-sf-rounded font-semibold text-base rounded-custom-small hover:bg-green-60 cursor-pointer transition-colors"
+                                            className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-green-50 text-green-100 font-sf-rounded font-semibold text-sm sm:text-base rounded-custom-small hover:bg-green-60 cursor-pointer transition-colors"
                                         >
                                             + Добавить питомца
                                         </button>
@@ -316,22 +316,22 @@ const Profile = ({ isInAdminPanel = false }) => {
                             </section>
                         )}
 
-                        <section className="flex flex-col items-center gap-6">
-                            <header className="flex items-center justify-between w-full">
-                                <div className="flex items-center gap-4">
-                                    <h1 className="font-sf-rounded font-bold text-green-20 text-2xl md:text-3xl">
+                        <section className="flex flex-col items-center gap-4 sm:gap-6">
+                            <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-3 sm:gap-4">
+                                <div className="flex items-center gap-2 sm:gap-4">
+                                    <h1 className="font-sf-rounded font-bold text-green-20 text-xl sm:text-2xl md:text-3xl">
                                         {shouldShowShelterManagement && activeTab === 'shelter' ? 'Питомцы приюта' : 'Избранные питомцы'}
                                     </h1>
-                                    <span className="px-3 py-1 bg-green-50 text-green-100 font-sf-rounded font-medium text-sm rounded-full">
+                                    <span className="px-2 sm:px-3 py-1 bg-green-50 text-green-100 font-sf-rounded font-medium text-xs sm:text-sm rounded-full">
                                         {shouldShowShelterManagement && activeTab === 'shelter' ? shelterPets.length : favoritePets.length}
                                     </span>
                                 </div>
                                 
                                 {shouldShowShelterManagement && (
-                                    <div className="flex border border-green-80 rounded-custom-small overflow-hidden">
+                                    <div className="flex border border-green-80 rounded-custom-small overflow-hidden w-full sm:w-auto">
                                         <button
                                             onClick={() => setActiveTab('favorites')}
-                                            className={`px-4 py-2 font-sf-rounded font-medium text-sm transition-colors ${
+                                            className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 font-sf-rounded font-medium text-xs sm:text-sm transition-colors ${
                                                 activeTab === 'favorites' 
                                                     ? 'bg-green-50 text-green-100' 
                                                     : 'bg-green-90 text-green-40 hover:bg-green-80'
@@ -341,7 +341,7 @@ const Profile = ({ isInAdminPanel = false }) => {
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('shelter')}
-                                            className={`px-4 py-2 font-sf-rounded font-medium text-sm transition-colors ${
+                                            className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 font-sf-rounded font-medium text-xs sm:text-sm transition-colors ${
                                                 activeTab === 'shelter' 
                                                     ? 'bg-green-50 text-green-100' 
                                                     : 'bg-green-90 text-green-40 hover:bg-green-80'
@@ -366,9 +366,9 @@ const Profile = ({ isInAdminPanel = false }) => {
                         </section>
                     </main>
 
-                    <aside className="lg:w-80 flex flex-col gap-6">
+                    <aside className="w-full lg:w-80 flex flex-col gap-4 sm:gap-6">
                         <div className="relative bg-green-90 rounded-custom overflow-hidden">
-                            <div className="relative h-64">
+                            <div className="relative h-48 sm:h-56 md:h-64">
                                 {profileImage ? (
                                     <>
                                         <img
@@ -386,15 +386,15 @@ const Profile = ({ isInAdminPanel = false }) => {
                                     </div>
                                 )}
                                 
-                                <div className="absolute bottom-6 left-6 right-6">
-                                    <h2 className="font-sf-rounded font-bold text-green-98 text-2xl md:text-3xl">
+                                <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
+                                    <h2 className="font-sf-rounded font-bold text-green-98 text-xl sm:text-2xl md:text-3xl">
                                         {user?.firstname && user?.lastname 
                                             ? `${user.firstname} ${user.lastname}`
                                             : user?.email?.split('@')[0] || 'Пользователь'
                                         }
                                     </h2>
-                                    <div className="inline-flex items-center justify-center gap-2.5 px-4 py-2 bg-green-90/30 rounded-custom-small mt-2">
-                                        <span className="font-sf-rounded font-medium text-green-98 text-sm">
+                                    <div className="inline-flex items-center justify-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-90/30 rounded-custom-small mt-2">
+                                        <span className="font-sf-rounded font-medium text-green-98 text-xs sm:text-sm">
                                             {getUserStatus()}
                                         </span>
                                     </div>

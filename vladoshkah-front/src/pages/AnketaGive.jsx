@@ -223,13 +223,13 @@ const AnketaGive = () => {
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="bg-green-95 rounded-custom p-6 animate-fade-up" style={{ animationDelay: '0.1s' }}>
-                        <h2 className="font-sf-rounded font-bold text-green-30 text-2xl mb-6">
+                <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+                    <div className="bg-green-95 rounded-custom p-4 sm:p-6 animate-fade-up" style={{ animationDelay: '0.1s' }}>
+                        <h2 className="font-sf-rounded font-bold text-green-30 text-xl sm:text-2xl mb-4 sm:mb-6">
                             Основная информация
                         </h2>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div>
                                 <label htmlFor="name" className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
                                     Кличка животного *
@@ -352,19 +352,19 @@ const AnketaGive = () => {
                             </div>
                         </div>
 
-                        <div className="mt-8 pt-6 border-t border-green-80">
-                            <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-4">
+                        <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-green-80">
+                            <h3 className="font-sf-rounded font-bold text-green-30 text-lg sm:text-xl mb-3 sm:mb-4">
                                 Фотографии животного *
                             </h3>
-                            <p className="text-green-40 font-inter text-sm mb-4">
+                            <p className="text-green-40 font-inter text-xs sm:text-sm mb-3 sm:mb-4">
                                 Можно загрузить до 5 фотографий. Обязательно добавьте хотя бы одну.
                             </p>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 <div className="flex flex-col items-center justify-center">
                                     <label 
                                         htmlFor="petPhotos"
-                                        className="w-full h-48 border-2 border-dashed border-green-40 rounded-custom-small flex flex-col items-center justify-center cursor-pointer hover:border-green-50 hover:bg-green-98 transition-colors"
+                                        className="w-full h-40 sm:h-48 border-2 border-dashed border-green-40 rounded-custom-small flex flex-col items-center justify-center cursor-pointer hover:border-green-50 hover:bg-green-98 transition-colors"
                                     >
                                         <div className="text-center">
                                             <div className="w-12 h-12 bg-green-80 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -442,8 +442,8 @@ const AnketaGive = () => {
                         </div>
                     </div>
 
-                    <div className="bg-green-95 rounded-custom p-6 animate-fade-up" style={{ animationDelay: '0.2s' }}>
-                        <h2 className="font-sf-rounded font-bold text-green-30 text-2xl mb-6">
+                    <div className="bg-green-95 rounded-custom p-4 sm:p-6 animate-fade-up" style={{ animationDelay: '0.2s' }}>
+                        <h2 className="font-sf-rounded font-bold text-green-30 text-xl sm:text-2xl mb-4 sm:mb-6">
                             Медицинские данные
                         </h2>
                         
@@ -499,12 +499,12 @@ const AnketaGive = () => {
                         </div>
                     </div>
 
-                    <div className="bg-green-95 rounded-custom p-6 animate-fade-up" style={{ animationDelay: '0.3s' }}>
-                        <h2 className="font-sf-rounded font-bold text-green-30 text-2xl mb-6">
+                    <div className="bg-green-95 rounded-custom p-4 sm:p-6 animate-fade-up" style={{ animationDelay: '0.3s' }}>
+                        <h2 className="font-sf-rounded font-bold text-green-30 text-xl sm:text-2xl mb-4 sm:mb-6">
                             История животного
                         </h2>
                         
-                        <div className="space-y-6">
+                        <div className="space-y-4 sm:space-y-6">
                             <div>
                                 <textarea
                                     id="history"
@@ -519,19 +519,19 @@ const AnketaGive = () => {
                         </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6 animate-fade-up" style={{ animationDelay: '0.5s' }}>
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end pt-4 sm:pt-6 animate-fade-up" style={{ animationDelay: '0.5s' }}>
                         <button
                             type="button"
                             onClick={() => navigate(-1)}
                             disabled={isSubmitting}
-                            className="px-8 py-4 bg-green-80 text-green-40 font-sf-rounded font-semibold text-base rounded-custom-small hover:bg-green-70 transition-colors disabled:opacity-50"
+                            className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-green-80 text-green-40 font-sf-rounded font-semibold text-sm sm:text-base rounded-custom-small hover:bg-green-70 transition-colors disabled:opacity-50"
                         >
                             Назад
                         </button>
                         <button
                             type="submit"
                             disabled={!isFormValid || isSubmitting}
-                            className={`px-8 py-4 font-sf-rounded font-semibold text-base rounded-custom-small transition-all duration-200 ${
+                            className={`w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 font-sf-rounded font-semibold text-sm sm:text-base rounded-custom-small transition-all duration-200 ${
                                 isFormValid && !isSubmitting
                                     ? 'bg-green-50 text-green-100 hover:bg-green-60 active:bg-green-40 shadow-lg hover:shadow-xl cursor-pointer'
                                     : 'bg-green-80 text-green-60 cursor-not-allowed'

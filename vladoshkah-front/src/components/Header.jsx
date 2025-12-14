@@ -16,10 +16,10 @@ export const Header = () => {
   const forceScrollToTop = useForceScroll()
   
   const navigationItems = [
-    { id: 1, label: "Найти питомца", path: "/find-pet" },
-    { id: 2, label: "Помочь", path: null, action: () => setIsHelpModalOpen(true) },
-    { id: 3, label: "Приюты", path: "/shelters" },
-    { id: 4, label: "Отдать животное", path: "/give-animal" },
+    { id: 1, label: "Найти питомца", path: "/find-pet", icon: "🔍" },
+    { id: 2, label: "Помочь", path: null, action: () => setIsHelpModalOpen(true), icon: "❤️" },
+    { id: 3, label: "Приюты", path: "/shelters", icon: "🏠" },
+    { id: 4, label: "Отдать животное", path: "/give-animal", icon: "🐾" },
   ];
 
   const handleRefreshUser = async () => {
@@ -199,7 +199,7 @@ export const Header = () => {
           <nav
             className={`${
               isMenuOpen ? 'flex' : 'hidden'
-            } absolute top-full left-0 right-0 mx-[20px] my-2 bg-green-98 flex-col gap-0 rounded-custom-small z-50 border border-green-80 shadow-lg md:hidden max-h-[calc(100vh-100px)] overflow-y-auto`}
+            } absolute top-full left-0 right-0 mx-[20px] my-2 bg-green-90 flex-col gap-0 rounded-custom-small z-50 border-2 border-green-40 shadow-lg md:hidden max-h-[calc(100vh-100px)] overflow-y-auto`}
             role="navigation"
             aria-label="Mobile navigation"
           >
@@ -209,30 +209,32 @@ export const Header = () => {
                   {item.path ? (
                     <button
                       onClick={() => handleNavButtonClick(item)}
-                      className={`block w-full text-left px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 cursor-pointer hover:bg-green-90 hover:pl-6 ${
-                        index < navigationItems.length - 1 ? 'border-b border-green-80' : ''
+                      className={`flex items-center gap-3 w-full text-left px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 cursor-pointer hover:bg-green-95 hover:pl-6 ${
+                        index < navigationItems.length - 1 ? 'border-b border-green-40' : ''
                       } ${
                         location.pathname === item.path 
                           ? 'text-green-20 font-semibold bg-green-95' 
                           : ''
                       }`}
                     >
-                      {item.label}
+                      <span className="text-xl">{item.icon}</span>
+                      <span>{item.label}</span>
                     </button>
                   ) : (
                     <button
                       onClick={() => handleNavButtonClick(item)}
-                      className={`block w-full text-left px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 cursor-pointer hover:bg-green-90 hover:pl-6 ${
-                        index < navigationItems.length - 1 ? 'border-b border-green-80' : ''
+                      className={`flex items-center gap-3 w-full text-left px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 cursor-pointer hover:bg-green-95 hover:pl-6 ${
+                        index < navigationItems.length - 1 ? 'border-b border-green-40' : ''
                       }`}
                     >
-                      {item.label}
+                      <span className="text-xl">{item.icon}</span>
+                      <span>{item.label}</span>
                     </button>
                   )}
                 </div>
               ))}
             </div>
-            <div className="border-t border-green-80"></div>
+            <div className="border-t border-green-40"></div>
             <div className="px-0 pb-2">
               {!isAuthenticated ? (
                 <>
@@ -244,13 +246,14 @@ export const Header = () => {
                       }
                       setIsMenuOpen(false);
                     }}
-                    className={`block w-full text-left px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 cursor-pointer hover:bg-green-90 hover:pl-6 border-b border-green-80 ${
+                    className={`flex items-center gap-3 w-full text-left px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 cursor-pointer hover:bg-green-95 hover:pl-6 border-b border-green-40 ${
                       location.pathname === '/login' 
                         ? 'text-green-20 font-semibold bg-green-95' 
                         : ''
                     }`}
                   >
-                    Войти
+                    <span className="text-xl">🔑</span>
+                    <span>Войти</span>
                   </div>
                   <div
                     onClick={() => {
@@ -260,18 +263,19 @@ export const Header = () => {
                       }
                       setIsMenuOpen(false);
                     }}
-                    className={`block w-full text-left px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 cursor-pointer hover:bg-green-90 hover:pl-6 ${
+                    className={`flex items-center gap-3 w-full text-left px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 cursor-pointer hover:bg-green-95 hover:pl-6 ${
                       location.pathname === '/register' 
                         ? 'text-green-20 font-semibold bg-green-95' 
                         : ''
                     }`}
                   >
-                    Зарегистрироваться
+                    <span className="text-xl">📝</span>
+                    <span>Зарегистрироваться</span>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="px-4 py-3 bg-green-95 border-b border-green-80">
+                  <div className="px-4 py-3 bg-green-95 border-b border-green-40">
                     <p className="text-green-30 font-semibold text-sm">{getUserDisplayName()}</p>
                     <p className="text-green-40 text-xs">{getUserRoleDisplay()}</p>
                   </div>
@@ -285,7 +289,7 @@ export const Header = () => {
                         }
                         setIsMenuOpen(false);
                       }}
-                      className={`flex items-center gap-3 px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 cursor-pointer hover:bg-green-90 hover:pl-6 border-b border-green-80 ${
+                      className={`flex items-center gap-3 px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 cursor-pointer hover:bg-green-95 hover:pl-6 border-b border-green-40 ${
                         location.pathname === '/profile' 
                           ? 'text-green-20 font-semibold bg-green-95' 
                           : ''
@@ -307,7 +311,7 @@ export const Header = () => {
                         }
                         setIsMenuOpen(false);
                       }}
-                      className={`flex items-center gap-3 px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 cursor-pointer hover:bg-green-90 hover:pl-6 border-b border-green-80 ${
+                      className={`flex items-center gap-3 px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 cursor-pointer hover:bg-green-95 hover:pl-6 border-b border-green-40 ${
                         location.pathname === '/profile' 
                           ? 'text-green-20 font-semibold bg-green-95' 
                           : ''
@@ -324,7 +328,7 @@ export const Header = () => {
                   
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 w-full text-left px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 hover:bg-green-90 hover:pl-6"
+                    className="flex items-center gap-3 w-full text-left px-4 py-3 text-green-30 font-inter font-medium transition-all duration-300 hover:bg-green-95 hover:pl-6"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

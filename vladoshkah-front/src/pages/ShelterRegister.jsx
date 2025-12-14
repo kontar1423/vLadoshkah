@@ -216,19 +216,19 @@ const ShelterRegister = () => {
 
     return (
         <>
-        <div className="min-h-screen bg-green-95 flex items-center justify-center px-4 py-10">
-            <div className="w-full max-w-6xl bg-green-95 rounded-custom p-8">
-                <div className="flex flex-col lg:flex-row gap-8">
+        <div className="min-h-screen bg-green-95 flex items-center justify-center px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-10">
+            <div className="w-full max-w-6xl bg-green-95 rounded-custom p-4 sm:p-6 md:p-8">
+                <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
                     <div className="lg:w-2/3">
-                        <h1 className="text-green-30 font-sf-rounded font-bold text-3xl md:text-4xl lg:text-5xl mb-2">
+                        <h1 className="text-green-30 font-sf-rounded font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-2">
                             Регистрация приюта
                         </h1>
-                        <p className="text-green-40 font-inter font-medium text-base md:text-lg mb-8">
+                        <p className="text-green-40 font-inter font-medium text-sm sm:text-base md:text-lg mb-6 sm:mb-8">
                             Заполните информацию о вашем приюте
                         </p>
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 <div>
                                     <label className="block text-green-40 font-inter font-medium text-sm md:text-base mb-2">
                                         Название приюта *
@@ -388,11 +388,11 @@ const ShelterRegister = () => {
                     </div>
 
                     <div className="lg:w-1/3">
-                        <div className="bg-green-95 rounded-custom p-6 h-full">
-                            <h3 className="text-green-30 font-sf-rounded font-bold text-xl mb-4">
+                        <div className="bg-green-95 rounded-custom p-4 sm:p-6 h-full">
+                            <h3 className="text-green-30 font-sf-rounded font-bold text-lg sm:text-xl mb-3 sm:mb-4">
                                 Фотографии приюта
                             </h3>
-                            <p className="text-green-40 font-inter text-sm mb-6">
+                            <p className="text-green-40 font-inter text-xs sm:text-sm mb-4 sm:mb-6">
                                 Добавьте фотографии вашего приюта (минимум 1 фото)
                             </p>
 

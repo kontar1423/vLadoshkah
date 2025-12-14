@@ -74,7 +74,7 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
         const mobileCardWidthClass = isHomePage
             ? (isTablet ? 'max-w-[360px]' : 'max-w-[320px]')
             : (isTablet ? 'max-w-[300px]' : 'max-w-[230px]');
-        const mobileCardShiftClass = isHomePage && !isTablet ? 'translate-x-6' : '';
+        const mobileCardShiftClass = '';
         const arrowOffsetLeft = isHomePage ? '-left-8' : isTablet ? '-left-10' : '-left-12';
         const arrowOffsetRight = isHomePage ? '-right-8' : isTablet ? '-right-10' : '-right-12';
         const arrowSizeClass = isHomePage || isTablet ? 'w-11 h-11' : 'w-10 h-10';
@@ -84,7 +84,7 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
             <div className={`relative w-full ${mobileContainerClass} mx-auto px-2 pt-4 pb-8`}>
                 <div className={`relative overflow-visible flex items-center justify-center ${mobileMinHeightClass}`}>
                     <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center w-full">
-                        <div className={`w-full ${mobileCardWidthClass} ${mobileCardShiftClass}`}>
+                        <div className={`w-full ${mobileCardWidthClass} mx-auto`}>
                             <PetCard 
                                 petData={currentPet} 
                                 initialFavorite={favoritesMap[currentPet.id] === true}

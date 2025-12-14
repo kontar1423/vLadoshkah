@@ -61,17 +61,18 @@
     if (isCompactLayout && shelters.length > 0) {
         const currentShelter = shelters[currentIndex];
         const isTablet = !isMobile;
-        const containerWidthClass = isTablet ? 'max-w-[320px]' : 'max-w-[230px]';
-        const minHeightClass = isTablet ? 'min-h-[420px]' : 'min-h-[340px]';
+        const containerWidthClass = isTablet ? 'max-w-[320px]' : 'max-w-[200px]';
+        const cardWidthClass = isTablet ? 'max-w-[320px]' : 'max-w-[200px]';
+        const minHeightClass = isTablet ? 'min-h-[420px]' : 'min-h-[280px]';
         const arrowOffset = isTablet ? '-left-10' : '-left-12';
         const arrowSizeClass = isTablet ? 'w-11 h-11' : 'w-10 h-10';
         const arrowIconSize = isTablet ? 'w-5 h-5' : 'w-4 h-4';
 
         return (
             <div className={`relative w-full ${containerWidthClass} mx-auto px-2`}>
-                <div className={`relative overflow-hidden flex items-center justify-center ${minHeightClass}`}>
+                <div className={`relative overflow-visible flex items-center justify-center ${minHeightClass}`}>
                     <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center w-full">
-                        <div className={`w-full ${containerWidthClass}`}>
+                        <div className={`w-full ${cardWidthClass} mx-auto`}>
                             <MiniShelterCard shelter={currentShelter} />
                         </div>
                     </div>

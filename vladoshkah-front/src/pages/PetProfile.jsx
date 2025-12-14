@@ -502,11 +502,11 @@ const PetProfile = () => {
     const hasMultiplePhotos = availablePhotos.length > 1;
 
     return (
-        <div className="min-h-screen bg-green-95 py-10">
+        <div className="min-h-screen bg-green-95 py-4 sm:py-6 md:py-10">
             <div className="max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px]">
-                <div className="flex flex-col lg:flex-row gap-8 items-start">
-                <div className="lg:w-1/3">
-                    <article className="flex flex-col items-start gap-6 bg-green-95 rounded-custom p-6">
+                <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 md:gap-8 items-start">
+                <div className="w-full lg:w-1/3">
+                    <article className="flex flex-col items-start gap-4 sm:gap-6 bg-green-95 rounded-custom p-4 sm:p-6">
                     <div className="w-full aspect-[1.01] rounded-custom overflow-hidden relative group">
                         {currentPhotoUrl ? (
                             <>
@@ -526,27 +526,27 @@ const PetProfile = () => {
                                     <>
                                         <button
                                             onClick={handlePreviousPhoto}
-                                            className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200"
+                                            className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200"
                                             aria-label="Предыдущее фото"
                                             title="Предыдущее фото"
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                             </svg>
                                         </button>
                                         
                                         <button
                                             onClick={handleNextPhoto}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200"
+                                            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200"
                                             aria-label="Следующее фото"
                                             title="Следующее фото"
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                             </svg>
                                         </button>
                                         
-                                        <div className="absolute bottom-20 right-4 z-10 px-3 py-1.5 bg-black/50 text-white text-sm rounded-full backdrop-blur-sm">
+                                        <div className="absolute bottom-16 sm:bottom-20 right-3 sm:right-4 z-10 px-2 sm:px-3 py-1 sm:py-1.5 bg-black/50 text-white text-xs sm:text-sm rounded-full backdrop-blur-sm">
                                             {currentPhotoIndex + 1} / {availablePhotos.length}
                                         </div>
                                     </>
@@ -572,16 +572,16 @@ const PetProfile = () => {
                         </div>
                         
                         <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-green-95 to-transparent"></div>
-                        <div className="absolute bottom-6 left-6 right-6">
-                            <div className="flex items-center gap-4">
-                                <div className="px-4 py-2 bg-green-90 rounded-full">
-                                    <h2 className="font-sf-rounded font-bold text-green-20 text-2xl">
+                        <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
+                            <div className="flex items-center gap-2 sm:gap-4">
+                                <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-90 rounded-full">
+                                    <h2 className="font-sf-rounded font-bold text-green-20 text-lg sm:text-xl md:text-2xl">
                                         {currentPet.name}
                                     </h2>
                                 </div>
                                 
-                                <div className="flex w-11 h-11 items-center justify-center bg-green-90/80 rounded-[100px] backdrop-blur-sm">
-                                    <span className="text-green-20 text-sm font-semibold">
+                                <div className="flex w-9 h-9 sm:w-11 sm:h-11 items-center justify-center bg-green-90/80 rounded-[100px] backdrop-blur-sm">
+                                    <span className="text-green-20 text-xs sm:text-sm font-semibold">
                                         {currentPet.gender === "male" ? "♂" : "♀"}
                                     </span>
                                 </div>
@@ -590,15 +590,15 @@ const PetProfile = () => {
                     </div>
 
                     {(petInfo.length > 0 || petDetails.length > 0) && (
-                        <div className="flex flex-col gap-4 w-full">
+                        <div className="flex flex-col gap-3 sm:gap-4 w-full">
                             {petInfo.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                     {petInfo.map((info) => (
                                         <div
                                             key={info.id}
-                                            className="inline-flex items-center justify-center gap-2.5 py-2 px-3 bg-green-70 rounded-[100px]"
+                                            className="inline-flex items-center justify-center gap-1.5 sm:gap-2.5 py-1.5 sm:py-2 px-2 sm:px-3 bg-green-70 rounded-[100px]"
                                         >
-                                            <div className="relative w-fit font-inter font-semibold text-green-98 text-lg tracking-[0]">
+                                            <div className="relative w-fit font-inter font-semibold text-green-98 text-sm sm:text-base md:text-lg tracking-[0]">
                                                 {info.text}
                                             </div>
                                         </div>
@@ -607,13 +607,13 @@ const PetProfile = () => {
                             )}
 
                             {petDetails.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                     {petDetails.map((detail) => (
                                         <div
                                             key={detail.id}
-                                            className="inline-flex items-center justify-center gap-2.5 py-2 px-3 bg-green-70 rounded-[100px]"
+                                            className="inline-flex items-center justify-center gap-1.5 sm:gap-2.5 py-1.5 sm:py-2 px-2 sm:px-3 bg-green-70 rounded-[100px]"
                                         >
-                                            <div className="text-green-98 relative w-fit font-inter font-semibold text-lg tracking-[0]">
+                                            <div className="text-green-98 relative w-fit font-inter font-semibold text-sm sm:text-base md:text-lg tracking-[0]">
                                                 {detail.text}
                                             </div>
                                         </div>
@@ -623,21 +623,21 @@ const PetProfile = () => {
                         </div>
                     )}
 
-                    <div className="w-full space-y-3">
-                        <div className="bg-green-90 rounded-custom-small p-4">
-                            <h4 className="font-inter font-semibold text-green-30 text-sm mb-2">
+                    <div className="w-full space-y-2 sm:space-y-3">
+                        <div className="bg-green-90 rounded-custom-small p-3 sm:p-4">
+                            <h4 className="font-inter font-semibold text-green-30 text-xs sm:text-sm mb-1.5 sm:mb-2">
                                 Характер
                             </h4>
-                            <p className="text-green-20 text-sm font-inter">
+                            <p className="text-green-20 text-xs sm:text-sm font-inter">
                                 {currentPet.personality}
                             </p>
                         </div>
 
-                        <div className="bg-green-90 rounded-custom-small p-4">
-                            <h4 className="font-inter font-semibold text-green-30 text-sm mb-2">
+                        <div className="bg-green-90 rounded-custom-small p-3 sm:p-4">
+                            <h4 className="font-inter font-semibold text-green-30 text-xs sm:text-sm mb-1.5 sm:mb-2">
                                 Состояние здоровья
                             </h4>
-                            <p className="text-green-20 text-sm font-inter">
+                            <p className="text-green-20 text-xs sm:text-sm font-inter">
                                 {getHealthDisplay(currentPet.health)}
                             </p>
                         </div>
@@ -645,18 +645,18 @@ const PetProfile = () => {
                     </article>
                 </div>
 
-                <div className="lg:w-2/3">
-                    <section className="flex flex-col items-start justify-center gap-4 mb-6">
-                        <div className="flex items-center justify-center p-6 relative self-stretch w-full bg-green-90 rounded-custom">
-                            <p className="flex-1 font-inter font-regular text-green-20 text-[16px] leading-relaxed whitespace-pre-line">
+                <div className="w-full lg:w-2/3">
+                    <section className="flex flex-col items-start justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                        <div className="flex items-center justify-center p-4 sm:p-6 relative self-stretch w-full bg-green-90 rounded-custom">
+                            <p className="flex-1 font-inter font-regular text-green-20 text-sm sm:text-base leading-relaxed whitespace-pre-line">
                                 {currentPet.description}
                             </p>
                         </div>
                     </section>
 
-                    <section className="flex flex-col items-start justify-center gap-4 mb-8">
-                        <div className="flex items-center justify-between p-6 relative self-stretch w-full bg-green-90 rounded-custom">
-                            <address className="flex-1 font-inter font-semibold text-green-20 text-[16px] leading-relaxed not-italic">
+                    <section className="flex flex-col items-start justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 relative self-stretch w-full bg-green-90 rounded-custom gap-3 sm:gap-4">
+                            <address className="flex-1 font-inter font-semibold text-green-20 text-sm sm:text-base leading-relaxed not-italic">
                                 {shelterData?.name || currentPet.shelter_name}
                                 <br />
                                 {shelterData?.address || 'Адрес не указан'}
@@ -676,36 +676,36 @@ const PetProfile = () => {
 
                             <Link
                                 to={`/shelter/${currentPet.shelter_id}`}
-                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-70 rounded-custom-small hover:bg-green-60 transition-colors"
+                                className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-green-70 rounded-custom-small hover:bg-green-60 transition-colors w-full sm:w-auto"
                                 aria-label="Перейти к профилю приюта"
                             >
-                                <span className="font-inter font-medium text-green-98 text-[16px]">
+                                <span className="font-inter font-medium text-green-98 text-sm sm:text-base">
                                     К приюту
                                 </span>
                             </Link>
                         </div>
                     </section>
                                         
-                    <section className="flex flex-col items-start justify-center gap-4 mb-6">
-                        <div className="flex flex-col items-start p-6 relative self-stretch w-full bg-green-90 rounded-custom gap-4">
+                    <section className="flex flex-col items-start justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                        <div className="flex flex-col items-start p-4 sm:p-6 relative self-stretch w-full bg-green-90 rounded-custom gap-3 sm:gap-4">
                             <div className="w-full">
-                                <h3 className="font-inter font-semibold text-green-30 text-lg mb-2">
+                                <h3 className="font-inter font-semibold text-green-30 text-base sm:text-lg mb-2">
                                     Хотите забрать {currentPet.name} домой?
                                 </h3>
-                                <p className="text-green-40 font-inter text-sm">
+                                <p className="text-green-40 font-inter text-xs sm:text-sm">
                                     Подайте заявку на усыновление и приют свяжется с вами для обсуждения деталей
                                 </p>
                             </div>
                             
-                            <div className="w-2/3 mx-auto">
+                            <div className="w-full sm:w-2/3 mx-auto">
                                 {checkingApplicationStatus ? (
-                                    <div className="w-full px-8 py-2 bg-green-70 text-green-40 font-sf-rounded font-semibold rounded-custom-small opacity-50 text-lg text-center">
+                                    <div className="w-full px-4 sm:px-8 py-2 bg-green-70 text-green-40 font-sf-rounded font-semibold rounded-custom-small opacity-50 text-sm sm:text-base md:text-lg text-center">
                                         Проверка...
                                     </div>
                                 ) : isApplied ? (
                                     <button
                                         disabled
-                                        className="w-full px-8 py-2 bg-green-70 text-green-40 font-sf-rounded font-semibold rounded-custom-small cursor-not-allowed opacity-75 text-lg text-center"
+                                        className="w-full px-4 sm:px-8 py-2 bg-green-70 text-green-40 font-sf-rounded font-semibold rounded-custom-small cursor-not-allowed opacity-75 text-sm sm:text-base md:text-lg text-center"
                                         aria-disabled="true"
                                     >
                                         ✓ Заявка отправлена
@@ -717,7 +717,7 @@ const PetProfile = () => {
                                             e.preventDefault();
                                             e.stopPropagation();
                                         }}
-                                        className="w-full px-8 py-2 bg-green-70 text-green-40 font-sf-rounded font-semibold rounded-custom-small cursor-not-allowed opacity-75 text-lg text-center pointer-events-none"
+                                        className="w-full px-4 sm:px-8 py-2 bg-green-70 text-green-40 font-sf-rounded font-semibold rounded-custom-small cursor-not-allowed opacity-75 text-sm sm:text-base md:text-lg text-center pointer-events-none"
                                         aria-disabled="true"
                                     >
                                         Питомца уже хотят забрать
@@ -725,7 +725,7 @@ const PetProfile = () => {
                                 ) : (
                                     <button
                                         onClick={handleAdoptClick}
-                                        className="w-full px-8 py-2 bg-green-70 text-green-100 font-sf-rounded font-semibold rounded-custom-small hover:bg-green-60 active:bg-green-40 shadow-lg hover:shadow-xl transition-all duration-200 text-lg text-center"
+                                        className="w-full px-4 sm:px-8 py-2 bg-green-70 text-green-100 font-sf-rounded font-semibold rounded-custom-small hover:bg-green-60 active:bg-green-40 shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base md:text-lg text-center"
                                     >
                                         Хочу забрать к себе
                                     </button>
@@ -735,14 +735,14 @@ const PetProfile = () => {
                     </section>
 
                     {similarPets.length > 0 && (
-                        <section className="flex flex-col items-center gap-4 relative self-stretch">
-                            <div className="flex items-center gap-[25px] relative self-stretch w-full mb-6">
-                                <h2 className="w-fit font-sf-rounded font-bold text-green-20 text-2xl">
+                        <section className="flex flex-col items-center gap-3 sm:gap-4 relative self-stretch">
+                            <div className="flex items-center gap-[25px] relative self-stretch w-full mb-4 sm:mb-6">
+                                <h2 className="w-fit font-sf-rounded font-bold text-green-20 text-xl sm:text-2xl">
                                     Похожие питомцы
                                 </h2>
                             </div>
 
-                            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-6 lg:gap-8 w-full">
+                            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-4 lg:gap-6 w-full">
                                 {similarPets.map((pet) => (
                                     <PetCard 
                                         key={pet.id}

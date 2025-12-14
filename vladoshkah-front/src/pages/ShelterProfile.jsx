@@ -695,9 +695,9 @@ const ShelterProfile = () => {
         onReset={handleResetFilters}
       />
 
-      <div className="max-w-container mx-auto px-4 space-y-8">
-        <div className="relative w-full max-w-[1260px] h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row">
-          <div className="relative w-full md:w-[350px] h-[180px] md:h-full flex-shrink-0">
+      <div className="max-w-container mx-auto px-4 sm:px-6 md:px-8 space-y-6 sm:space-y-8">
+        <div className="relative w-full max-w-[1260px] h-[250px] sm:h-[300px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row">
+          <div className="relative w-full md:w-[350px] h-[150px] sm:h-[180px] md:h-full flex-shrink-0">
             <img 
               src={shelterData.photoUrl || PriutPhoto} 
               alt={shelterData.name}
@@ -719,18 +719,18 @@ const ShelterProfile = () => {
             <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-green-90 to-transparent hidden md:block"></div>
           </div>
 
-          <div className="flex-1 flex flex-col p-4 md:p-6 md:pl-6 md:pr-6 relative h-full">
+          <div className="flex-1 flex flex-col p-3 sm:p-4 md:p-6 md:pl-6 md:pr-6 relative h-full">
             {shelterData.acceptsAnimalsFromOwners && (
-              <div className="absolute top-4 right-4 md:right-4 bg-green-90 bg-opacity-90 border-2 border-green-30 rounded-custom-small px-2 py-1.5 md:px-3 md:py-2 backdrop-blur-sm max-w-[140px] sm:max-w-[160px] md:max-w-[200px] z-10">
-                <span className="font-inter font-medium text-green-30 text-[10px] sm:text-xs md:text-sm leading-tight break-words">
+              <div className="absolute top-2 sm:top-3 md:top-4 right-2 sm:right-3 md:right-4 bg-green-90 bg-opacity-90 border-2 border-green-30 rounded-custom-small px-2 py-1 sm:py-1.5 md:px-3 md:py-2 backdrop-blur-sm max-w-[120px] sm:max-w-[160px] md:max-w-[200px] z-10">
+                <span className="font-inter font-medium text-green-30 text-[9px] sm:text-xs md:text-sm leading-tight break-words">
                   Поддерживает возможность отдать питомца
                 </span>
               </div>
             )}
 
-            <div className="w-full flex-1 flex flex-col min-h-0 overflow-hidden pb-20">
-              <header className="inline-flex flex-col items-start relative mb-3 md:mb-4 w-full pr-[150px] sm:pr-[180px] md:pr-[260px] flex-shrink-0">
-                <h1 className="w-fit font-sf-rounded font-bold text-2xl md:text-4xl text-green-30 mb-2">
+            <div className="w-full flex-1 flex flex-col min-h-0 overflow-hidden pb-12 sm:pb-16 md:pb-20">
+              <header className="inline-flex flex-col items-start relative mb-2 sm:mb-3 md:mb-4 w-full pr-[100px] sm:pr-[150px] md:pr-[260px] flex-shrink-0">
+                <h1 className="w-fit font-sf-rounded font-bold text-xl sm:text-2xl md:text-3xl lg:text-4xl text-green-30 mb-2">
                   {shelterData.name}
                 </h1>
 
@@ -744,8 +744,8 @@ const ShelterProfile = () => {
                 </div>
               </header>
 
-              <div className="flex-1 overflow-y-auto pr-2 min-h-0">
-                <p className="font-inter font-medium text-green-30 text-sm md:text-base leading-relaxed mb-4">
+              <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 min-h-0">
+                <p className="font-inter font-medium text-green-30 text-xs sm:text-sm md:text-base leading-relaxed mb-3 sm:mb-4">
                   {shelterData.description}
                 </p>
 
@@ -779,12 +779,12 @@ const ShelterProfile = () => {
               </div>
             </div>
 
-            <div className="absolute bottom-4 md:bottom-6 left-4 md:left-6 right-4 md:right-6 w-auto">
+            <div className="absolute bottom-3 sm:bottom-4 md:bottom-6 left-3 sm:left-4 md:left-6 right-3 sm:right-4 md:right-6 w-auto">
               <button
-                className="all-[unset] box-border flex h-11 items-center justify-center gap-2 px-6 py-3 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer w-full"
+                className="all-[unset] box-border flex h-10 sm:h-11 items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer w-full"
                 onClick={scrollToMap}
               >
-                <span className="relative w-fit font-inter font-medium text-green-20 text-base">
+                <span className="relative w-fit font-inter font-medium text-green-20 text-sm sm:text-base">
                   Показать на карте
                 </span>
               </button>
@@ -793,10 +793,10 @@ const ShelterProfile = () => {
         </div>
 
         <div className="w-full max-w-[1260px] mx-auto">
-          <div className="bg-green-90 rounded-custom p-6 border-2 border-green-70">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-              <div className="flex-1">
-                <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-4">
+          <div className="bg-green-90 rounded-custom p-4 sm:p-6 border-2 border-green-70">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-6">
+              <div className="flex-1 w-full">
+                <h3 className="font-sf-rounded font-bold text-green-30 text-lg sm:text-xl mb-3 sm:mb-4">
                   Оцените приют
                 </h3>
                 
@@ -852,10 +852,10 @@ const ShelterProfile = () => {
           </div>
         </div>
 
-        <section className="bg-green-95 rounded-custom p-6 w-full max-w-[1160px] mx-auto">
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-6 w-full">
+        <section className="bg-green-95 rounded-custom p-4 sm:p-6 w-full max-w-[1160px] mx-auto">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-4 sm:gap-6 w-full">
             <div className="w-full lg:w-auto text-center lg:text-left">
-              <span className="font-sf-rounded font-bold text-green-30 text-2xl md:text-4xl">
+              <span className="font-sf-rounded font-bold text-green-30 text-xl sm:text-2xl md:text-3xl lg:text-4xl">
                 <strong className="text-green-30">{animalCount}</strong> питомцев
               </span>
             </div>
@@ -882,20 +882,20 @@ const ShelterProfile = () => {
           </div>
         </section>
 
-        <div className="flex flex-wrap items-center gap-2.5 p-[15px] relative bg-green-90 rounded-custom w-full max-w-[1260px] mx-auto">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 p-3 sm:p-[15px] relative bg-green-90 rounded-custom w-full max-w-[1260px] mx-auto">
           <button
             onClick={() => setShowFilters(true)}
-            className="inline-flex items-center justify-center gap-2.5 px-4 py-2 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer"
           >
             <svg 
-              className="relative w-6 h-6 aspect-[1] text-green-20"
+              className="relative w-5 h-5 sm:w-6 sm:h-6 aspect-[1] text-green-20"
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
             </svg>
-            <span className="relative w-fit mt-[-1.00px] font-inter font-medium text-green-20 text-base">
+            <span className="relative w-fit mt-[-1.00px] font-inter font-medium text-green-20 text-sm sm:text-base">
               Фильтры
             </span>
           </button>

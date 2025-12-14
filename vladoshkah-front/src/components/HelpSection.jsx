@@ -37,7 +37,7 @@ const HelpSection = ({ isOpen, onClose }) => {
             />
             
             <div 
-                className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999] bg-green-90 overflow-hidden w-full max-w-2xl rounded-2xl shadow-xl"
+                className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999] bg-green-90 overflow-hidden w-[90%] max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl rounded-2xl shadow-xl"
                 onClick={handleContentClick}
             >
                 <button
@@ -50,7 +50,7 @@ const HelpSection = ({ isOpen, onClose }) => {
                     </svg>
                 </button>
 
-                <div className="py-8 px-6 sm:px-8 relative">
+                <div className="py-4 sm:py-6 md:py-8 px-4 sm:px-6 md:px-8 relative max-h-[90vh] overflow-y-auto">
                     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
                         <div className="absolute w-64 h-64 -top-32 -right-32 bg-green-80 rounded-full opacity-20"></div>
                         <div className="absolute w-48 h-48 -bottom-24 -left-24 bg-green-70 rounded-full opacity-15"></div>

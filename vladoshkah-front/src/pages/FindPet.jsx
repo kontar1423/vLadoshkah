@@ -427,21 +427,21 @@ const FindPet = () => {
           </div>
         </section>
 
-        <section className="mt-8 md:mt-16 max-w-[1160px] mx-auto mb-28 px-4 md:px-0">
-          <div className="relative w-full bg-green-90 rounded-custom overflow-hidden p-6 md:p-8 lg:p-12">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-green-80 rounded-full -translate-y-32 translate-x-32 opacity-50"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-green-70 rounded-full translate-y-24 -translate-x-24 opacity-30"></div>
+        <section className="mt-6 sm:mt-8 md:mt-16 max-w-[1160px] mx-auto mb-16 sm:mb-20 md:mb-28 px-4 md:px-0">
+          <div className="relative w-full bg-green-90 rounded-custom overflow-hidden p-4 sm:p-6 md:p-8 lg:p-12">
+            <div className="absolute top-0 right-0 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 bg-green-80 rounded-full -translate-y-16 sm:-translate-y-24 md:-translate-y-32 translate-x-16 sm:translate-x-24 md:translate-x-32 opacity-50"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-36 sm:h-36 md:w-48 md:h-48 bg-green-70 rounded-full translate-y-12 sm:translate-y-18 md:translate-y-24 -translate-x-12 sm:-translate-x-18 md:-translate-x-24 opacity-30"></div>
             
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-6 md:gap-8">
               <div className="relative w-full lg:w-auto">
-                <div className="relative bg-green-40 rounded-[40px] p-6 md:p-8 transform -rotate-2 shadow-2xl">
+                <div className="relative bg-green-40 rounded-[40px] p-4 sm:p-6 md:p-8 transform -rotate-2 shadow-2xl">
                   <div className="transform rotate-2">
-                    <h3 className="font-sf-rounded font-bold text-green-95 text-xl sm:text-2xl md:text-3xl lg:text-4xl text-center">
+                    <h3 className="font-sf-rounded font-bold text-green-95 text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl text-center">
                       более {allPets.length} животных<br />ищут свой дом!
                     </h3>
                   </div>
-                  <div className="absolute -top-2 -left-2 w-6 h-6 bg-green-60 rounded-full"></div>
-                  <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-green-80 rounded-full"></div>
+                  <div className="absolute -top-2 -left-2 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-green-60 rounded-full"></div>
+                  <div className="absolute -bottom-2 -right-2 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 bg-green-80 rounded-full"></div>
                 </div>
               </div>
 
@@ -457,11 +457,11 @@ const FindPet = () => {
                         className="w-full px-4 py-3 bg-green-95 border-2 border-green-40 rounded-custom font-inter text-green-40 placeholder-green-40 focus:outline-none focus:border-green-40 relative z-10"
                         disabled={loading}
                       />
-                      <div className="absolute -left-16 md:-left-20 lg:-left-24 top-1/2 transform -translate-y-1/2 animate-bounce pointer-events-none z-0">
+                      <div className="absolute -left-12 sm:-left-16 md:-left-20 lg:-left-24 top-1/2 transform -translate-y-1/2 animate-bounce pointer-events-none z-0 hidden sm:block">
                         <img 
                           src={miniPes} 
                           alt="Собака" 
-                          className="w-32 h-32 md:w-40 md:h-44 object-contain" 
+                          className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-44 object-contain" 
                         />
                       </div>
                     </div>
@@ -489,18 +489,18 @@ const FindPet = () => {
                 </div>
 
                 {activeFilterLabels && activeFilterLabels.length > 0 && (
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <div className="bg-green-80 rounded-custom-small px-3 py-1 inline-block">
-                      <span className="font-inter text-green-30 text-sm font-medium">
+                  <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <div className="bg-green-80 rounded-custom-small px-2 sm:px-3 py-1 inline-block">
+                      <span className="font-inter text-green-30 text-xs sm:text-sm font-medium">
                         Активные фильтры:
                       </span>
                     </div>
                     {activeFilterLabels.map((filterLabel, index) => (
                       <div 
                         key={index}
-                        className="bg-green-70 rounded-custom-small px-3 py-1 flex items-center gap-2"
+                        className="bg-green-70 rounded-custom-small px-2 sm:px-3 py-1 flex items-center gap-1.5 sm:gap-2"
                       >
-                        <span className="font-inter text-green-20 text-sm">
+                        <span className="font-inter text-green-20 text-xs sm:text-sm">
                           {filterLabel}
                         </span>
                         <button
@@ -523,7 +523,7 @@ const FindPet = () => {
                           className="text-green-40 hover:text-green-30 transition-colors"
                           aria-label={`Удалить фильтр ${filterLabel}`}
                         >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
@@ -531,7 +531,7 @@ const FindPet = () => {
                     ))}
                     <button
                       onClick={handleResetFilters}
-                      className="text-green-60 hover:text-green-40 transition-colors font-inter text-sm underline"
+                      className="text-green-60 hover:text-green-40 transition-colors font-inter text-xs sm:text-sm underline"
                       aria-label="Сбросить все фильтры"
                     >
                       Сбросить все
@@ -543,10 +543,10 @@ const FindPet = () => {
           </div>
         </section>
 
-        <section id="pets-section" className="w-full max-w-[1260px] mx-auto pt-2 pb-6 sm:pt-6 sm:pb-10 md:py-30 mb-10 md:mb-25 px-4 md:px-0">
-          <div className="mb-6 flex justify-center sm:justify-start">
-            <div className="bg-green-90 rounded-custom-small px-6 py-3 inline-block">
-              <span className="font-inter font-medium text-green-30">
+        <section id="pets-section" className="w-full max-w-[1260px] mx-auto pt-2 pb-6 sm:pt-6 sm:pb-10 md:py-30 mb-8 sm:mb-10 md:mb-25 px-4 md:px-0">
+          <div className="mb-4 sm:mb-6 flex justify-center sm:justify-start">
+            <div className="bg-green-90 rounded-custom-small px-4 sm:px-6 py-2 sm:py-3 inline-block">
+              <span className="font-inter font-medium text-green-30 text-sm sm:text-base">
                 {`Найдено ${filteredPets.length} питомцев${searchTerm ? ` по запросу "${searchTerm}"` : ''}`}
               </span>
             </div>

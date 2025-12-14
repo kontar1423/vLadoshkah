@@ -212,26 +212,26 @@ const AddPetToShelter = () => {
     }
 
     return (
-        <div className="min-h-screen bg-green-95 py-8 px-4">
+        <div className="min-h-screen bg-green-95 py-4 sm:py-6 md:py-8 px-4 sm:px-6 md:px-8">
             <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-8">
-                    <h1 className="font-sf-rounded font-bold text-green-30 text-3xl mb-2">
+                <div className="text-center mb-6 sm:mb-8">
+                    <h1 className="font-sf-rounded font-bold text-green-30 text-2xl sm:text-3xl md:text-4xl mb-2">
                         Добавление питомца в приют
                     </h1>
-                    <p className="font-inter text-green-40 text-lg">
+                    <p className="font-inter text-green-40 text-sm sm:text-base md:text-lg">
                         Приют: {shelterInfo.name}
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="bg-green-95 rounded-custom p-6">
-                        <h2 className="font-sf-rounded font-bold text-green-30 text-2xl mb-6">
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                    <div className="bg-green-95 rounded-custom p-4 sm:p-6">
+                        <h2 className="font-sf-rounded font-bold text-green-30 text-xl sm:text-2xl mb-4 sm:mb-6">
                             Основная информация
                         </h2>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                <label className="block text-green-40 font-inter font-medium text-xs sm:text-sm mb-2">
                                     Кличка животного *
                                 </label>
                                 <input
@@ -245,7 +245,7 @@ const AddPetToShelter = () => {
                             </div>
 
                             <div>
-                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                <label className="block text-green-40 font-inter font-medium text-xs sm:text-sm mb-2">
                                     Вид животного *
                                 </label>
                                 <select
@@ -267,7 +267,7 @@ const AddPetToShelter = () => {
                             </div>
 
                             <div>
-                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                <label className="block text-green-40 font-inter font-medium text-xs sm:text-sm mb-2">
                                     Порода
                                 </label>
                                 <input
@@ -280,7 +280,7 @@ const AddPetToShelter = () => {
                             </div>
 
                             <div>
-                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                <label className="block text-green-40 font-inter font-medium text-xs sm:text-sm mb-2">
                                     Пол *
                                 </label>
                                 <select
@@ -297,7 +297,7 @@ const AddPetToShelter = () => {
                             </div>
 
                             <div>
-                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                <label className="block text-green-40 font-inter font-medium text-xs sm:text-sm mb-2">
                                     Цвет
                                 </label>
                                 <input
@@ -311,7 +311,7 @@ const AddPetToShelter = () => {
                             </div>
 
                             <div>
-                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                <label className="block text-green-40 font-inter font-medium text-xs sm:text-sm mb-2">
                                     Возраст (лет) *
                                 </label>
                                 <input
@@ -327,7 +327,7 @@ const AddPetToShelter = () => {
                             </div>
 
                             <div>
-                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                <label className="block text-green-40 font-inter font-medium text-xs sm:text-sm mb-2">
                                     Состояние здоровья *
                                 </label>
                                 <select
@@ -352,7 +352,7 @@ const AddPetToShelter = () => {
                         
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                <label className="block text-green-40 font-inter font-medium text-xs sm:text-sm mb-2">
                                     Характер питомца
                                 </label>
                                 <textarea
@@ -366,7 +366,7 @@ const AddPetToShelter = () => {
                             </div>
 
                             <div>
-                                <label className="block text-green-40 font-inter font-medium text-sm mb-2">
+                                <label className="block text-green-40 font-inter font-medium text-xs sm:text-sm mb-2">
                                     История питомца
                                 </label>
                                 <textarea
@@ -381,12 +381,12 @@ const AddPetToShelter = () => {
                         </div>
                     </div>
 
-                    <div className="bg-green-95 rounded-custom p-6">
-                        <h3 className="font-sf-rounded font-bold text-green-30 text-xl mb-4">
+                    <div className="bg-green-95 rounded-custom p-4 sm:p-6">
+                        <h3 className="font-sf-rounded font-bold text-green-30 text-lg sm:text-xl mb-4">
                             Фотографии животного *
                         </h3>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div>
                                 <label className="block w-full h-48 border-2 border-dashed border-green-40 rounded-custom-small flex flex-col items-center justify-center cursor-pointer hover:border-green-50">
                                     <input
@@ -445,18 +445,18 @@ const AddPetToShelter = () => {
                         </div>
                     </div>
 
-                    <div className="flex gap-4 justify-end">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end">
                         <button
                             type="button"
                             onClick={() => navigate('/admin-profile')}
-                            className="px-6 py-3 bg-green-80 text-green-40 font-sf-rounded font-semibold rounded-custom-small hover:bg-green-70"
+                            className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-green-80 text-green-40 font-sf-rounded font-semibold text-sm sm:text-base rounded-custom-small hover:bg-green-70"
                         >
                             Назад
                         </button>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="px-6 py-3 bg-green-50 text-green-100 font-sf-rounded font-semibold rounded-custom-small hover:bg-green-60 disabled:opacity-50"
+                            className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-green-50 text-green-100 font-sf-rounded font-semibold text-sm sm:text-base rounded-custom-small hover:bg-green-60 disabled:opacity-50"
                         >
                             {isSubmitting ? 'Добавление...' : 'Добавить питомца'}
                         </button>
