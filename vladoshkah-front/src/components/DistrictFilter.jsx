@@ -459,7 +459,7 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex items-center justify-between self-stretch w-full gap-2 sm:gap-4 sticky top-0 bg-green-95 z-50 pb-2 border-b-2 border-green-80">
+        <header className="flex items-center justify-between self-stretch w-full gap-2 sm:gap-4 sticky top-0 bg-green-95 z-50 pb-2 pt-2 -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 border-b-2 border-green-80 shadow-sm">
           <div className="flex-shrink-0 min-w-0">
             <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-sf-rounded font-bold text-green-30 whitespace-nowrap">
               Выберите округа Москвы
@@ -477,7 +477,7 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
           </button>
         </header>
 
-        <div className="w-full bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 shadow-sm border-2 border-green-40">
+        <div className="w-full bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 shadow-sm border-2 border-green-40 mt-2">
           <div className="flex flex-col gap-2 sm:gap-3 md:gap-4">
             <div className="flex flex-col gap-2 sm:gap-3">
               <div>

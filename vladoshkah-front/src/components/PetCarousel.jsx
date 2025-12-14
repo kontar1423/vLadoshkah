@@ -81,8 +81,8 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
         const arrowIconSize = isHomePage || isTablet ? 'w-5 h-5' : 'w-4 h-4';
 
         return (
-            <div className={`relative w-full ${mobileContainerClass} mx-auto px-2`}>
-                <div className={`relative overflow-visible flex items-center justify-center ${mobileMinHeightClass}`}>
+            <div className={`relative w-full ${mobileContainerClass} mx-auto px-2 pt-4 pb-8`}>
+                <div className={`relative overflow-hidden flex items-center justify-center ${mobileMinHeightClass}`}>
                     <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center w-full">
                         <div className={`w-full ${mobileCardWidthClass} ${mobileCardShiftClass}`}>
                             <PetCard 
@@ -127,7 +127,7 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
                             </svg>
                         </button>
 
-                        <div className="flex justify-center mt-4 space-x-2">
+                        <div className="flex justify-center mt-6 mb-2 space-x-2">
                             {(() => {
                                 const getVisibleIndicators = () => {
                                     if (pets.length <= 3) {
@@ -194,10 +194,10 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
     const DESKTOP_GAP = 24;
 
     return (
-        <div className="relative w-full max-w-5xl mx-auto px-4 pb-12">
+        <div className="relative w-full max-w-5xl mx-auto px-4 pt-4 pb-16">
         <div
             ref={containerRef}
-            className="relative h-[400px] flex items-center justify-center overflow-visible"
+            className="relative h-[380px] flex items-center justify-center overflow-hidden"
         >
             {items.map(({ pet, position, uniqueKey }) => {
             const isActive = position === 0;
@@ -286,7 +286,7 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
         )}
 
         {pets.length > 1 && (
-            <div className="flex justify-center mt-8 space-x-3">
+            <div className="flex justify-center mt-10 mb-2 space-x-3">
             {getVisibleIndicators().map((i) => (
                 <button
                 key={i}
