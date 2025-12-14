@@ -110,14 +110,14 @@
                             </svg>
                         </button>
 
-                        <div className="flex justify-center mt-4 space-x-2">
+                        <div className="flex justify-center mt-4 space-x-1.5">
                             {shelters.map((_, i) => (
                                 <button
                                     key={i}
                                     onClick={() => navigateTo(i)}
                                     disabled={isTransitioning}
-                                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                                        i === currentIndex ? 'bg-green-70 scale-125' : 'bg-green-40 hover:bg-green-50'
+                                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                                        i === currentIndex ? 'bg-green-70 scale-110' : 'bg-green-40 hover:bg-green-50'
                                     }`}
                                     aria-label={`Перейти к приюту ${i + 1}`}
                                 />
@@ -235,14 +235,14 @@
         )}
 
         {shelters.length > 1 && (
-            <div className="flex justify-center mt-1 space-x-2">
+            <div className="flex justify-center mt-1 space-x-1.5">
             {shelters.map((_, i) => (
                 <button
                 key={i}
                 onClick={() => navigateTo(i)}
                 disabled={isTransitioning}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    i === currentIndex ? 'bg-green-70 scale-125' : 'bg-green-40 hover:bg-green-50'
+                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                    i === currentIndex ? 'bg-green-70 scale-110' : 'bg-green-40 hover:bg-green-50'
                 }`}
                 aria-label={`Перейти к приюту ${i + 1}`}
                 />

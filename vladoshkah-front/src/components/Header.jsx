@@ -235,7 +235,7 @@ export const Header = () => {
           <nav
             className={`${
               isMenuOpen ? 'flex' : 'hidden'
-            } absolute top-full left-0 right-0 mx-[20px] my-2 bg-green-90 flex-col gap-0 rounded-custom-small z-50 border-2 border-green-40 shadow-lg md:hidden max-h-[calc(100vh-100px)] overflow-y-auto`}
+            } absolute top-full left-0 right-0 mx-[20px] my-2 bg-[#ddf8d8cc] backdrop-blur-sm flex-col gap-0 rounded-custom-small z-50 border-2 border-green-40 shadow-lg md:hidden max-h-[calc(100vh-100px)] overflow-y-auto`}
             role="navigation"
             aria-label="Mobile navigation"
           >
