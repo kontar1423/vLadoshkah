@@ -187,7 +187,7 @@ const getDistrictName = (regionCode) => {
 
   return (
     <div className="min-h-screen bg-green-95">
-      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] pt-20 sm:pt-24 md:pt-28 pb-12 sm:pb-16">
+      <section className="w-full max-w-container mx-auto px-[20px] md:px-[40px] lg:px-[60px] pt-4 sm:pt-6 md:pt-8 pb-12 sm:pb-16">
         <div className="bg-green-90 rounded-custom h-[320px] sm:h-[380px] md:h-[500px] w-full relative overflow-hidden">
           <div className="absolute -bottom-20 -left-20 -right-20 flex items-start justify-center opacity-70">
             <div className="relative w-full max-w-4xl">
