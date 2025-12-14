@@ -728,7 +728,7 @@ const ShelterProfile = () => {
               </div>
             )}
 
-            <div className="w-full flex-1 flex flex-col min-h-0 md:overflow-hidden pb-4 sm:pb-6 md:pb-12 sm:pb-16 md:pb-20">
+            <div className="w-full flex-1 flex flex-col min-h-0 md:overflow-hidden">
               <header className="inline-flex flex-col items-start relative mb-2 sm:mb-3 md:mb-4 w-full pr-[100px] sm:pr-[150px] md:pr-[260px] flex-shrink-0">
                 <h1 className="w-fit font-sf-rounded font-bold text-xl sm:text-2xl md:text-3xl lg:text-4xl text-green-30 mb-2">
                   {shelterData.name}
@@ -776,22 +776,22 @@ const ShelterProfile = () => {
                     )}
                   </div>
                 </div>
-
-                <div className="mt-3 sm:mt-4">
-                  <button
-                    className="w-full sm:w-auto flex h-10 sm:h-12 items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-green-70 rounded-custom-small hover:bg-green-80 active:bg-green-60 transition-colors cursor-pointer shadow-md"
-                    onClick={scrollToMap}
-                  >
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                    <span className="font-inter font-medium text-green-20 text-xs sm:text-sm md:text-base">
-                      Показать на карте
-                    </span>
-                  </button>
-                </div>
               </div>
+            </div>
+
+            <div className="mt-auto pt-3 sm:pt-4 border-t border-green-80">
+              <button
+                className="w-full flex h-10 sm:h-12 items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-green-70 rounded-custom-small hover:bg-green-80 active:bg-green-60 transition-colors cursor-pointer shadow-md"
+                onClick={scrollToMap}
+              >
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span className="font-inter font-medium text-green-20 text-xs sm:text-sm md:text-base">
+                  Показать на карте
+                </span>
+              </button>
             </div>
 
           </div>
