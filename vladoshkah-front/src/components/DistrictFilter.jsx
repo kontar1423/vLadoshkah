@@ -434,7 +434,7 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-2 sm:p-4"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-1 sm:p-2 md:p-4"
       style={{
         position: 'fixed',
         top: 0,
@@ -442,7 +442,8 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
         right: 0,
         bottom: 0,
         overflowY: 'auto',
-        paddingTop: '80px',
+        paddingTop: '60px',
+        paddingBottom: '20px',
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -451,23 +452,23 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
       }}
     >
       <div
-        className="bg-green-95 rounded-custom w-full max-w-6xl flex flex-col items-start gap-3 sm:gap-4 md:gap-6 p-4 sm:p-6 md:p-8 relative my-auto shadow-xl"
+        className="bg-green-95 rounded-custom w-full max-w-6xl flex flex-col items-start gap-2 sm:gap-3 md:gap-4 lg:gap-6 p-3 sm:p-4 md:p-6 lg:p-8 relative my-auto shadow-xl"
         style={{
-          maxHeight: 'calc(100vh - 100px)',
+          maxHeight: 'calc(100vh - 80px)',
           overflowY: 'auto',
           position: 'relative',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex items-center justify-between self-stretch w-full gap-2 sm:gap-4 sticky top-0 bg-green-95 z-50 pb-2 pt-2 -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 border-b-2 border-green-80 shadow-sm">
+        <header className="flex items-center justify-between self-stretch w-full gap-2 sm:gap-4 sticky top-0 bg-green-95 z-50 pb-2 pt-2 -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 px-3 sm:px-4 md:px-6 lg:px-8 border-b-2 border-green-80 shadow-sm">
           <div className="flex-shrink-0 min-w-0">
-            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-sf-rounded font-bold text-green-30 whitespace-nowrap">
+            <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-sf-rounded font-bold text-green-30 break-words">
               Выберите округа Москвы
             </h1>
           </div>
           <button
             onClick={onClose}
-            className="w-6 h-6 sm:w-8 sm:h-8 cursor-pointer text-green-40 hover:text-green-30 transition-colors flex-shrink-0"
+            className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 cursor-pointer text-green-40 hover:text-green-30 transition-colors flex-shrink-0"
             aria-label="Закрыть фильтры"
             style={{ position: 'relative', zIndex: 100 }}
           >
@@ -485,8 +486,8 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-3 sm:gap-4 items-start">
-              <div className="rounded-custom-small border border-green-80 bg-green-95 overflow-hidden w-full aspect-[4/3] min-h-[200px] sm:min-h-[250px] md:min-h-[300px] max-h-[400px]">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-2 sm:gap-3 md:gap-4 items-start">
+              <div className="rounded-custom-small border border-green-80 bg-green-95 overflow-hidden w-full aspect-[4/3] min-h-[180px] sm:min-h-[220px] md:min-h-[280px] lg:min-h-[300px] max-h-[250px] sm:max-h-[300px] md:max-h-[350px] lg:max-h-[400px]">
                 <object
                   ref={mapRef}
                   data={MAP_SRC}

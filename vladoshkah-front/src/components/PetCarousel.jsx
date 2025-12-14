@@ -81,10 +81,10 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
         const arrowIconSize = isHomePage || isTablet ? 'w-5 h-5' : 'w-4 h-4';
 
         return (
-            <div className={`relative w-full ${mobileContainerClass} mx-auto px-2 pt-4 pb-8`}>
+            <div className={`relative w-full ${mobileContainerClass} mx-auto pt-4 pb-8`}>
                 <div className={`relative overflow-visible flex items-center justify-center ${mobileMinHeightClass}`}>
-                    <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center w-full">
-                        <div className={`w-full ${mobileCardWidthClass} mx-auto`}>
+                    <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center items-center w-full">
+                        <div className={`${mobileCardWidthClass} mx-auto`}>
                             <PetCard 
                                 petData={currentPet} 
                                 initialFavorite={favoritesMap[currentPet.id] === true}
