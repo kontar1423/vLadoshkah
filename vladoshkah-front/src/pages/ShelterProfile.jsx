@@ -696,7 +696,7 @@ const ShelterProfile = () => {
       />
 
       <div className="max-w-container mx-auto px-4 sm:px-6 md:px-8 space-y-6 sm:space-y-8">
-        <div className="relative w-full max-w-[1260px] h-[250px] sm:h-[300px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row">
+        <div className="relative w-full max-w-[1260px] h-auto min-h-[250px] sm:min-h-[300px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row mb-20 sm:mb-24 md:mb-4">
           <div className="relative w-full md:w-[350px] h-[150px] sm:h-[180px] md:h-full flex-shrink-0">
             <img 
               src={shelterData.photoUrl || PriutPhoto} 
@@ -728,50 +728,50 @@ const ShelterProfile = () => {
               </div>
             )}
 
-            <div className="w-full flex-1 flex flex-col min-h-0 overflow-hidden pb-12 sm:pb-16 md:pb-20">
+            <div className="w-full flex-1 flex flex-col min-h-0 md:overflow-hidden pb-4 sm:pb-6 md:pb-12 sm:pb-16 md:pb-20">
               <header className="inline-flex flex-col items-start relative mb-2 sm:mb-3 md:mb-4 w-full pr-[100px] sm:pr-[150px] md:pr-[260px] flex-shrink-0">
                 <h1 className="w-fit font-sf-rounded font-bold text-xl sm:text-2xl md:text-3xl lg:text-4xl text-green-30 mb-2">
                   {shelterData.name}
                 </h1>
 
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-3 sm:mb-4">
                   <div className="flex">
                     <StaticStars rating={ratingStats.average} />
                   </div>
-                  <span className="font-inter font-medium text-green-30 text-sm">
+                  <span className="font-inter font-medium text-green-30 text-xs sm:text-sm">
                     {safeNumber(ratingStats.average).toFixed(1)} ({ratingStats.totalRatings} {getRatingWord(ratingStats.totalRatings)})
                   </span>
                 </div>
               </header>
 
-              <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 min-h-0">
+              <div className="flex-1 md:overflow-y-auto pr-1 sm:pr-2 min-h-0">
                 <p className="font-inter font-medium text-green-30 text-xs sm:text-sm md:text-base leading-relaxed mb-3 sm:mb-4">
                   {shelterData.description}
                 </p>
 
-                <div className="mb-4">
-                  <div className="space-y-1">
-                    <div className="font-inter font-medium text-green-30 text-sm">
+                <div className="mb-3 sm:mb-4">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <div className="font-inter font-medium text-green-30 text-xs sm:text-sm">
                       Телефон: {shelterData.contacts.phone}
                     </div>
                     {shelterData.contacts.telegram && (
-                      <div className="font-inter font-medium text-green-30 text-sm">
+                      <div className="font-inter font-medium text-green-30 text-xs sm:text-sm">
                         Telegram: {shelterData.contacts.telegram}
                       </div>
                     )}
                     {shelterData.contacts.whatsapp && (
-                      <div className="font-inter font-medium text-green-30 text-sm">
+                      <div className="font-inter font-medium text-green-30 text-xs sm:text-sm">
                         WhatsApp: {shelterData.contacts.whatsapp}
                       </div>
                     )}
                     {shelterData.contacts.email && (
-                      <div className="font-inter font-medium text-green-30 text-sm">
+                      <div className="font-inter font-medium text-green-30 text-xs sm:text-sm break-words">
                         Email: {shelterData.contacts.email}
                       </div>
                     )}
                     {shelterData.website && (
-                      <div className="font-inter font-medium text-green-30 text-sm">
-                        Сайт: <a href={shelterData.website} target="_blank" rel="noopener noreferrer" className="text-green-50 hover:text-green-40 underline">{shelterData.website}</a>
+                      <div className="font-inter font-medium text-green-30 text-xs sm:text-sm break-words">
+                        Сайт: <a href={shelterData.website} target="_blank" rel="noopener noreferrer" className="text-green-50 hover:text-green-40 underline break-all">{shelterData.website}</a>
                       </div>
                     )}
                   </div>
@@ -782,16 +782,16 @@ const ShelterProfile = () => {
           </div>
         </div>
 
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-[1260px] px-4 sm:px-6 md:px-8">
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-[1260px] px-4 sm:px-6 md:px-8 pointer-events-none">
           <button
-            className="w-full flex h-12 sm:h-14 items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-green-70 rounded-custom-small hover:bg-green-80 active:bg-green-60 transition-colors cursor-pointer shadow-lg"
+            className="w-full flex h-12 sm:h-14 items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-green-70 rounded-custom-small hover:bg-green-80 active:bg-green-60 transition-colors cursor-pointer shadow-lg pointer-events-auto"
             onClick={scrollToMap}
           >
             <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
-            <span className="font-inter font-medium text-green-20 text-base sm:text-lg">
+            <span className="font-inter font-medium text-green-20 text-sm sm:text-base md:text-lg">
               Показать на карте
             </span>
           </button>

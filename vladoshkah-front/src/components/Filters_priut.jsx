@@ -340,7 +340,7 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                                 />
                                 
                                 <div 
-                                    className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 shadow-lg cursor-pointer z-20 hover:scale-110 transition-transform"
+                                    className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 shadow-lg cursor-pointer z-20 hover:scale-110 transition-transform touch-none"
                                     style={{ left: `${minPosition}%` }}
                                     onMouseDown={(e) => {
                                         e.preventDefault();
@@ -366,9 +366,35 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
                                         document.addEventListener('mousemove', handleMouseMove);
                                         document.addEventListener('mouseup', handleMouseUp);
                                     }}
+                                    onTouchStart={(e) => {
+                                        e.preventDefault();
+                                        const slider = e.currentTarget;
+                                        const touch = e.touches[0];
+                                        const startX = touch.clientX;
+                                        const startLeft = minPosition;
+                                        const sliderWidth = slider.parentElement.offsetWidth;
+
+                                        const handleTouchMove = (moveEvent) => {
+                                            const touch = moveEvent.touches[0];
+                                            const deltaX = touch.clientX - startX;
+                                            const deltaPercent = (deltaX / sliderWidth) * 100;
+                                            let newPosition = startLeft + deltaPercent;
+                                            newPosition = Math.max(0, Math.min(newPosition, maxPosition));
+                                            const newValue = Math.round((newPosition / 100) * 30);
+                                            handleAgeChange('min', newValue);
+                                        };
+
+                                        const handleTouchEnd = () => {
+                                            document.removeEventListener('touchmove', handleTouchMove);
+                                            document.removeEventListener('touchend', handleTouchEnd);
+                                        };
+
+                                        document.addEventListener('touchmove', handleTouchMove, { passive: false });
+                                        document.addEventListener('touchend', handleTouchEnd);
+                                    }}
                                 ></div>
                                 <div 
-                                    className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 shadow-lg cursor-pointer z-20 hover:scale-110 transition-transform"
+                                    className="absolute w-6 h-6 bg-green-50 rounded-full border-2 border-green-98 -top-2 transform -translate-x-1/2 shadow-lg cursor-pointer z-20 hover:scale-110 transition-transform touch-none"
                                     style={{ left: `${maxPosition}%` }}
                                     onMouseDown={(e) => {
                                         e.preventDefault();
@@ -393,6 +419,32 @@ export const FiltersP = ({ isOpen, onClose, onApply, initialFilters, onReset }) 
 
                                         document.addEventListener('mousemove', handleMouseMove);
                                         document.addEventListener('mouseup', handleMouseUp);
+                                    }}
+                                    onTouchStart={(e) => {
+                                        e.preventDefault();
+                                        const slider = e.currentTarget;
+                                        const touch = e.touches[0];
+                                        const startX = touch.clientX;
+                                        const startLeft = maxPosition;
+                                        const sliderWidth = slider.parentElement.offsetWidth;
+
+                                        const handleTouchMove = (moveEvent) => {
+                                            const touch = moveEvent.touches[0];
+                                            const deltaX = touch.clientX - startX;
+                                            const deltaPercent = (deltaX / sliderWidth) * 100;
+                                            let newPosition = startLeft + deltaPercent;
+                                            newPosition = Math.max(minPosition, Math.min(newPosition, 100));
+                                            const newValue = Math.round((newPosition / 100) * 30);
+                                            handleAgeChange('max', newValue);
+                                        };
+
+                                        const handleTouchEnd = () => {
+                                            document.removeEventListener('touchmove', handleTouchMove);
+                                            document.removeEventListener('touchend', handleTouchEnd);
+                                        };
+
+                                        document.addEventListener('touchmove', handleTouchMove, { passive: false });
+                                        document.addEventListener('touchend', handleTouchEnd);
                                     }}
                                 ></div>
                             </div>
