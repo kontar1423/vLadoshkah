@@ -179,8 +179,9 @@ export const Header = () => {
   return (
     <>
       <header
-        className="flex w-full min-h-[60px] md:min-h-[78px] items-center justify-between px-[20px] md:px-[40px] lg:px-[60px] xl:px-[80px] 2xl:px-[120px] py-2.5 fixed md:sticky top-0 left-0 right-0 z-50 bg-[#ddf8d8cc] backdrop-blur-sm transition-all duration-300 shadow-soft"
+        className="flex w-full min-h-[60px] md:min-h-[78px] items-center justify-between px-[20px] md:px-[40px] lg:px-[60px] xl:px-[80px] 2xl:px-[120px] py-2.5 fixed top-0 left-0 right-0 z-[100] bg-[#ddf8d8cc] backdrop-blur-sm transition-all duration-300 shadow-soft"
         role="banner"
+        style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100 }}
       >
         <div className="gap-[15px] md:gap-[30px] lg:gap-[50px] xl:gap-[60px] 2xl:gap-[70px] flex items-center relative flex-1 flex-wrap md:flex-nowrap">
           
