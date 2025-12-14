@@ -69,8 +69,8 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
             ? (isTablet ? 'max-w-[380px]' : 'max-w-[300px]')
             : (isTablet ? 'max-w-[320px]' : 'max-w-[230px]');
         const mobileMinHeightClass = isHomePage
-            ? (isTablet ? 'min-h-[360px]' : 'min-h-[280px]')
-            : (isTablet ? 'min-h-[320px]' : 'min-h-[260px]');
+            ? (isTablet ? 'min-h-[420px]' : 'min-h-[360px]')
+            : (isTablet ? 'min-h-[400px]' : 'min-h-[340px]');
         const mobileCardWidthClass = isHomePage
             ? (isTablet ? 'max-w-[360px]' : 'max-w-[320px]')
             : (isTablet ? 'max-w-[300px]' : 'max-w-[230px]');
@@ -82,7 +82,7 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
 
         return (
             <div className={`relative w-full ${mobileContainerClass} mx-auto px-2 pt-4 pb-8`}>
-                <div className={`relative overflow-hidden flex items-center justify-center ${mobileMinHeightClass}`}>
+                <div className={`relative overflow-visible flex items-center justify-center ${mobileMinHeightClass}`}>
                     <div className="flex-shrink-0 transition-all duration-500 ease-out flex justify-center w-full">
                         <div className={`w-full ${mobileCardWidthClass} ${mobileCardShiftClass}`}>
                             <PetCard 
@@ -197,7 +197,7 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
         <div className="relative w-full max-w-5xl mx-auto px-4 pt-4 pb-16">
         <div
             ref={containerRef}
-            className="relative h-[380px] flex items-center justify-center overflow-hidden"
+            className="relative h-[480px] flex items-center justify-center overflow-visible"
         >
             {items.map(({ pet, position, uniqueKey }) => {
             const isActive = position === 0;
