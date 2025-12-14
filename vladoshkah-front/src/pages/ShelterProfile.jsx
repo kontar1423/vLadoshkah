@@ -779,17 +779,22 @@ const ShelterProfile = () => {
               </div>
             </div>
 
-            <div className="absolute bottom-3 sm:bottom-4 md:bottom-6 left-3 sm:left-4 md:left-6 right-3 sm:right-4 md:right-6 w-auto">
-              <button
-                className="all-[unset] box-border flex h-10 sm:h-11 items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer w-full"
-                onClick={scrollToMap}
-              >
-                <span className="relative w-fit font-inter font-medium text-green-20 text-sm sm:text-base">
-                  Показать на карте
-                </span>
-              </button>
-            </div>
           </div>
+        </div>
+
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-[1260px] px-4 sm:px-6 md:px-8">
+          <button
+            className="w-full flex h-12 sm:h-14 items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-green-70 rounded-custom-small hover:bg-green-80 active:bg-green-60 transition-colors cursor-pointer shadow-lg"
+            onClick={scrollToMap}
+          >
+            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span className="font-inter font-medium text-green-20 text-base sm:text-lg">
+              Показать на карте
+            </span>
+          </button>
         </div>
 
         <div className="w-full max-w-[1260px] mx-auto">

@@ -44,12 +44,14 @@ const MiniShelterCard = ({ shelter, wideMobile = false }) => {
             className={`bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 ${sizeClasses} flex flex-col cursor-pointer md:cursor-default hover:shadow-lg transition-shadow duration-300`}
         >
         <div
-            className="relative w-full aspect-square mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small flex-shrink-0"
+            className="relative w-full mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small flex-shrink-0"
+            style={{ aspectRatio: '1 / 1', width: '100%' }}
         >
             <img
             src={photoUrl || PriutPhoto}
             alt={name}
             className="w-full h-full object-cover"
+            style={{ aspectRatio: '1 / 1', objectFit: 'cover' }}
             onError={(e) => {
                 e.target.style.display = 'none';
                 const fallback = document.getElementById(`shelter-fallback-${id}`);
