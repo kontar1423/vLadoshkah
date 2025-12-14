@@ -127,34 +127,20 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
                             </svg>
                         </button>
 
-                        <div className="flex justify-center mt-6 mb-2 space-x-2">
-                            {(() => {
-                                const getVisibleIndicators = () => {
-                                    if (pets.length <= 3) {
-                                        return pets.map((_, i) => i);
-                                    }
-                                    const indicators = [];
-                                    if (currentIndex === 0) {
-                                        indicators.push(pets.length - 1, 0, 1);
-                                    } else if (currentIndex === pets.length - 1) {
-                                        indicators.push(pets.length - 2, pets.length - 1, 0);
-                                    } else {
-                                        indicators.push(currentIndex - 1, currentIndex, currentIndex + 1);
-                                    }
-                                    return indicators;
-                                };
-                                return getVisibleIndicators().map((i) => (
-                                    <button
-                                        key={i}
-                                        onClick={() => navigateTo(i)}
-                                        disabled={isTransitioning}
-                                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                                            i === currentIndex ? 'bg-green-70 scale-125' : 'bg-green-40 hover:bg-green-50'
-                                        }`}
-                                        aria-label={`Перейти к питомцу ${i + 1}`}
-                                    />
-                                ));
-                            })()}
+                        <div className="flex justify-center items-center mt-6 mb-2 space-x-2 flex-wrap gap-y-2">
+                            {pets.map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => navigateTo(i)}
+                                    disabled={isTransitioning}
+                                    className={`rounded-full transition-all duration-300 ${
+                                        i === currentIndex 
+                                            ? 'bg-green-70 scale-125 w-3 h-3' 
+                                            : 'bg-green-40 hover:bg-green-50 opacity-70 w-2.5 h-2.5'
+                                    }`}
+                                    aria-label={`Перейти к питомцу ${i + 1}`}
+                                />
+                            ))}
                         </div>
                     </>
                 )}
@@ -174,9 +160,9 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
 
     const items = getCarouselItems();
 
-    // Для десктопа показываем только 3 индикатора (предыдущий, текущий, следующий)
+    // Для десктопа показываем все индикаторы, если их не больше 10, иначе показываем только 3
     const getVisibleIndicators = () => {
-        if (pets.length <= 3) {
+        if (pets.length <= 10) {
             return pets.map((_, i) => i);
         }
         const indicators = [];
@@ -286,16 +272,18 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
         )}
 
         {pets.length > 1 && (
-            <div className="flex justify-center mt-10 mb-2 space-x-3">
-            {getVisibleIndicators().map((i) => (
+            <div className="flex justify-center items-center mt-10 mb-2 space-x-3 flex-wrap gap-y-2">
+            {pets.map((_, i) => (
                 <button
-                key={i}
-                onClick={() => navigateTo(i)}
-                disabled={isTransitioning}
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                    i === currentIndex ? 'bg-green-70 scale-125' : 'bg-green-40 hover:bg-green-50'
-                }`}
-                aria-label={`Перейти к питомцу ${i + 1}`}
+                    key={i}
+                    onClick={() => navigateTo(i)}
+                    disabled={isTransitioning}
+                    className={`rounded-full transition-all duration-300 ${
+                        i === currentIndex 
+                            ? 'bg-green-70 scale-125 w-4 h-4' 
+                            : 'bg-green-40 hover:bg-green-50 opacity-70 w-3 h-3'
+                    }`}
+                    aria-label={`Перейти к питомцу ${i + 1}`}
                 />
             ))}
             </div>

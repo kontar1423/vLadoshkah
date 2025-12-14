@@ -65,16 +65,29 @@
             // Попытка геокодирования по адресу
             if (shelter.address) {
                 try {
-                const geocodeResult = await geocodingService.getCoordinates(
-                    `${shelter.address}, Москва`
-                );
+                // Нормализуем адрес: убираем дублирование "Москва" и лишние запятые
+                let normalizedAddress = shelter.address.trim();
+                
+                // Убираем дублирование "Москва" в конце адреса
+                normalizedAddress = normalizedAddress.replace(/,\s*Москва\s*,?\s*Москва\s*$/i, ', Москва');
+                normalizedAddress = normalizedAddress.replace(/,\s*Москва\s*$/i, ', Москва');
+                
+                // Если адрес уже содержит "Москва", не добавляем его повторно
+                if (!normalizedAddress.toLowerCase().includes('москва')) {
+                    normalizedAddress = `${normalizedAddress}, Москва`;
+                }
+                
+                const geocodeResult = await geocodingService.getCoordinates(normalizedAddress);
                 
                 // Преобразуем объект {lat, lng} в массив [lat, lng] для Leaflet
                 if (geocodeResult && geocodeResult.lat && geocodeResult.lng) {
                     coordinates = [geocodeResult.lat, geocodeResult.lng];
                     console.log(`✓ Геокодирование успешно для приюта "${shelter.name}":`, coordinates);
                 } else {
-                    console.warn(`⚠ Геокодирование вернуло null для приюта "${shelter.name}" с адресом "${shelter.address}"`);
+                    // Выводим предупреждение только если нет fallback вариантов
+                    if (!shelter.districtId) {
+                        console.warn(`⚠ Геокодирование вернуло null для приюта "${shelter.name}" с адресом "${shelter.address}"`);
+                    }
                 }
                 } catch (error) {
                 console.error(`✗ Ошибка геокодирования для приюта "${shelter.name}":`, error);

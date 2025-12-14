@@ -41,12 +41,26 @@ const HelpSection = ({ isOpen, onClose }) => {
                 onClick={handleContentClick}
             >
                 <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 z-10 w-8 h-8 bg-green-80 text-green-30 rounded-full flex items-center justify-center hover:bg-green-70 transition-colors"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (onClose) onClose();
+                    }}
+                    onTouchStart={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }}
+                    onTouchEnd={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (onClose) onClose();
+                    }}
+                    className="absolute top-3 right-3 sm:top-4 sm:right-4 z-[10000] w-10 h-10 sm:w-8 sm:h-8 bg-green-80 text-green-30 rounded-full flex items-center justify-center hover:bg-green-70 active:bg-green-60 transition-colors touch-manipulation"
+                    style={{ touchAction: 'manipulation' }}
                     aria-label="Закрыть"
                 >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg className="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
 

@@ -15,11 +15,47 @@ export const Header = () => {
   const location = useLocation()
   const forceScrollToTop = useForceScroll()
   
+  const SearchIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+  );
+
+  const HeartIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    </svg>
+  );
+
+  const HomeIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    </svg>
+  );
+
+  const PawIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+    </svg>
+  );
+
+  const LoginIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+    </svg>
+  );
+
+  const RegisterIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+    </svg>
+  );
+
   const navigationItems = [
-    { id: 1, label: "Найти питомца", path: "/find-pet", icon: "🔍" },
-    { id: 2, label: "Помочь", path: null, action: () => setIsHelpModalOpen(true), icon: "❤️" },
-    { id: 3, label: "Приюты", path: "/shelters", icon: "🏠" },
-    { id: 4, label: "Отдать животное", path: "/give-animal", icon: "🐾" },
+    { id: 1, label: "Найти питомца", path: "/find-pet", icon: SearchIcon },
+    { id: 2, label: "Помочь", path: null, action: () => setIsHelpModalOpen(true), icon: HeartIcon },
+    { id: 3, label: "Приюты", path: "/shelters", icon: HomeIcon },
+    { id: 4, label: "Отдать животное", path: "/give-animal", icon: PawIcon },
   ];
 
   const handleRefreshUser = async () => {
@@ -217,7 +253,7 @@ export const Header = () => {
                           : ''
                       }`}
                     >
-                      <span className="text-xl">{item.icon}</span>
+                      {item.icon && <item.icon />}
                       <span>{item.label}</span>
                     </button>
                   ) : (
@@ -227,7 +263,7 @@ export const Header = () => {
                         index < navigationItems.length - 1 ? 'border-b border-green-40' : ''
                       }`}
                     >
-                      <span className="text-xl">{item.icon}</span>
+                      {item.icon && <item.icon />}
                       <span>{item.label}</span>
                     </button>
                   )}
@@ -252,7 +288,7 @@ export const Header = () => {
                         : ''
                     }`}
                   >
-                    <span className="text-xl">🔑</span>
+                    <LoginIcon />
                     <span>Войти</span>
                   </div>
                   <div
@@ -269,7 +305,7 @@ export const Header = () => {
                         : ''
                     }`}
                   >
-                    <span className="text-xl">📝</span>
+                    <RegisterIcon />
                     <span>Зарегистрироваться</span>
                   </div>
                 </>
