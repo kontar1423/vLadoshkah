@@ -486,7 +486,7 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-3 sm:gap-4 items-start">
-              <div className="rounded-custom-small border border-green-80 bg-green-95 overflow-hidden aspect-[4/3] min-h-[240px] sm:min-h-[300px] md:min-h-[360px]">
+              <div className="rounded-custom-small border border-green-80 bg-green-95 overflow-hidden w-full aspect-[4/3] min-h-[200px] sm:min-h-[250px] md:min-h-[300px] max-h-[400px]">
                 <object
                   ref={mapRef}
                   data={MAP_SRC}

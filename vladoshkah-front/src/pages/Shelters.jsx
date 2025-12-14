@@ -225,7 +225,7 @@ const Shelters = () => {
           </h2>
         </div>
 
-        <div className="w-full h-screen rounded-custom overflow-hidden border-2 border-green-40 mb-16">
+        <div className="w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-screen rounded-custom overflow-hidden border-2 border-green-40 mb-16">
           <SheltersMap 
             shelters={shelters} 
             onShelterClick={(shelter) => {

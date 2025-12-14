@@ -205,7 +205,7 @@ const GiveAnimal = () => {
                   style={isMobile ? {} : { animationDelay: `${index * 0.1}s` }}
                 >
                   {isMobile ? (
-                    <MiniShelterCard shelter={shelter} />
+                    <MiniShelterCard shelter={shelter} wideMobile />
                   ) : (
                     <ShelterCard shelterData={shelter} />
                   )}

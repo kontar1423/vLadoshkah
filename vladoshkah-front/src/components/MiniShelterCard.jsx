@@ -45,7 +45,6 @@ const MiniShelterCard = ({ shelter, wideMobile = false }) => {
         >
         <div
             className="relative w-full aspect-square mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small flex-shrink-0"
-            style={{ aspectRatio: '1 / 1' }}
         >
             <img
             src={photoUrl || PriutPhoto}
@@ -66,7 +65,7 @@ const MiniShelterCard = ({ shelter, wideMobile = false }) => {
             </div>
         </div>
         
-        <h3 className="font-sf-rounded font-bold text-green-30 text-sm sm:text-base md:text-lg lg:text-xl mb-1 sm:mb-1.5 md:mb-2 line-clamp-1">{name}</h3>
+        <h3 className="font-sf-rounded font-bold text-green-30 text-sm sm:text-base md:text-lg lg:text-xl mb-1 sm:mb-1.5 md:mb-2 truncate">{name}</h3>
         
         <p className="font-inter text-green-40 text-[10px] sm:text-xs md:text-sm mb-1 sm:mb-1.5 md:mb-2 line-clamp-2 flex-grow">
             {description || ''}
