@@ -69,8 +69,8 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
             ? (isTablet ? 'max-w-[380px]' : 'max-w-[300px]')
             : (isTablet ? 'max-w-[320px]' : 'max-w-[230px]');
         const mobileMinHeightClass = isHomePage
-            ? (isTablet ? 'min-h-[420px]' : 'min-h-[340px]')
-            : (isTablet ? 'min-h-[380px]' : 'min-h-[300px]');
+            ? (isTablet ? 'min-h-[360px]' : 'min-h-[280px]')
+            : (isTablet ? 'min-h-[320px]' : 'min-h-[260px]');
         const mobileCardWidthClass = isHomePage
             ? (isTablet ? 'max-w-[360px]' : 'max-w-[320px]')
             : (isTablet ? 'max-w-[300px]' : 'max-w-[230px]');
