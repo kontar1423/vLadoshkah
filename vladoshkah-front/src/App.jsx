@@ -18,6 +18,7 @@ import ShelterProfile from './pages/ShelterProfile'
 import AnketaGive from './pages/AnketaGive'
 import ShelterRegister from './pages/ShelterRegister'
 import AddPetToShelter from './pages/AddPetToShelter'
+import NotFound from './pages/NotFound'
 import './assets/fonts/fonts.css';
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
               <Route path="/application-give" element={<AnketaGive />} />
               <Route path="/register-shelter" element={<ShelterRegister />} />
               <Route path="/add-pet" element={<AddPetToShelter />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
           <Footer />
