@@ -128,17 +128,33 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
                         </button>
 
                         <div className="flex justify-center mt-4 space-x-2">
-                            {pets.map((_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => navigateTo(i)}
-                                    disabled={isTransitioning}
-                                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                                        i === currentIndex ? 'bg-green-70 scale-125' : 'bg-green-40 hover:bg-green-50'
-                                    }`}
-                                    aria-label={`Перейти к питомцу ${i + 1}`}
-                                />
-                            ))}
+                            {(() => {
+                                const getVisibleIndicators = () => {
+                                    if (pets.length <= 3) {
+                                        return pets.map((_, i) => i);
+                                    }
+                                    const indicators = [];
+                                    if (currentIndex === 0) {
+                                        indicators.push(pets.length - 1, 0, 1);
+                                    } else if (currentIndex === pets.length - 1) {
+                                        indicators.push(pets.length - 2, pets.length - 1, 0);
+                                    } else {
+                                        indicators.push(currentIndex - 1, currentIndex, currentIndex + 1);
+                                    }
+                                    return indicators;
+                                };
+                                return getVisibleIndicators().map((i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => navigateTo(i)}
+                                        disabled={isTransitioning}
+                                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                            i === currentIndex ? 'bg-green-70 scale-125' : 'bg-green-40 hover:bg-green-50'
+                                        }`}
+                                        aria-label={`Перейти к питомцу ${i + 1}`}
+                                    />
+                                ));
+                            })()}
                         </div>
                     </>
                 )}
