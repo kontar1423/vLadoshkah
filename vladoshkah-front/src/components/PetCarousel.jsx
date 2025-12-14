@@ -158,11 +158,30 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
 
     const items = getCarouselItems();
 
+    // Для десктопа показываем только 3 индикатора (предыдущий, текущий, следующий)
+    const getVisibleIndicators = () => {
+        if (pets.length <= 3) {
+            return pets.map((_, i) => i);
+        }
+        const indicators = [];
+        if (currentIndex === 0) {
+            indicators.push(pets.length - 1, 0, 1);
+        } else if (currentIndex === pets.length - 1) {
+            indicators.push(pets.length - 2, pets.length - 1, 0);
+        } else {
+            indicators.push(currentIndex - 1, currentIndex, currentIndex + 1);
+        }
+        return indicators;
+    };
+
+    const DESKTOP_CARD_WIDTH = 280;
+    const DESKTOP_GAP = 24;
+
     return (
-        <div className="relative w-full max-w-6xl mx-auto px-4">
+        <div className="relative w-full max-w-5xl mx-auto px-4 pb-12">
         <div
             ref={containerRef}
-            className="relative h-[460px] flex items-center justify-center overflow-visible"
+            className="relative h-[400px] flex items-center justify-center overflow-visible"
         >
             {items.map(({ pet, position, uniqueKey }) => {
             const isActive = position === 0;
@@ -180,12 +199,12 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
                 opacity = 1;
                 zIndex = 30;
             } else if (isLeft) {
-                translateX = `calc(-50% - ${CARD_WIDTH + GAP}px)`;
+                translateX = `calc(-50% - ${DESKTOP_CARD_WIDTH + DESKTOP_GAP}px)`;
                 scale = 0.85;
                 opacity = 1;
                 zIndex = 20;
             } else if (isRight) {
-                translateX = `calc(-50% + ${CARD_WIDTH + GAP}px)`;
+                translateX = `calc(-50% + ${DESKTOP_CARD_WIDTH + DESKTOP_GAP}px)`;
                 scale = 0.85;
                 opacity = 1;
                 zIndex = 20;
@@ -202,10 +221,10 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
                     opacity: opacity,
                     zIndex: zIndex,
                     willChange: 'transform, opacity',
-                    width: `${CARD_WIDTH}px`,
+                    width: `${DESKTOP_CARD_WIDTH}px`,
                 }}
                 >
-                <div style={{ width: '100%', maxWidth: `${CARD_WIDTH}px` }}>
+                <div style={{ width: '100%', maxWidth: `${DESKTOP_CARD_WIDTH}px` }}>
                     <PetCard 
                         petData={pet} 
                         initialFavorite={favoritesMap[pet.id] === true}
@@ -251,13 +270,13 @@ const PetCarousel = ({ pets = [], favoritesMap = {}, isHomePage = false }) => {
         )}
 
         {pets.length > 1 && (
-            <div className="flex justify-center mt-6 space-x-2">
-            {pets.map((_, i) => (
+            <div className="flex justify-center mt-8 space-x-3">
+            {getVisibleIndicators().map((i) => (
                 <button
                 key={i}
                 onClick={() => navigateTo(i)}
                 disabled={isTransitioning}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                     i === currentIndex ? 'bg-green-70 scale-125' : 'bg-green-40 hover:bg-green-50'
                 }`}
                 aria-label={`Перейти к питомцу ${i + 1}`}

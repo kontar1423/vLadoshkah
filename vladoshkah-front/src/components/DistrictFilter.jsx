@@ -459,10 +459,9 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex items-center justify-between self-stretch w-full gap-2 sm:gap-4 sticky top-0 bg-green-95 z-50 pb-2">
-          <div>
-            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-sf-rounded font-bold text-green-30">Выберите округа Москвы</h1>
-            
+        <header className="flex items-center justify-between self-stretch w-full gap-2 sm:gap-4 sticky top-0 bg-green-95 z-50 pb-2 border-b-2 border-green-80">
+          <div className="flex-shrink-0 min-w-0">
+            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-sf-rounded font-bold text-green-30 whitespace-nowrap">Выберите округа Москвы</h1>
           </div>
           <button
             onClick={onClose}
@@ -478,41 +477,10 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
 
         <div className="w-full bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 shadow-sm border-2 border-green-40">
           <div className="flex flex-col gap-2 sm:gap-3 md:gap-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+            <div className="flex flex-col gap-2 sm:gap-3">
               <div>
                 <p className="font-inter text-green-30 font-semibold text-xs sm:text-sm md:text-base">Карта округов Москвы</p>
-                
               </div>
-              <div className="flex flex-wrap gap-2">
-                {selectedDistricts.length === 0 ? (
-                  <span className="text-green-50 text-sm font-inter"></span>
-                ) : (
-                  selectedDistricts.map((regionId) => {
-                    const district = districts.find((d) => d.id === regionId);
-                    const color = legendColorFor(regionId);
-                    return (
-                      <span
-                        key={regionId}
-                        className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full bg-green-90 border border-green-80 text-green-30 text-xs sm:text-sm"
-                      >
-                        <span
-                          className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border border-green-30 flex-shrink-0"
-                          style={{ backgroundColor: color }}
-                        />
-                        <span className="truncate max-w-[100px] sm:max-w-none">{district?.name || regionId}</span>
-                        <button
-                          onClick={() => toggleRegion(regionId)}
-                          className="text-green-40 hover:text-green-20 flex-shrink-0"
-                          aria-label={`Убрать ${district?.name || regionId}`}
-                        >
-                          ×
-                        </button>
-                      </span>
-                    );
-                  })
-                )}
-              </div>
-            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-3 sm:gap-4 items-start">
               <div className="rounded-custom-small border border-green-80 bg-green-95 overflow-hidden aspect-[4/3] min-h-[240px] sm:min-h-[300px] md:min-h-[360px]">
@@ -547,9 +515,13 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
                         }`}
                       >
                         <span
-                          className="w-3 h-3 sm:w-4 sm:h-4 rounded-full border border-green-30 flex-shrink-0"
+                          className="w-3 h-3 sm:w-4 sm:h-4 rounded-full border border-green-30 flex-shrink-0 relative"
                           style={{ backgroundColor: color }}
-                        />
+                        >
+                          <span className="absolute inset-0 flex items-center justify-center text-[8px] sm:text-[10px] font-bold text-green-30 leading-none">
+                            {district.num}
+                          </span>
+                        </span>
                         <span className="font-inter text-xs sm:text-sm leading-tight truncate">{district.name}</span>
                       </button>
                     );
@@ -557,6 +529,37 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
                 </div>
               </aside>
             </div>
+            
+            {selectedDistricts.length > 0 && (
+              <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t-2 border-green-80">
+                <p className="font-inter text-green-30 font-semibold text-xs sm:text-sm md:text-base mb-2">Выбранные округа:</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedDistricts.map((regionId) => {
+                    const district = districts.find((d) => d.id === regionId);
+                    const color = legendColorFor(regionId);
+                    return (
+                      <span
+                        key={regionId}
+                        className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full bg-green-90 border border-green-80 text-green-30 text-xs sm:text-sm"
+                      >
+                        <span
+                          className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border border-green-30 flex-shrink-0"
+                          style={{ backgroundColor: color }}
+                        />
+                        <span className="truncate max-w-[100px] sm:max-w-none">{district?.name || regionId}</span>
+                        <button
+                          onClick={() => toggleRegion(regionId)}
+                          className="text-green-40 hover:text-green-20 flex-shrink-0"
+                          aria-label={`Убрать ${district?.name || regionId}`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

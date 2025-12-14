@@ -149,19 +149,41 @@ const Shelters = () => {
   const currentShelters = filteredShelters.slice(indexOfFirstShelter, indexOfLastShelter);
   const totalPages = Math.ceil(filteredShelters.length / sheltersPerPage);
 
+  // Сохраняем позицию скролла перед переключением страницы
+  const saveScrollPosition = () => {
+    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+    sessionStorage.setItem('sheltersScrollPosition', scrollPosition.toString());
+  };
+
+  // Восстанавливаем позицию скролла после изменения страницы
+  useEffect(() => {
+    const savedPosition = sessionStorage.getItem('sheltersScrollPosition');
+    if (savedPosition && currentPage > 1) {
+      setTimeout(() => {
+        window.scrollTo({
+          top: parseInt(savedPosition, 10),
+          behavior: 'auto'
+        });
+      }, 0);
+    }
+  }, [currentPage]);
+
   const nextPage = () => {
     if (currentPage < totalPages) {
+      saveScrollPosition();
       setCurrentPage(currentPage + 1);
     }
   };
 
   const prevPage = () => {
     if (currentPage > 1) {
+      saveScrollPosition();
       setCurrentPage(currentPage - 1);
     }
   };
 
   const goToPage = (pageNumber) => {
+    saveScrollPosition();
     setCurrentPage(pageNumber);
   };
 

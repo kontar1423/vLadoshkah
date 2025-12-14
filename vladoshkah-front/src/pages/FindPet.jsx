@@ -301,19 +301,41 @@ const FindPet = () => {
   const currentPets = filteredPets.slice(indexOfFirstPet, indexOfLastPet);
   const totalPages = Math.ceil(filteredPets.length / petsPerPage);
 
+  // Сохраняем позицию скролла перед переключением страницы
+  const saveScrollPosition = () => {
+    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+    sessionStorage.setItem('findPetScrollPosition', scrollPosition.toString());
+  };
+
+  // Восстанавливаем позицию скролла после изменения страницы
+  useEffect(() => {
+    const savedPosition = sessionStorage.getItem('findPetScrollPosition');
+    if (savedPosition && currentPage > 1) {
+      setTimeout(() => {
+        window.scrollTo({
+          top: parseInt(savedPosition, 10),
+          behavior: 'auto'
+        });
+      }, 0);
+    }
+  }, [currentPage]);
+
   const nextPage = () => {
     if (currentPage < totalPages) {
+      saveScrollPosition();
       setCurrentPage(currentPage + 1);
     }
   };
 
   const prevPage = () => {
     if (currentPage > 1) {
+      saveScrollPosition();
       setCurrentPage(currentPage - 1);
     }
   };
 
   const goToPage = (pageNumber) => {
+    saveScrollPosition();
     setCurrentPage(pageNumber);
   };
 
@@ -764,12 +786,14 @@ const FindPet = () => {
                             </button>
                             
                             {index < filteredArray.length - 1 && (
-                              <img
-                                className="relative w-6 h-px object-cover my-2"
-                                alt="" 
-                                src={LineIcon}
-                                role="presentation"
-                              />
+                              <div className="w-full flex justify-center my-2">
+                                <img
+                                  className="relative w-full max-w-full h-px object-cover"
+                                  alt="" 
+                                  src={LineIcon}
+                                  role="presentation"
+                                />
+                              </div>
                             )}
                           </div>
                         ))

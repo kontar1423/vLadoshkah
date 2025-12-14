@@ -2,8 +2,29 @@
     import { Link, useNavigate } from 'react-router-dom';
     import PriutPhoto from '../assets/images/priut.jpg';
 
+const getDistrictName = (regionCode) => {
+    const districtMap = {
+        'cao': 'Центральный',
+        'sao': 'Северный',
+        'svao': 'Северо-Восточный',
+        'vao': 'Восточный',
+        'yuvao': 'Юго-Восточный',
+        'yao': 'Южный',
+        'yuzao': 'Юго-Западный',
+        'zao': 'Западный',
+        'szao': 'Северо-Западный',
+        'zelao': 'Зеленоградский',
+        'tinao': 'Троицкий',
+        'nao': 'Новомосковский'
+    };
+    return districtMap[regionCode] || null;
+};
+
 const MiniShelterCard = ({ shelter, wideMobile = false }) => {
-    const { id, name, district, description, photoUrl } = shelter;
+    const { id, name, district, districtId, region, description, photoUrl } = shelter;
+    
+    // Определяем округ: сначала проверяем district, потом districtId, потом region
+    const displayDistrict = district || getDistrictName(districtId) || getDistrictName(region) || 'Москва';
     const navigate = useNavigate();
 
     const handleCardClick = (e) => {
@@ -52,7 +73,7 @@ const MiniShelterCard = ({ shelter, wideMobile = false }) => {
         </p>
         
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-auto gap-0.5 sm:gap-2">
-            <span className="font-inter text-green-50 text-[10px] sm:text-xs md:text-sm truncate w-full sm:w-auto">{district || 'Москва'}</span>
+            <span className="font-inter text-green-50 text-[10px] sm:text-xs md:text-sm truncate w-full sm:w-auto">{displayDistrict}</span>
             <Link
             to={`/shelter/${id}`}
             onClick={(e) => e.stopPropagation()}

@@ -61,22 +61,38 @@
         const sheltersWithCoordinates = await Promise.all(
             shelters.map(async (shelter) => {
             let coordinates = null;
+            
+            // Попытка геокодирования по адресу
             if (shelter.address) {
                 try {
-                coordinates = await geocodingService.getCoordinates(
+                const geocodeResult = await geocodingService.getCoordinates(
                     `${shelter.address}, Москва`
                 );
-                } catch (error) {
-                console.error(`Ошибка геокодирования для приюта ${shelter.name}:`, error);
+                
+                // Преобразуем объект {lat, lng} в массив [lat, lng] для Leaflet
+                if (geocodeResult && geocodeResult.lat && geocodeResult.lng) {
+                    coordinates = [geocodeResult.lat, geocodeResult.lng];
+                    console.log(`✓ Геокодирование успешно для приюта "${shelter.name}":`, coordinates);
+                } else {
+                    console.warn(`⚠ Геокодирование вернуло null для приюта "${shelter.name}" с адресом "${shelter.address}"`);
                 }
+                } catch (error) {
+                console.error(`✗ Ошибка геокодирования для приюта "${shelter.name}":`, error);
+                }
+            } else {
+                console.warn(`⚠ У приюта "${shelter.name}" нет адреса`);
             }
             
+            // Fallback: координаты по округу
             if (!coordinates && shelter.districtId) {
                 coordinates = getCoordinatesByDistrict(shelter.districtId);
+                console.log(`📍 Использованы координаты округа для приюта "${shelter.name}":`, coordinates);
             }
             
+            // Fallback: случайные координаты в пределах Москвы
             if (!coordinates) {
                 coordinates = getFallbackCoordinates(shelter.id);
+                console.log(`📍 Использованы fallback координаты для приюта "${shelter.name}":`, coordinates);
             }
             
             return {
@@ -86,11 +102,17 @@
             })
         );
         
+        console.log(`✅ Загружено координат для ${sheltersWithCoordinates.length} из ${shelters.length} приютов`);
         setSheltersWithCoords(sheltersWithCoordinates);
         setLoading(false);
         };
 
-        loadCoordinates();
+        if (shelters && shelters.length > 0) {
+            loadCoordinates();
+        } else {
+            setSheltersWithCoords([]);
+            setLoading(false);
+        }
     }, [shelters]);
 
     const getCoordinatesByDistrict = (districtId) => {
@@ -175,7 +197,13 @@
             const isHighlighted = isShelterHighlighted(shelter.id);
             const isVisible = filteredShelters.some(s => s.id === shelter.id) || searchQuery === "";
 
-            if (!isVisible || !shelter.coordinates) return null;
+            // Проверяем, что координаты есть и это массив [lat, lng]
+            if (!isVisible || !shelter.coordinates || !Array.isArray(shelter.coordinates) || shelter.coordinates.length !== 2) {
+                if (!shelter.coordinates) {
+                    console.warn(`⚠ Приют "${shelter.name}" (ID: ${shelter.id}) не имеет координат`);
+                }
+                return null;
+            }
 
             return (
                 <Marker 

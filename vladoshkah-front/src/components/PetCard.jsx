@@ -274,7 +274,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
 
             <div className="flex flex-col flex-1 bg-green-90 rounded-b-custom-small mt-0 sm:mt-0 md:mt-0 lg:mt-0 xl:mt-0 pt-4 sm:pt-6 md:pt-7 lg:pt-8 xl:pt-9">
                 <div className="relative z-10 flex items-center gap-1.5 sm:gap-1.5 md:gap-2 w-full px-2 sm:px-2 md:px-3 lg:px-4 pb-1.5 sm:pb-1.5 min-w-0">
-                    <div className="px-2 sm:px-2 md:px-2.5 lg:px-3 py-1 bg-green-90 rounded-full border-2 border-green-30 shadow-sm min-w-0 max-w-full overflow-hidden">
+                    <div className="px-2 sm:px-2 md:px-2.5 lg:px-3 py-1 h-6 sm:h-6 md:h-7 lg:h-8 flex items-center bg-green-90 rounded-full border-2 border-green-30 shadow-sm min-w-0 max-w-full overflow-hidden">
                         <span className="font-inter text-green-30 text-xs sm:text-xs md:text-sm lg:text-base truncate block">
                             {name}
                         </span>
@@ -284,7 +284,7 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
                             {gender === "male" ? "♂" : "♀"}
                         </span>
                     </div>
-                    <div className="px-1.5 sm:px-1.5 md:px-2 py-0.5 bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0">
+                    <div className="px-1.5 sm:px-1.5 md:px-2 h-6 sm:h-6 md:h-7 lg:h-8 flex items-center bg-green-90 rounded-full border-2 border-green-30 shadow-sm flex-shrink-0">
                         <span className="font-inter text-green-30 text-[11px] sm:text-[10px] md:text-xs lg:text-sm">
                             {formatAge(age)}
                         </span>

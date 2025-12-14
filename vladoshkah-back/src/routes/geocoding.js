@@ -11,32 +11,107 @@ router.get('/coordinates', async (req, res) => {
       return res.status(400).json({ error: 'Address parameter is required' });
     }
 
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
-      {
-        headers: {
-          'User-Agent': 'Vladoshkah App'
-        }
-      }
-    );
+    const encodedAddress = encodeURIComponent(address);
+    const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1`;
+    
+    logger.info({ address, url: nominatimUrl }, 'Geocoding request');
 
-    if (!response.ok) {
-      throw new Error(`Nominatim API error: ${response.status}`);
+    // Создаем AbortController для таймаута
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд таймаут
+
+    let response;
+    try {
+      response = await fetch(nominatimUrl, {
+        headers: {
+          'User-Agent': 'Vladoshkah App (contact@vladoshkah.ru)',
+          'Accept': 'application/json'
+        },
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      
+      if (fetchError.name === 'AbortError') {
+        logger.error({ address }, 'Geocoding request timeout');
+        return res.status(504).json({ 
+          error: 'Geocoding request timeout',
+          details: 'The request took too long to complete'
+        });
+      }
+      
+      logger.error({ error: fetchError, address, errorName: fetchError.name }, 'Failed to fetch from Nominatim');
+      return res.status(500).json({ 
+        error: 'Failed to connect to geocoding service',
+        details: fetchError.message 
+      });
     }
 
-    const data = await response.json();
-    
-    if (data && data.length > 0) {
-      return res.json({
-        lat: parseFloat(data[0].lat),
-        lng: parseFloat(data[0].lon)
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      logger.error({ 
+        status: response.status, 
+        statusText: response.statusText,
+        errorText,
+        address 
+      }, 'Nominatim API error');
+      
+      // Если это rate limit (429), возвращаем специальный статус
+      if (response.status === 429) {
+        return res.status(429).json({ 
+          error: 'Too many requests to geocoding service. Please try again later.' 
+        });
+      }
+      
+      return res.status(500).json({ 
+        error: 'Geocoding service error',
+        details: `HTTP ${response.status}: ${response.statusText}`
+      });
+    }
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      logger.error({ error: parseError, address, responseStatus: response.status }, 'Failed to parse Nominatim response');
+      return res.status(500).json({ 
+        error: 'Invalid response from geocoding service',
+        details: parseError.message 
       });
     }
     
-    return res.json(null);
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      logger.warn({ address, dataLength: data?.length }, 'No results from Nominatim');
+      return res.json(null);
+    }
+
+    const result = data[0];
+    if (!result.lat || !result.lon) {
+      logger.warn({ address, result }, 'Invalid result from Nominatim (missing lat/lon)');
+      return res.json(null);
+    }
+
+    const lat = parseFloat(result.lat);
+    const lng = parseFloat(result.lon);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      logger.warn({ address, lat: result.lat, lon: result.lon }, 'Invalid coordinates from Nominatim');
+      return res.json(null);
+    }
+
+    logger.info({ address, lat, lng }, 'Geocoding success');
+    
+    return res.json({
+      lat,
+      lng
+    });
   } catch (error) {
-    logger.error(error, 'Geocoding error');
-    return res.status(500).json({ error: 'Geocoding failed' });
+    logger.error({ error, stack: error.stack, address: req.query.address }, 'Unexpected geocoding error');
+    return res.status(500).json({ 
+      error: 'Geocoding failed',
+      details: error.message 
+    });
   }
 });
 

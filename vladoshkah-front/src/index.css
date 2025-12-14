@@ -529,3 +529,28 @@ body.modal-open {
 .modal-open footer {
   z-index: 100 !important;
 }
+
+/* Кастомный скроллбар для описания приюта */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #DDF8D8;
+  border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #44C265;
+  border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #1AA64A;
+}
+
+/* Для Firefox */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #44C265 #DDF8D8;
+}
