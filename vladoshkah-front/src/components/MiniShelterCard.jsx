@@ -35,14 +35,13 @@ const MiniShelterCard = ({ shelter, wideMobile = false }) => {
     }; 
 
     const sizeClasses = wideMobile
-        ? 'w-full max-w-none md:max-w-[320px] lg:max-w-[380px]'
-        : 'w-full max-w-none md:max-w-[300px] lg:max-w-[380px]';
+        ? 'w-full max-w-none md:max-w-[320px] lg:max-w-[380px] min-h-[340px] sm:min-h-[360px] md:min-h-[400px] h-auto'
+        : 'w-full max-w-none md:max-w-[300px] lg:max-w-[380px] min-h-[320px] sm:min-h-[340px] md:min-h-[380px] h-auto';
 
     return (
         <div 
             onClick={handleCardClick}
-            className={`bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 ${sizeClasses} aspect-square flex flex-col cursor-pointer md:cursor-default hover:shadow-lg transition-shadow duration-300 overflow-hidden`}
-            style={{ aspectRatio: '1 / 1' }}
+            className={`bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 ${sizeClasses} flex flex-col cursor-pointer md:cursor-default hover:shadow-lg transition-shadow duration-300`}
         >
         <div
             className="relative w-full aspect-square mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small flex-shrink-0"
@@ -67,13 +66,13 @@ const MiniShelterCard = ({ shelter, wideMobile = false }) => {
             </div>
         </div>
         
-        <h3 className="font-sf-rounded font-bold text-green-30 text-sm sm:text-base md:text-lg lg:text-xl mb-1 sm:mb-1.5 md:mb-2 line-clamp-1 overflow-hidden flex-shrink-0">{name}</h3>
+        <h3 className="font-sf-rounded font-bold text-green-30 text-sm sm:text-base md:text-lg lg:text-xl mb-1 sm:mb-1.5 md:mb-2 line-clamp-1">{name}</h3>
         
-        <p className="font-inter text-green-40 text-[10px] sm:text-xs md:text-sm mb-1 sm:mb-1.5 md:mb-2 line-clamp-2 overflow-hidden flex-grow min-h-0">
+        <p className="font-inter text-green-40 text-[10px] sm:text-xs md:text-sm mb-1 sm:mb-1.5 md:mb-2 line-clamp-2 flex-grow">
             {description || ''}
         </p>
         
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-auto gap-0.5 sm:gap-2 flex-shrink-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-auto gap-0.5 sm:gap-2">
             <span className="font-inter text-green-50 text-[10px] sm:text-xs md:text-sm truncate w-full sm:w-auto">{displayDistrict}</span>
             <Link
             to={`/shelter/${id}`}

@@ -7,7 +7,6 @@ import PetCard from '../components/PetCard';
 import Filters from '../components/Filters';
 import HelpSection from '../components/HelpSection';
 import SearchIcon from '../assets/images/search.png';
-import LineIcon from '../assets/images/line.png';
 import miniPes from '../assets/images/mini_pes.png';
 import { animalService } from '../services/animalService';
 import { shelterService } from '../services/shelterService';
@@ -787,12 +786,7 @@ const FindPet = () => {
                             
                             {index < filteredArray.length - 1 && (
                               <div className="w-full flex justify-center my-2">
-                                <img
-                                  className="relative w-full max-w-full h-px object-cover"
-                                  alt="" 
-                                  src={LineIcon}
-                                  role="presentation"
-                                />
+                                <div className="w-16 h-px bg-green-60"></div>
                               </div>
                             )}
                           </div>

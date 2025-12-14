@@ -202,10 +202,10 @@ const PetCard = ({ petData, initialFavorite = false, onDelete = null, wideMobile
     };
 
     const mobileSizeClasses = mobileLarge
-        ? 'w-full max-w-[230px] sm:max-w-[330px] md:max-w-[360px] min-h-[420px] sm:min-h-[460px] md:min-h-[520px] h-auto'
+        ? 'w-full max-w-[230px] sm:max-w-[330px] md:max-w-[360px] min-h-[380px] sm:min-h-[420px] md:min-h-[480px] h-auto'
         : wideMobile
-            ? 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] min-h-[400px] sm:min-h-[420px] md:min-h-[520px] h-auto'
-            : 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] min-h-[380px] sm:min-h-[400px] md:min-h-[520px] h-auto';
+            ? 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] min-h-[360px] sm:min-h-[380px] md:min-h-[480px] h-auto'
+            : 'w-full max-w-[180px] sm:max-w-[300px] md:max-w-[320px] min-h-[340px] sm:min-h-[360px] md:min-h-[480px] h-auto';
 
     return (
         <article 
