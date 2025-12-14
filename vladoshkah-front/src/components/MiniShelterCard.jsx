@@ -35,16 +35,17 @@ const MiniShelterCard = ({ shelter, wideMobile = false }) => {
     }; 
 
     const sizeClasses = wideMobile
-        ? 'w-full max-w-none md:max-w-[320px] lg:max-w-[380px] min-h-[340px] sm:min-h-[360px] md:min-h-[400px] h-auto'
-        : 'w-full max-w-none md:max-w-[300px] lg:max-w-[380px] min-h-[320px] sm:min-h-[340px] md:min-h-[380px] h-auto';
+        ? 'w-full max-w-none md:max-w-[320px] lg:max-w-[380px]'
+        : 'w-full max-w-none md:max-w-[300px] lg:max-w-[380px]';
 
     return (
         <div 
             onClick={handleCardClick}
-            className={`bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 ${sizeClasses} flex flex-col cursor-pointer md:cursor-default hover:shadow-lg transition-shadow duration-300`}
+            className={`bg-green-90 rounded-custom-small p-2 sm:p-3 md:p-4 ${sizeClasses} aspect-square flex flex-col cursor-pointer md:cursor-default hover:shadow-lg transition-shadow duration-300`}
+            style={{ aspectRatio: '1 / 1' }}
         >
         <div
-            className="relative w-full aspect-square min-h-[200px] sm:min-h-[230px] md:min-h-[260px] mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small"
+            className="relative w-full aspect-square mb-2 sm:mb-3 md:mb-4 overflow-hidden rounded-custom-small"
             style={{ aspectRatio: '1 / 1' }}
         >
             <img

@@ -696,7 +696,7 @@ const ShelterProfile = () => {
       />
 
       <div className="max-w-container mx-auto px-4 space-y-8">
-        <div className="relative w-full max-w-[1260px] min-h-[400px] md:h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row">
+        <div className="relative w-full max-w-[1260px] h-[400px] bg-green-90 rounded-custom overflow-hidden flex flex-col md:flex-row">
           <div className="relative w-full md:w-[350px] h-[180px] md:h-full flex-shrink-0">
             <img 
               src={shelterData.photoUrl || PriutPhoto} 
@@ -719,7 +719,7 @@ const ShelterProfile = () => {
             <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-green-90 to-transparent hidden md:block"></div>
           </div>
 
-          <div className="flex-1 flex flex-col p-4 md:p-6 md:pl-6 md:pr-6 relative min-h-0">
+          <div className="flex-1 flex flex-col p-4 md:p-6 md:pl-6 md:pr-6 relative h-full">
             {shelterData.acceptsAnimalsFromOwners && (
               <div className="absolute top-4 right-4 md:right-4 bg-green-90 bg-opacity-90 border-2 border-green-30 rounded-custom-small px-2 py-1.5 md:px-3 md:py-2 backdrop-blur-sm max-w-[140px] sm:max-w-[160px] md:max-w-[200px] z-10">
                 <span className="font-inter font-medium text-green-30 text-[10px] sm:text-xs md:text-sm leading-tight break-words">
@@ -728,7 +728,7 @@ const ShelterProfile = () => {
               </div>
             )}
 
-            <div className="w-full flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="w-full flex-1 flex flex-col min-h-0 overflow-hidden pb-20">
               <header className="inline-flex flex-col items-start relative mb-3 md:mb-4 w-full pr-[150px] sm:pr-[180px] md:pr-[260px] flex-shrink-0">
                 <h1 className="w-fit font-sf-rounded font-bold text-2xl md:text-4xl text-green-30 mb-2">
                   {shelterData.name}
@@ -779,7 +779,7 @@ const ShelterProfile = () => {
               </div>
             </div>
 
-            <div className="w-full pt-4 flex-shrink-0">
+            <div className="absolute bottom-4 md:bottom-6 left-4 md:left-6 right-4 md:right-6 w-auto">
               <button
                 className="all-[unset] box-border flex h-11 items-center justify-center gap-2 px-6 py-3 bg-green-70 rounded-custom-small hover:bg-green-80 transition-colors cursor-pointer w-full"
                 onClick={scrollToMap}
