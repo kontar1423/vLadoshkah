@@ -460,7 +460,7 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex items-center justify-between self-stretch w-full gap-2 sm:gap-4 sticky top-0 bg-green-95 z-50 pb-2 pt-2 -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 px-3 sm:px-4 md:px-6 lg:px-8 border-b-2 border-green-80 shadow-sm">
+        <header className="flex items-center justify-between self-stretch w-full gap-2 sm:gap-4 pb-3">
           <div className="flex-shrink-0 min-w-0">
             <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-sf-rounded font-bold text-green-30 break-words">
               Выберите округа Москвы
@@ -470,7 +470,6 @@ const DistrictFilter = ({ isOpen, onClose, onApplyFilter }) => {
             onClick={onClose}
             className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 cursor-pointer text-green-40 hover:text-green-30 transition-colors flex-shrink-0"
             aria-label="Закрыть фильтры"
-            style={{ position: 'relative', zIndex: 100 }}
           >
             <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
