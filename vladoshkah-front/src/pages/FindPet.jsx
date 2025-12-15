@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import Pes from '../assets/images/sobaka.png';
 import ButtonIcon from '../assets/images/Button.png';
 import LapaIcon from '../assets/images/lapa.png';
@@ -17,6 +17,7 @@ import PetCardSkeleton from '../components/PetCardSkeleton';
 
 const FindPet = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [shelterSearchQuery, setShelterSearchQuery] = useState("");
@@ -24,7 +25,8 @@ const FindPet = () => {
   const [filteredPets, setFilteredPets] = useState([]);
   const [shelters, setShelters] = useState([]);
   const [filteredShelters, setFilteredShelters] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const initialPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [petsPerPage] = useState(24);
   const [showFilters, setShowFilters] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -263,7 +265,7 @@ const FindPet = () => {
       );
       setFilteredPets(searchedPets);
     }
-    setCurrentPage(1);
+    updatePage(1);
   }, [searchTerm, allPets]);
 
   
@@ -276,7 +278,7 @@ const FindPet = () => {
       const allAnimals = await animalService.getAllAnimals();
       setAllPets(allAnimals);
       setFilteredPets(allAnimals);
-      setCurrentPage(1);
+      updatePage(1);
     } catch (error) {
       console.error('Error resetting filters:', error);
       setError('Не удалось сбросить фильтры');
@@ -290,9 +292,28 @@ const FindPet = () => {
     setHighlightedShelter(shelterId);
   };
 
-  
   const handleShelterClick = (shelter) => {
     highlightShelterOnMap(shelter.id);
+  };
+
+  const getTotalPages = () => Math.max(1, Math.ceil(filteredPets.length / petsPerPage));
+
+  const syncPageToUrl = (page) => {
+    const params = new URLSearchParams(searchParams);
+    if (page > 1) {
+      params.set('page', page);
+    } else {
+      params.delete('page');
+    }
+    setSearchParams(params, { replace: true });
+  };
+
+  const updatePage = (page) => {
+    const total = getTotalPages();
+    const nextPage = Math.min(Math.max(1, page), total);
+    setCurrentPage(nextPage);
+    syncPageToUrl(nextPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const indexOfLastPet = currentPage * petsPerPage;
@@ -300,42 +321,27 @@ const FindPet = () => {
   const currentPets = filteredPets.slice(indexOfFirstPet, indexOfLastPet);
   const totalPages = Math.ceil(filteredPets.length / petsPerPage);
 
-  // Сохраняем позицию скролла перед переключением страницы
-  const saveScrollPosition = () => {
-    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-    sessionStorage.setItem('findPetScrollPosition', scrollPosition.toString());
-  };
-
-  // Восстанавливаем позицию скролла после изменения страницы
   useEffect(() => {
-    const savedPosition = sessionStorage.getItem('findPetScrollPosition');
-    if (savedPosition && currentPage > 1) {
-      setTimeout(() => {
-        window.scrollTo({
-          top: parseInt(savedPosition, 10),
-          behavior: 'auto'
-        });
-      }, 0);
+    const pageFromUrl = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    if (pageFromUrl !== currentPage) {
+      setCurrentPage(pageFromUrl);
     }
-  }, [currentPage]);
+  }, [searchParams]);
 
   const nextPage = () => {
     if (currentPage < totalPages) {
-      saveScrollPosition();
-      setCurrentPage(currentPage + 1);
+      updatePage(currentPage + 1);
     }
   };
 
   const prevPage = () => {
     if (currentPage > 1) {
-      saveScrollPosition();
-      setCurrentPage(currentPage - 1);
+      updatePage(currentPage - 1);
     }
   };
 
   const goToPage = (pageNumber) => {
-    saveScrollPosition();
-    setCurrentPage(pageNumber);
+    updatePage(pageNumber);
   };
 
   const activeFilterLabels = formatActiveFilters();
