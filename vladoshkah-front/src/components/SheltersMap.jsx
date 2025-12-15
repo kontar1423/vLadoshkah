@@ -87,79 +87,73 @@ const SheltersMap = ({
     };
   }, []);
 
-    useEffect(() => {
-        const loadCoordinates = async () => {
-        setLoading(true);
-        
-        const sheltersWithCoordinates = await Promise.all(
-            shelters.map(async (shelter) => {
-            let coordinates = null;
-            
-            // Попытка геокодирования по адресу
-            if (shelter.address) {
-                try {
-                // Нормализуем адрес: убираем дублирование "Москва" и лишние запятые
-                let normalizedAddress = shelter.address.trim();
-                
-                // Убираем дублирование "Москва" в конце адреса
-                normalizedAddress = normalizedAddress.replace(/,\s*Москва\s*,?\s*Москва\s*$/i, ', Москва');
-                normalizedAddress = normalizedAddress.replace(/,\s*Москва\s*$/i, ', Москва');
-                
-                // Если адрес уже содержит "Москва", не добавляем его повторно
-                if (!normalizedAddress.toLowerCase().includes('москва')) {
-                    normalizedAddress = `${normalizedAddress}, Москва`;
-                }
-                
-                const geocodeResult = await geocodingService.getCoordinates(normalizedAddress);
-                
-                // Преобразуем объект {lat, lng} в массив [lat, lng] для Leaflet
-                if (geocodeResult && geocodeResult.lat && geocodeResult.lng) {
-                    coordinates = [geocodeResult.lat, geocodeResult.lng];
-                    console.log(`✓ Геокодирование успешно для приюта "${shelter.name}":`, coordinates);
-                } else {
-                    // Выводим предупреждение только если нет fallback вариантов
-                    if (!shelter.districtId) {
-                        console.warn(`⚠ Геокодирование вернуло null для приюта "${shelter.name}" с адресом "${shelter.address}"`);
-                    }
-                }
-                } catch (error) {
-                console.error(`✗ Ошибка геокодирования для приюта "${shelter.name}":`, error);
-                }
-            } else {
-                console.warn(`⚠ У приюта "${shelter.name}" нет адреса`);
-            }
-            
-            // Fallback: координаты по округу
-            if (!coordinates && shelter.districtId) {
-                coordinates = getCoordinatesByDistrict(shelter.districtId);
-                console.log(`📍 Использованы координаты округа для приюта "${shelter.name}":`, coordinates);
-            }
-            
-            // Fallback: случайные координаты в пределах Москвы
-            if (!coordinates) {
-                coordinates = getFallbackCoordinates(shelter.id);
-                console.log(`📍 Использованы fallback координаты для приюта "${shelter.name}":`, coordinates);
-            }
-            
-            return {
-                ...shelter,
-                coordinates: coordinates
-            };
-            })
-        );
-        
-        console.log(`✅ Загружено координат для ${sheltersWithCoordinates.length} из ${shelters.length} приютов`);
-        setSheltersWithCoords(sheltersWithCoordinates);
-        setLoading(false);
-        };
+  useEffect(() => {
+    let isMounted = true;
 
-        if (shelters && shelters.length > 0) {
-            loadCoordinates();
+    const loadCoordinatesIncremental = async () => {
+      setLoading(true);
+      setSheltersWithCoords([]);
+
+      for (const shelter of shelters) {
+        if (!isMounted) break;
+
+        let coordinates = null;
+
+        if (shelter.address) {
+          try {
+            let normalizedAddress = shelter.address.trim();
+            normalizedAddress = normalizedAddress.replace(/,\s*Москва\s*,?\s*Москва\s*$/i, ', Москва');
+            normalizedAddress = normalizedAddress.replace(/,\s*Москва\s*$/i, ', Москва');
+            if (!normalizedAddress.toLowerCase().includes('москва')) {
+              normalizedAddress = `${normalizedAddress}, Москва`;
+            }
+
+            const geocodeResult = await geocodingService.getCoordinates(normalizedAddress);
+            if (geocodeResult && geocodeResult.lat && geocodeResult.lng) {
+              coordinates = [geocodeResult.lat, geocodeResult.lng];
+              console.log(`✓ Геокодирование успешно для приюта "${shelter.name}":`, coordinates);
+            } else if (!shelter.districtId) {
+              console.warn(`⚠ Геокодирование вернуло null для приюта "${shelter.name}" с адресом "${shelter.address}"`);
+            }
+          } catch (error) {
+            console.error(`✗ Ошибка геокодирования для приюта "${shelter.name}":`, error);
+          }
         } else {
-            setSheltersWithCoords([]);
-            setLoading(false);
+          console.warn(`⚠ У приюта "${shelter.name}" нет адреса`);
         }
-    }, [shelters]);
+
+        if (!coordinates && shelter.districtId) {
+          coordinates = getCoordinatesByDistrict(shelter.districtId);
+          console.log(`📍 Использованы координаты округа для приюта "${shelter.name}":`, coordinates);
+        }
+
+        if (!coordinates) {
+          coordinates = getFallbackCoordinates(shelter.id);
+          console.log(`📍 Использованы fallback координаты для приюта "${shelter.name}":`, coordinates);
+        }
+
+        const withCoords = { ...shelter, coordinates };
+        if (isMounted) {
+          setSheltersWithCoords((prev) => [...prev, withCoords]);
+        }
+      }
+
+      if (isMounted) {
+        setLoading(false);
+      }
+    };
+
+    if (shelters && shelters.length > 0) {
+      loadCoordinatesIncremental();
+    } else {
+      setSheltersWithCoords([]);
+      setLoading(false);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [shelters]);
 
     const getCoordinatesByDistrict = (districtId) => {
         const districtCoordinates = {
@@ -205,19 +199,14 @@ const SheltersMap = ({
             (searchQuery && filteredShelters.some(s => s.id === shelterId));
     };
 
-  if (loading) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-green-90 rounded-custom">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-40 mx-auto mb-4"></div>
-            <p className="font-inter text-green-40">Загрузка карты...</p>
-            </div>
-        </div>
-        );
-    }
-
   return (
     <div className="w-full h-full relative" style={{ zIndex: 1 }}>
+      {loading && (
+        <div className="absolute left-4 top-4 z-[1000] flex items-center gap-2 pointer-events-none bg-green-90/80 border border-green-40 rounded-custom-small px-3 py-2 shadow-md">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-40"></div>
+          <p className="font-inter text-green-40 text-sm">Загрузка приютов...</p>
+        </div>
+      )}
       {searchQuery && (
         <div className="absolute top-4 left-4 z-[1000] bg-green-90 border-2 border-green-40 rounded-custom-small px-4 py-2 shadow-lg">
             <span className="font-inter text-green-30 text-sm">
