@@ -37,6 +37,8 @@ const FindPet = () => {
   const [highlightedShelter, setHighlightedShelter] = useState(null);
   const [favoritesMap, setFavoritesMap] = useState({}); // Маппинг animal_id -> isFavorite
   const sheltersLoadingRef = useRef(false);
+  const listTopRef = useRef(null);
+  const prevSearchTermRef = useRef(null);
 
   const getFilterDisplayName = (filterKey, filterValue) => {
     const filterLabels = {
@@ -265,7 +267,10 @@ const FindPet = () => {
       );
       setFilteredPets(searchedPets);
     }
-    updatePage(1);
+    if (prevSearchTermRef.current !== null && prevSearchTermRef.current !== searchTerm) {
+      updatePage(1);
+    }
+    prevSearchTermRef.current = searchTerm;
   }, [searchTerm, allPets]);
 
   
@@ -296,6 +301,14 @@ const FindPet = () => {
     highlightShelterOnMap(shelter.id);
   };
 
+  const scrollToListTop = () => {
+    if (listTopRef.current) {
+      listTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const getTotalPages = () => Math.max(1, Math.ceil(filteredPets.length / petsPerPage));
 
   const syncPageToUrl = (page) => {
@@ -313,7 +326,7 @@ const FindPet = () => {
     const nextPage = Math.min(Math.max(1, page), total);
     setCurrentPage(nextPage);
     syncPageToUrl(nextPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(scrollToListTop, 0);
   };
 
   const indexOfLastPet = currentPage * petsPerPage;
@@ -325,6 +338,7 @@ const FindPet = () => {
     const pageFromUrl = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     if (pageFromUrl !== currentPage) {
       setCurrentPage(pageFromUrl);
+      setTimeout(scrollToListTop, 0);
     }
   }, [searchParams]);
 
@@ -549,7 +563,11 @@ const FindPet = () => {
           </div>
         </section>
 
-        <section id="pets-section" className="w-full max-w-[1260px] mx-auto pt-2 pb-6 sm:pt-6 sm:pb-10 md:py-30 mb-8 sm:mb-10 md:mb-25 px-4 md:px-0">
+        <section
+          id="pets-section"
+          ref={listTopRef}
+          className="w-full max-w-[1260px] mx-auto pt-2 pb-6 sm:pt-6 sm:pb-10 md:py-30 mb-8 sm:mb-10 md:mb-25 px-4 md:px-0"
+        >
           <div className="mb-4 sm:mb-6 flex justify-center sm:justify-start">
             <div className="bg-green-90 rounded-custom-small px-4 sm:px-6 py-2 sm:py-3 inline-block">
               <span className="font-inter font-medium text-green-30 text-sm sm:text-base">

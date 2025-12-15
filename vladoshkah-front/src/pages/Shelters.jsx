@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import ShelterCard from '../components/ShelterCard';
 import MiniShelterCard from '../components/MiniShelterCard';
 import DistrictFilter from '../components/DistrictFilter';
@@ -10,7 +11,9 @@ const Shelters = () => {
   const [shelters, setShelters] = useState([]);
   const [filteredShelters, setFilteredShelters] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [sheltersPerPage] = useState(12);
   const [showDistrictFilter, setShowDistrictFilter] = useState(false);
   const [activeFilters, setActiveFilters] = useState({
@@ -21,6 +24,8 @@ const Shelters = () => {
   const [error, setError] = useState('');
   const [isMobile, setIsMobile] = useState(false);
   const loadingRef = useRef(false);
+  const listTopRef = useRef(null);
+  const prevSearchTermRef = useRef(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -112,6 +117,7 @@ const Shelters = () => {
     });
     
     applyFilters(filters.districtIds, searchTerm);
+    updatePage(1);
   };
 
   const applyFilters = (districtIds, search) => {
@@ -130,18 +136,21 @@ const Shelters = () => {
     }
     
     setFilteredShelters(filtered);
-    setCurrentPage(1);
   };
 
   useEffect(() => {
     applyFilters(activeFilters.districtIds, searchTerm);
+    if (prevSearchTermRef.current !== null && prevSearchTermRef.current !== searchTerm) {
+      updatePage(1);
+    }
+    prevSearchTermRef.current = searchTerm;
   }, [searchTerm, shelters, activeFilters.districtIds]);
 
   const handleResetFilters = () => {
     setActiveFilters({ districts: [], districtIds: [] });
     setSearchTerm("");
     setFilteredShelters(shelters);
-    setCurrentPage(1);
+    updatePage(1);
   };
 
   const indexOfLastShelter = currentPage * sheltersPerPage;
@@ -149,42 +158,56 @@ const Shelters = () => {
   const currentShelters = filteredShelters.slice(indexOfFirstShelter, indexOfLastShelter);
   const totalPages = Math.ceil(filteredShelters.length / sheltersPerPage);
 
-  // Сохраняем позицию скролла перед переключением страницы
-  const saveScrollPosition = () => {
-    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-    sessionStorage.setItem('sheltersScrollPosition', scrollPosition.toString());
+  const scrollToListTop = () => {
+    if (listTopRef.current) {
+      listTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
-  // Восстанавливаем позицию скролла после изменения страницы
-  useEffect(() => {
-    const savedPosition = sessionStorage.getItem('sheltersScrollPosition');
-    if (savedPosition && currentPage > 1) {
-      setTimeout(() => {
-        window.scrollTo({
-          top: parseInt(savedPosition, 10),
-          behavior: 'auto'
-        });
-      }, 0);
+  const syncPageToUrl = (page) => {
+    const params = new URLSearchParams(searchParams);
+    if (page > 1) {
+      params.set('page', page);
+    } else {
+      params.delete('page');
     }
-  }, [currentPage]);
+    setSearchParams(params, { replace: true });
+  };
+
+  const getTotalPages = () => Math.max(1, Math.ceil(filteredShelters.length / sheltersPerPage));
+
+  const updatePage = (page) => {
+    const total = getTotalPages();
+    const nextPage = Math.min(Math.max(1, page), total);
+    setCurrentPage(nextPage);
+    syncPageToUrl(nextPage);
+    setTimeout(scrollToListTop, 0);
+  };
+
+  useEffect(() => {
+    const pageFromUrl = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    if (pageFromUrl !== currentPage) {
+      setCurrentPage(pageFromUrl);
+      setTimeout(scrollToListTop, 0);
+    }
+  }, [searchParams]);
 
   const nextPage = () => {
     if (currentPage < totalPages) {
-      saveScrollPosition();
-      setCurrentPage(currentPage + 1);
+      updatePage(currentPage + 1);
     }
   };
 
   const prevPage = () => {
     if (currentPage > 1) {
-      saveScrollPosition();
-      setCurrentPage(currentPage - 1);
+      updatePage(currentPage - 1);
     }
   };
 
   const goToPage = (pageNumber) => {
-    saveScrollPosition();
-    setCurrentPage(pageNumber);
+    updatePage(pageNumber);
   };
 
   const getSelectedDistrictsText = () => {
@@ -301,7 +324,10 @@ const Shelters = () => {
           </div>
         </section>
 
-        <section className="w-full max-w-[1260px] mx-auto">
+        <section
+          className="w-full max-w-[1260px] mx-auto"
+          ref={listTopRef}
+        >
           {shelters.length === 0 && (
             <div className="text-center py-16">
               <div className="bg-green-90 rounded-custom p-12 max-w-2xl mx-auto">
